@@ -1,0 +1,158 @@
+/*
+ * Dizajn tokeni.
+ *
+ * Tri stanja teme, ne dva: eksplicitan izbor postavlja data-theme na koren,
+ * a podrazumevano "sistemsko" ne postavlja ništa — tada odlučuje
+ * prefers-color-scheme. Zato se svaka boja definiše u :root, a u tamnim
+ * blokovima se samo redefiniše. Boja koja postoji samo unutar media upita
+ * nikad se ne primeni u nestampanom stanju.
+ */
+
+:root {
+  /* --- Podloge i tekst --- */
+  --ground: #f6f8f8;
+  --surface: #ffffff;
+  --surface-sunk: #eff3f3;
+  --surface-raised: #ffffff;
+
+  --ink: #141a1b;
+  --ink-2: #3a4749;
+  --muted: #5a686c;
+  --faint: #8b9a9e;
+
+  --line: #dbe2e3;
+  --line-strong: #c2cdcf;
+
+  /* --- Akcent platforme (Delta Pro). Nikad se ne menja po klijentu. --- */
+  --accent: #0e6e6b;
+  --accent-ink: #0a5451;
+  --accent-soft: #e1efee;
+  --accent-contrast: #ffffff;
+
+  /*
+   * Akcent radnog prostora. Podrazumevano jednak platformskom; server ga
+   * prepisuje bojom klijenta TEK nakon provere kontrasta.
+   */
+  --brand: var(--accent);
+  --brand-ink: var(--accent-ink);
+  --brand-soft: var(--accent-soft);
+  --brand-contrast: var(--accent-contrast);
+
+  /* --- Semantičke boje. Odvojene od akcenta, ne koriste se kao ukras. --- */
+  --ok: #1f7a4d;
+  --ok-soft: #e3f1ea;
+  --warn: #b4632a;
+  --warn-soft: #f7ebe0;
+  --critical: #9e2b2b;
+  --critical-soft: #f8e7e7;
+  --info: #2b5f9e;
+  --info-soft: #e6eef8;
+
+  --shadow-sm: 0 1px 2px rgba(20, 26, 27, 0.05);
+  --shadow-md: 0 1px 2px rgba(20, 26, 27, 0.05), 0 8px 24px -16px rgba(20, 26, 27, 0.28);
+
+  /* --- Tipografija --- */
+  --font-sans: var(--font-plex-sans), 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), 'SFMono-Regular', Consolas, monospace;
+
+  --text-2xs: 10.5px;
+  --text-xs: 11.5px;
+  --text-sm: 12.5px;
+  --text-base: 13.5px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  /* --- Prostor: skala od 4px, bez izuzetaka --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 56px;
+  --space-16: 72px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 999px;
+
+  --header-height: 52px;
+  --sidebar-width: 232px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ground: #0d1113;
+    --surface: #151b1d;
+    --surface-sunk: #111719;
+    --surface-raised: #1b2225;
+
+    --ink: #e3e9ea;
+    --ink-2: #bcc7c9;
+    --muted: #8b9a9e;
+    --faint: #6b797d;
+
+    --line: #263033;
+    --line-strong: #374447;
+
+    --accent: #3fa9a2;
+    --accent-ink: #6fc7c1;
+    --accent-soft: #12302f;
+    --accent-contrast: #06201f;
+
+    --ok: #4aa877;
+    --ok-soft: #14291f;
+    --warn: #d08a4e;
+    --warn-soft: #2e2117;
+    --critical: #d06b6b;
+    --critical-soft: #2e1919;
+    --info: #6f9fd8;
+    --info-soft: #172433;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.7);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ground: #0d1113;
+  --surface: #151b1d;
+  --surface-sunk: #111719;
+  --surface-raised: #1b2225;
+
+  --ink: #e3e9ea;
+  --ink-2: #bcc7c9;
+  --muted: #8b9a9e;
+  --faint: #6b797d;
+
+  --line: #263033;
+  --line-strong: #374447;
+
+  --accent: #3fa9a2;
+  --accent-ink: #6fc7c1;
+  --accent-soft: #12302f;
+  --accent-contrast: #06201f;
+
+  --ok: #4aa877;
+  --ok-soft: #14291f;
+  --warn: #d08a4e;
+  --warn-soft: #2e2117;
+  --critical: #d06b6b;
+  --critical-soft: #2e1919;
+  --info: #6f9fd8;
+  --info-soft: #172433;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.7);
+
+  color-scheme: dark;
+}
