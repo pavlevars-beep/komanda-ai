@@ -1,0 +1,858 @@
+<title>Arhitektura Komanda AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#F6F8F8;
+  --surface:#FFFFFF;
+  --surface-sunk:#EFF3F3;
+  --ink:#141A1B;
+  --ink-2:#3A4749;
+  --muted:#5A686C;
+  --line:#DBE2E3;
+  --line-strong:#C2CDCF;
+  --accent:#0E6E6B;
+  --accent-soft:#E1EFEE;
+  --accent-ink:#0A5451;
+  --ok:#1F7A4D;
+  --warn:#B4632A;
+  --warn-soft:#F7EBE0;
+  --critical:#9E2B2B;
+  --critical-soft:#F8E7E7;
+  --shadow:0 1px 2px rgba(20,26,27,.05), 0 8px 24px -16px rgba(20,26,27,.28);
+
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+
+  --measure:68ch;
+  --rail:250px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1113;
+    --surface:#151B1D;
+    --surface-sunk:#111719;
+    --ink:#E3E9EA;
+    --ink-2:#BCC7C9;
+    --muted:#8B9A9E;
+    --line:#263033;
+    --line-strong:#374447;
+    --accent:#3FA9A2;
+    --accent-soft:#12302F;
+    --accent-ink:#6FC7C1;
+    --ok:#4AA877;
+    --warn:#D08A4E;
+    --warn-soft:#2E2117;
+    --critical:#D06B6B;
+    --critical-soft:#2E1919;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ok:#4AA877;
+  --ground:#0D1113;
+  --surface:#151B1D;
+  --surface-sunk:#111719;
+  --ink:#E3E9EA;
+  --ink-2:#BCC7C9;
+  --muted:#8B9A9E;
+  --line:#263033;
+  --line-strong:#374447;
+  --accent:#3FA9A2;
+  --accent-soft:#12302F;
+  --accent-ink:#6FC7C1;
+  --warn:#D08A4E;
+  --warn-soft:#2E2117;
+  --critical:#D06B6B;
+  --critical-soft:#2E1919;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16.5px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--sans);text-wrap:balance;margin:0;line-height:1.2}
+p{margin:0}
+a{color:var(--accent-ink);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);gap:0;max-width:1240px;margin:0 auto}
+
+.rail{
+  position:sticky;top:0;align-self:start;height:100vh;
+  padding:40px 24px 40px 28px;
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:26px;
+  font-family:var(--sans);
+}
+.mark{display:flex;flex-direction:column;gap:5px}
+.mark-name{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.mark-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rail nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto;min-height:0}
+.rail nav a{
+  display:flex;gap:11px;align-items:baseline;
+  padding:6px 9px;border-radius:5px;
+  font-size:13.5px;color:var(--muted);text-decoration:none;
+  border-left:2px solid transparent;
+}
+.rail nav a .n{font-family:var(--mono);font-size:10.5px;color:var(--line-strong);flex:none;width:14px}
+.rail nav a:hover{color:var(--ink);background:var(--surface-sunk)}
+.rail nav a.on{color:var(--accent-ink);background:var(--accent-soft);font-weight:500}
+.rail nav a.on .n{color:var(--accent)}
+.rail-foot{margin-top:auto;font-size:11.5px;color:var(--muted);line-height:1.5}
+
+.main{padding:40px 56px 120px;min-width:0}
+.wrap{max-width:var(--measure)}
+
+/* ---------- masthead ---------- */
+.masthead{padding-bottom:38px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:18px;
+}
+h1{font-size:clamp(30px,4.4vw,44px);font-weight:600;letter-spacing:-.025em;margin-bottom:16px}
+.standfirst{font-size:19px;line-height:1.55;color:var(--ink-2);max-width:60ch}
+.meta{
+  display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:26px;
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);
+}
+.meta b{font-weight:500;color:var(--ink-2)}
+
+/* ---------- sections ---------- */
+section{padding-top:56px;scroll-margin-top:24px}
+.sec-head{display:flex;gap:14px;align-items:baseline;margin-bottom:18px}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--accent);flex:none;padding-top:3px}
+h2{font-size:25px;font-weight:600;letter-spacing:-.02em}
+h3{font-family:var(--sans);font-size:15px;font-weight:600;letter-spacing:-.005em;margin-bottom:7px}
+.lede{color:var(--ink-2);margin-bottom:22px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack-lg{display:flex;flex-direction:column;gap:26px}
+
+/* ---------- breakout ---------- */
+.breakout{max-width:min(940px,100%)}
+
+/* ---------- cards & grids ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:20px 22px;box-shadow:var(--shadow);
+}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+
+/* ---------- decision table ---------- */
+.decisions{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.decision{display:grid;grid-template-columns:1fr 1.15fr;gap:0;border-bottom:1px solid var(--line)}
+.decision:last-child{border-bottom:0}
+.decision .q{padding:16px 20px;border-right:1px solid var(--line);background:var(--surface-sunk)}
+.decision .a{padding:16px 20px}
+.decision .label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.decision .q p{font-family:var(--sans);font-size:14px;font-weight:500;color:var(--ink)}
+.decision .a p{font-size:14.5px;color:var(--ink-2)}
+.decision .a strong{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--accent-ink);display:block;margin-bottom:4px}
+
+/* ---------- two experiences ---------- */
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.zone{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.zone-top{padding:16px 20px 14px;border-bottom:1px solid var(--line)}
+.zone-top .path{font-family:var(--mono);font-size:11.5px;color:var(--accent);margin-bottom:7px}
+.zone-top h3{margin-bottom:3px}
+.zone-top .who{font-family:var(--sans);font-size:12.5px;color:var(--muted)}
+.zone ul{margin:0;padding:14px 20px 18px 20px;list-style:none;display:flex;flex-direction:column;gap:7px}
+.zone li{font-family:var(--sans);font-size:13.5px;color:var(--ink-2);padding-left:15px;position:relative}
+.zone li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:1px;background:var(--line-strong)}
+.zone.brandable li::before{background:var(--accent)}
+
+/* ---------- lock stack ---------- */
+.locks{display:flex;flex-direction:column;gap:8px}
+.lock{
+  display:grid;grid-template-columns:38px 1fr;gap:0;align-items:stretch;
+  background:var(--surface);border:1px solid var(--line);border-radius:7px;overflow:hidden;
+}
+.lock-n{
+  display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600;
+  color:var(--surface);background:var(--accent);
+}
+.lock-body{padding:13px 18px}
+.lock-body h3{margin-bottom:3px}
+.lock-body p{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+.lock-body code{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);background:var(--surface-sunk);padding:1px 5px;border-radius:3px}
+.locks-note{
+  margin-top:14px;padding:14px 18px;border-left:2px solid var(--accent);
+  background:var(--accent-soft);border-radius:0 6px 6px 0;
+  font-size:14.5px;color:var(--ink-2);
+}
+
+/* ---------- access split ---------- */
+.access{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.access-col{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px}
+.access-col.gated{border-color:var(--warn);background:var(--warn-soft)}
+.access-col .fn{font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:9px}
+.access-col.gated .fn{color:var(--warn)}
+.access-col h3{margin-bottom:6px}
+.access-col p{font-family:var(--sans);font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.access-col .req{
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  font-family:var(--sans);font-size:12.5px;color:var(--muted);
+}
+.access-col.gated .req{border-top-color:var(--warn);color:var(--ink-2)}
+
+.banner-demo{
+  margin-top:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--line-strong);border-left:3px solid var(--warn);
+  border-radius:0 7px 7px 0;padding:13px 18px;font-family:var(--sans);font-size:13.5px;
+}
+.banner-demo .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);flex:none}
+.banner-demo .txt{color:var(--ink-2);flex:1;min-width:220px}
+.banner-demo .btn{
+  font-family:var(--sans);font-size:12.5px;font-weight:500;color:var(--critical);
+  border:1px solid var(--critical);border-radius:5px;padding:4px 11px;background:transparent;
+}
+.caption{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:9px}
+
+/* ---------- risk ladder ---------- */
+.ladder{display:flex;flex-direction:column;gap:10px}
+.rung{
+  display:grid;grid-template-columns:120px 1fr;gap:0;
+  border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);
+}
+.rung-key{padding:16px 18px;display:flex;flex-direction:column;gap:5px;justify-content:center}
+.rung-key .k{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.04em}
+.rung-key .t{font-family:var(--sans);font-size:11.5px;color:var(--muted)}
+.rung-body{padding:15px 18px;border-left:1px solid var(--line);font-family:var(--sans);font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.rung-body .gate{display:block;margin-top:7px;font-size:12.5px;color:var(--muted)}
+.rung.r-read .rung-key{background:var(--surface-sunk)}
+.rung.r-read .k{color:var(--accent)}
+.rung.r-prep .rung-key{background:var(--warn-soft)}
+.rung.r-prep .k{color:var(--warn)}
+.rung.r-exec{border-color:var(--critical)}
+.rung.r-exec .rung-key{background:var(--critical-soft)}
+.rung.r-exec .k{color:var(--critical)}
+.rung.r-exec .rung-body{border-left-color:var(--critical)}
+
+/* ---------- code ---------- */
+pre{
+  font-family:var(--mono);font-size:12.5px;line-height:1.65;
+  background:var(--surface-sunk);border:1px solid var(--line);border-radius:7px;
+  padding:16px 18px;overflow-x:auto;margin:0;color:var(--ink-2);
+}
+pre .c{color:var(--muted)}
+pre .k{color:var(--accent-ink);font-weight:500}
+
+/* ---------- provenance chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 10px;border-radius:4px;border:1px solid var(--line-strong);color:var(--muted);
+}
+.chip.fact{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.chip.calc{border-color:var(--line-strong);color:var(--ink-2);background:var(--surface-sunk)}
+.chip.interp{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.chip.fcast{border-color:var(--warn);color:var(--warn);background:transparent;border-style:dashed}
+
+/* ---------- entity groups ---------- */
+.entities{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.egroup{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:14px 16px}
+.egroup h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:9px}
+.egroup ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
+.egroup li{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.egroup li span{color:var(--muted)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{
+  font-family:var(--sans);font-size:13.5px;font-weight:500;
+  background:none;border:0;border-bottom:2px solid transparent;
+  padding:9px 14px;color:var(--muted);cursor:pointer;margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent-ink);border-bottom-color:var(--accent)}
+
+table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+th,td{text-align:left;padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;background:var(--surface-sunk);white-space:nowrap;
+}
+tr:last-child td{border-bottom:0}
+td.route{font-family:var(--mono);font-size:11.5px;color:var(--accent);white-space:nowrap}
+td.name{font-weight:500;color:var(--ink);white-space:nowrap}
+td.desc{color:var(--muted);min-width:280px}
+
+/* ---------- phases ---------- */
+.phases{display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line);padding-left:0}
+.phase{display:grid;grid-template-columns:64px 1fr;gap:0;padding:0 0 22px 0;position:relative}
+.phase:last-child{padding-bottom:0}
+.phase-n{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  padding:2px 0 0 16px;position:relative;
+}
+.phase-n::before{
+  content:"";position:absolute;left:-4.5px;top:7px;width:8px;height:8px;border-radius:50%;
+  background:var(--ground);border:2px solid var(--line-strong);
+}
+.phase.key .phase-n::before{background:var(--accent);border-color:var(--accent)}
+.phase.done .phase-n::before{background:var(--ok);border-color:var(--ok)}
+.phase.done .phase-n{color:var(--ok)}
+.tick{
+  font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ok);border:1px solid var(--ok);border-radius:3px;padding:1px 6px;
+  margin-left:8px;vertical-align:2px;font-weight:500;
+}
+.phase.key .phase-n{color:var(--accent)}
+.phase-body h3{margin-bottom:4px}
+.phase-body p{font-family:var(--sans);font-size:13.5px;color:var(--muted);line-height:1.55}
+.phase-body .done{
+  display:block;margin-top:7px;font-family:var(--sans);font-size:12.5px;color:var(--ink-2);
+  padding-left:11px;border-left:2px solid var(--accent-soft);
+}
+
+/* ---------- questions ---------- */
+.qgroup{margin-bottom:22px}
+.qgroup > .when{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:10px;
+}
+.qlist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.qlist li{
+  font-family:var(--sans);font-size:14px;color:var(--ink-2);line-height:1.55;
+  padding-left:26px;position:relative;
+}
+.qlist li .qn{
+  position:absolute;left:0;top:1px;font-family:var(--mono);font-size:11px;color:var(--muted);
+}
+
+.notbuilt{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.notbuilt span{
+  font-family:var(--sans);font-size:12.5px;color:var(--muted);
+  border:1px dashed var(--line-strong);border-radius:5px;padding:5px 11px;
+}
+
+.foot{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);font-family:var(--sans);font-size:13px;color:var(--muted)}
+.foot code{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:1fr}
+  .rail{
+    position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);
+    padding:24px 24px 18px;gap:16px;
+  }
+  .rail nav{flex-direction:row;flex-wrap:wrap;gap:2px}
+  .rail nav a{padding:5px 10px;font-size:12.5px}
+  .rail nav a .n{display:none}
+  .rail-foot{display:none}
+  .main{padding:28px 24px 80px}
+}
+@media (max-width:680px){
+  body{font-size:16px}
+  .grid-2,.grid-3,.split,.access,.decision{grid-template-columns:1fr}
+  .decision .q{border-right:0;border-bottom:1px solid var(--line)}
+  .rung{grid-template-columns:1fr}
+  .rung-body{border-left:0;border-top:1px solid var(--line)}
+  .phase{grid-template-columns:52px 1fr}
+  .main{padding:24px 18px 72px}
+}
+</style>
+
+<div class="shell">
+
+  <aside class="rail">
+    <div class="mark">
+      <div class="mark-name">Komanda AI Command Center</div>
+      <div class="mark-sub">Delta&nbsp;Pro&nbsp;DOO</div>
+    </div>
+    <nav id="nav">
+      <a href="#odluke"><span class="n">00</span>Odluke</a>
+      <a href="#zone"><span class="n">01</span>Dva iskustva</a>
+      <a href="#izolacija"><span class="n">02</span>Izolacija podataka</a>
+      <a href="#pristup"><span class="n">03</span>Pristup osoblja</a>
+      <a href="#akcije"><span class="n">04</span>Read / Prepare / Execute</a>
+      <a href="#konektori"><span class="n">05</span>Konektori i AI</a>
+      <a href="#baza"><span class="n">06</span>Model baze</a>
+      <a href="#ekrani"><span class="n">07</span>Mapa ekrana</a>
+      <a href="#plan"><span class="n">08</span>Plan isporuke</a>
+      <a href="#pitanja"><span class="n">09</span>Otvorena pitanja</a>
+    </nav>
+    <div class="rail-foot">Puna dokumentacija u repozitorijumu, folder <code>docs/</code>.</div>
+  </aside>
+
+  <main class="main">
+
+    <header class="masthead wrap">
+      <div class="eyebrow">Arhitektura i stanje izgradnje</div>
+      <h1>Komanda AI Command Center</h1>
+      <p class="standfirst">Platforma koja povezuje postojeće poslovne sisteme klijenta — ERP, CRM, baze, e-poštu, sajt i automatizacije — u jedan bezbedan radni prostor. AI je sloj inteligencije unutar ozbiljne poslovne platforme, a ne proizvod sam po sebi.</p>
+      <div class="meta">
+        <span><b>Stack</b> Next.js · TypeScript · Supabase · Vercel</span>
+        <span><b>Jezici</b> sr-Latn / en</span>
+        <span><b>Status</b> faze 0 i 1 isporučene</span>
+      </div>
+    </header>
+
+    <!-- 00 -->
+    <section id="odluke">
+      <div class="sec-head"><span class="sec-num">00</span><h2>Četiri donete odluke</h2></div>
+      <p class="lede wrap">Ove odluke se ne mogu naknadno dodati — one oblikuju šemu baze, RLS politike i tok podataka. Zato su rešene pre prve linije koda.</p>
+
+      <div class="breakout decisions">
+        <div class="decision">
+          <div class="q"><span class="label">Pitanje</span><p>Kako Delta Pro pristupa podacima klijenta?</p></div>
+          <div class="a"><span class="label">Odluka</span><p><strong>Eksplicitna dodela + impersonation sa revizijom</strong>Ni Super Admin ne čita poslovne podatke bez zapisane, vremenski ograničene sesije koju klijent vidi i može da prekine.</p></div>
+        </div>
+        <div class="decision">
+          <div class="q"><span class="label">Pitanje</span><p>Gde se čuvaju kredencijali integracija?</p></div>
+          <div class="a"><span class="label">Odluka</span><p><strong>Supabase Vault (pgsodium)</strong>Aplikacija drži samo referencu i naznaku. Dešifrovanje isključivo serverski, u memoriji jednog zahteva. Ne postoji ruta koja vraća tajnu.</p></div>
+        </div>
+        <div class="decision">
+          <div class="q"><span class="label">Pitanje</span><p>Koji AI provajder?</p></div>
+          <div class="a"><span class="label">Odluka</span><p><strong>OpenAI, iza apstrakcije od prvog dana</strong>Prelazak na Azure OpenAI u EU regionu je zamena jednog modula. Obrada van EU se dokumentuje u ugovoru o obradi podataka.</p></div>
+        </div>
+        <div class="decision">
+          <div class="q"><span class="label">Pitanje</span><p>Obim lokalizacije?</p></div>
+          <div class="a"><span class="label">Odluka</span><p><strong>Srpski (latinica) i engleski, ceo proizvod</strong>Uključujući internu konzolu. URL putanje ostaju neutralne da deljeni link ne pukne pri promeni jezika.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 -->
+    <section id="zone">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Dva iskustva, jedna aplikacija</h2></div>
+      <p class="lede wrap">Razdvajanje nije stilsko. Sprovedeno je na četiri nivoa istovremeno: ruting i layout, autorizacija, pristup podacima, i odvojeni API prefiksi. Nijedan handler ne služi oba konteksta.</p>
+
+      <div class="breakout split">
+        <div class="zone">
+          <div class="zone-top">
+            <div class="path">/console</div>
+            <h3>Konzola</h3>
+            <div class="who">Delta Pro — Super Admin, konsultant, podrška</div>
+          </div>
+          <ul>
+            <li>Onboarding klijenata i lista koraka</li>
+            <li>Graditelj integracija i test veze</li>
+            <li>Katalog konektora i registar AI alata</li>
+            <li>Zdravlje sistema i dijagnostika</li>
+            <li>Korisnici, role, revizioni trag</li>
+            <li>Nikad ne nosi brend klijenta</li>
+          </ul>
+        </div>
+        <div class="zone brandable">
+          <div class="zone-top">
+            <div class="path">/w/[orgSlug]</div>
+            <h3>Radni prostor</h3>
+            <div class="who">Klijent — uprava i ovlašćeni zaposleni</div>
+          </div>
+          <ul>
+            <li>Početna: šta danas traži pažnju</li>
+            <li>Pitajte svoje poslovanje</li>
+            <li>Izveštaji i upozorenja</li>
+            <li>Odobrenja predloženih akcija</li>
+            <li>Podaci i dokumenti</li>
+            <li>Brendiran, bez ijednog tehničkog pojma</li>
+          </ul>
+        </div>
+      </div>
+      <p class="caption">Klijent nikad ne vidi n8n, node-ove, webhook-ove ni identifikatore workflow-a. Automatizacija je izvršni motor iza naše API-ja, ne interfejs proizvoda.</p>
+    </section>
+
+    <!-- 02 -->
+    <section id="izolacija">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Izolacija podataka na četiri brave</h2></div>
+      <p class="lede wrap">Da bi podatak organizacije A stigao do korisnika organizacije B, moraju <em>istovremeno</em> otkazati četiri nezavisna mehanizma. Nijedan od njih ne oslanja se na filtriranje u frontend kodu.</p>
+
+      <div class="breakout">
+        <div class="locks">
+          <div class="lock">
+            <div class="lock-n">1</div>
+            <div class="lock-body">
+              <h3>Privilegije role</h3>
+              <p>Rolama <code>anon</code> i <code>authenticated</code> oduzeta su sva prava nad tabelama. I sa validnim ključem u ruci, upit pada pre nego što se RLS uopšte proceni.</p>
+            </div>
+          </div>
+          <div class="lock">
+            <div class="lock-n">2</div>
+            <div class="lock-body">
+              <h3>Row Level Security</h3>
+              <p>Zasebne politike za <code>select</code>, <code>insert</code>, <code>update</code>, <code>delete</code> — nikad <code>for all</code>. <code>force row level security</code> važi i za vlasnika tabele. Servisna rola nema <code>bypassrls</code>.</p>
+            </div>
+          </div>
+          <div class="lock">
+            <div class="lock-n">3</div>
+            <div class="lock-body">
+              <h3>Aplikativni scope</h3>
+              <p>Svaki upit prolazi kroz repozitorijum koji obavezno prima kontekst organizacije. Organizacija se razrešava sa servera — nikad iz tela zahteva, zaglavlja ni upitnog parametra.</p>
+            </div>
+          </div>
+          <div class="lock">
+            <div class="lock-n">4</div>
+            <div class="lock-body">
+              <h3>Složeni strani ključevi</h3>
+              <p>Svaki roditelj nosi <code>unique (organization_id, id)</code>, svako dete referencira oba polja. Baza fizički ne dozvoljava da poruka pokazuje na razgovor druge organizacije.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="locks-note">
+          Četvrta brava je ono što najčešće nedostaje. RLS obično uhvati unakrsno povezivanje, ali ne i grešku u pozadinskom poslu koji radi sa povišenim pravima. Ograničenje na nivou baze važi uvek, bez obzira na kod iznad njega.
+        </div>
+
+        <div class="stack" style="margin-top:22px">
+          <div>
+            <h3 style="margin-bottom:9px">Oblik politike koji je obavezan</h3>
+            <pre><span class="c">-- funkcija se izvršava jednom po naredbi (InitPlan), ne po redu</span>
+<span class="k">using</span> (organization_id <span class="k">in</span> (<span class="k">select unnest</span>(app.accessible_org_ids())))
+
+<span class="c">-- kod UPDATE politika WITH CHECK je obavezan; bez njega korisnik</span>
+<span class="c">-- može da izmeni organization_id i premesti zapis u tuđu organizaciju</span></pre>
+            <p class="caption">Lint provera nad šemom odbija politiku napisanu na spori način, i pada za svaku tabelu koja ima <code style="font-family:var(--mono)">organization_id</code> a nema uključen RLS — tako nova tabela ne može da se doda bez politike.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="pristup">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Pristup Delta Pro osoblja</h2></div>
+      <p class="lede wrap">Uobičajeno rešenje je izuzetak za osoblje u RLS politikama. To znači da postoji nalog koji tiho čita sve, i to je prvo pitanje koje postavi IT odeljenje klijenta. Umesto toga, razdvajamo dva prava koja se nikad ne mešaju.</p>
+
+      <div class="breakout">
+        <div class="access">
+          <div class="access-col">
+            <div class="fn">administrable_org_ids()</div>
+            <h3>Administrativni pristup</h3>
+            <p>Konfiguracija integracija, zdravlje, logovi, korisnici, role, brendiranje, obim podataka.</p>
+            <div class="req">Super Admin: sve organizacije. Konsultant: samo eksplicitno dodeljene. <strong style="font-family:var(--sans);color:var(--ink-2)">Ne daje pristup nijednom poslovnom podatku.</strong></div>
+          </div>
+          <div class="access-col gated">
+            <div class="fn">accessible_org_ids()</div>
+            <h3>Pristup poslovnim podacima</h3>
+            <p>Prodaja, kupci, potraživanja, dokumenti, AI razgovori, izveštaji.</p>
+            <div class="req">Klijentov korisnik: svoja organizacija. Delta Pro: <strong style="font-family:var(--sans);color:var(--ink-2)">samo dok traje aktivna sesija pristupa</strong> — sa obaveznim razlogom, opsegom i istekom.</div>
+          </div>
+        </div>
+
+        <div class="banner-demo">
+          <span class="dot"></span>
+          <span class="txt">Delta Pro (Ana Jovanović) ima pristup do <b>15:40</b> · razlog: dijagnostika ERP sinhronizacije</span>
+          <span class="btn">Prekini pristup</span>
+        </div>
+        <p class="caption">Traka koju klijent vidi u svom radnom prostoru dok je sesija aktivna. Klijentski administrator može da je prekine u svakom trenutku. Svaki zahtev u toku sesije nosi njen identifikator u revizionom tragu.</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="akcije">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Read · Prepare · Execute</h2></div>
+      <p class="lede wrap">Svaka sposobnost sistema je klasifikovana i tretirana različito. Granica između pripreme i izvršenja je mesto gde stoji čovek.</p>
+
+      <div class="breakout ladder">
+        <div class="rung r-read">
+          <div class="rung-key"><span class="k">READ</span><span class="t">Bez posledica</span></div>
+          <div class="rung-body">Sistem čita informaciju iz odobrenog izvora.<span class="gate">Uslov: permisija korisnika. Izvršava se odmah.</span></div>
+        </div>
+        <div class="rung r-prep">
+          <div class="rung-key"><span class="k">PREPARE</span><span class="t">Ništa napolju</span></div>
+          <div class="rung-body">Sistem priprema nacrt — e-mail, ponudu, izveštaj, predlog izmene.<span class="gate">Kreira zapis u odobrenjima. Nijedan spoljni sistem nije dodirnut.</span></div>
+        </div>
+        <div class="rung r-exec">
+          <div class="rung-key"><span class="k">EXECUTE</span><span class="t">Nepovratno</span></div>
+          <div class="rung-body">Sistem izvršava stvarnu akciju u spoljnom sistemu klijenta.<span class="gate">Uslov: odobren zapis + permisija <code style="font-family:var(--mono);font-size:11.5px">execute_actions</code> + ključ idempotencije. Pokreće ga deterministički backend, nikad odgovor modela.</span></div>
+        </div>
+      </div>
+
+      <div class="wrap" style="margin-top:22px">
+        <p>Odobrenje se prikazuje u punom kontekstu: šta se traži, u kom sistemu, na osnovu kojih podataka, ko je pokrenuo i koji je nivo rizika. Za e-poštu — primalac, naslov i telo poruke vidljivi su pre slanja. Radnje su <strong>Odobri</strong>, <strong>Izmeni</strong>, <strong>Odbij</strong>. Šema od početka podržava dvostruko odobrenje za kritične akcije.</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="konektori">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Konektori i AI sloj</h2></div>
+
+      <div class="stack-lg">
+        <div class="wrap">
+          <h3>Konektor izlaže sposobnosti, ne bazu</h3>
+          <p style="color:var(--ink-2);margin-top:6px">Najbrži način da AI odgovara na poslovna pitanja je da generiše SQL nad bazom klijenta. To je neprihvatljivo: nepredvidivo opterećenje produkcije, rizik od izmene podataka i nemoguća revizija. Zato u interfejsu <em>namerno ne postoji</em> metod koji prima upit.</p>
+        </div>
+
+        <div class="breakout">
+<pre><span class="k">interface</span> Connector {
+  getCapabilities(ctx)                      <span class="c">// šta ova integracija ume</span>
+  testConnection(ctx)                       <span class="c">// zdravlje i latencija</span>
+  invoke(capabilityId, input, ctx)          <span class="c">// READ / PREPARE</span>
+  execute(actionId, input, ctx)             <span class="c">// EXECUTE — traži odobrenje</span>
+}
+
+<span class="c">// Primer sposobnosti ERP konektora — imenovane, sa šemom ulaza i izlaza:</span>
+get_daily_sales · get_outstanding_invoices · get_inventory_alerts
+get_customer_balance · get_sales_by_period · get_unanswered_inquiries
+
+<span class="c">// Ne postoji: query(sql) · fetchData(rawQuery) · execRaw()</span></pre>
+          <p class="caption">SQL je unapred napisan, prošao kroz code review i verzionisan u repozitorijumu. Model bira <em>koju</em> sposobnost da pozove — nikada ne piše upit. Kredencijali su po pravilu read-only nalozi.</p>
+        </div>
+
+        <div class="wrap">
+          <h3>Kontekst poziva sklapa server</h3>
+          <p style="color:var(--ink-2);margin-top:6px">Organizacija, korisnik i permisije dolaze iz autentikovane serverske sesije. Ako model u argumentima pošalje <code style="font-family:var(--mono);font-size:13px">organization_id</code>, argument se odbacuje i upisuje se bezbednosni događaj. Pri svakom pozivu permisija se proverava <em>ponovo</em> — ne verujemo tome što je lista alata ranije filtrirana.</p>
+        </div>
+
+        <div class="wrap">
+          <h3>Svaka tvrdnja nosi poreklo</h3>
+          <p style="color:var(--ink-2);margin:6px 0 14px">Rukovodilac donosi odluku na osnovu broja na ekranu. Zato klasifikacija dolazi iz definicije alata, ne iz modela, i UI je vizuelno razlikuje. Prognoza nikad ne izgleda kao podatak iz ERP-a.</p>
+          <div class="chips">
+            <span class="chip fact">Činjenica</span>
+            <span class="chip calc">Izračunato</span>
+            <span class="chip interp">Tumačenje</span>
+            <span class="chip fcast">Prognoza</span>
+          </div>
+          <p class="caption">Uz klasifikaciju, svaki odgovor nosi izvor podatka i vreme poslednjeg osvežavanja. Ako podatak nije dostupan, odgovor to kaže i objasni zašto — nikad procena predstavljena kao činjenica.</p>
+        </div>
+
+        <div class="wrap">
+          <h3>Zaštita od ubacivanja instrukcija kroz podatke</h3>
+          <p style="color:var(--ink-2);margin-top:6px">Naziv kupca u ERP-u može sadržati zlonameran tekst. Odbrana nije formulacija prompta — odbrana je arhitektura: nijedna spoljna akcija ne prolazi bez ljudskog odobrenja, pa ubačena instrukcija ne može sama da izazove posledicu.</p>
+        </div>
+
+        <div class="wrap">
+          <h3>Lokalni konektor — pripremljeno, ne izgrađeno</h3>
+          <p style="color:var(--ink-2);margin-top:6px">Baza klijenta ne mora da bude izložena internetu. Cloud API je od početka projektovan kao red poslova koje agent preuzima <em>odlaznom</em> vezom i vraća rezultat. Tabele postoje u šemi; sam agent se gradi kada ga prvi klijent zatraži.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section id="baza">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Model baze</h2></div>
+      <p class="lede wrap">Osam grupa entiteta. Sve što pripada klijentu nosi <code style="font-family:var(--mono);font-size:13.5px">organization_id</code> i par <code style="font-family:var(--mono);font-size:13.5px">unique (organization_id, id)</code> koji omogućava složene strane ključeve.</p>
+
+      <div class="breakout entities">
+        <div class="egroup"><h3>Tenancy</h3><ul>
+          <li>organizations</li><li>organization_branding</li><li>user_profiles</li><li>organization_memberships</li></ul></div>
+        <div class="egroup"><h3>RBAC</h3><ul>
+          <li>roles</li><li>permissions</li><li>role_permissions</li><li>membership_permission<span>_overrides</span></li></ul></div>
+        <div class="egroup"><h3>Osoblje</h3><ul>
+          <li>platform_staff</li><li>client_assignments</li><li>impersonation_sessions</li></ul></div>
+        <div class="egroup"><h3>Integracije</h3><ul>
+          <li>connector_types</li><li>integrations</li><li>integration_credentials</li><li>integration_capabilities</li><li>integration_health_checks</li><li>data_sources</li></ul></div>
+        <div class="egroup"><h3>Agent (spremno)</h3><ul>
+          <li>connector_agents</li><li>agent_jobs</li></ul></div>
+        <div class="egroup"><h3>AI</h3><ul>
+          <li>ai_tools</li><li>organization_ai_tools</li><li>ai_conversations</li><li>ai_messages</li><li>ai_tool_calls</li><li>ai_usage_daily</li></ul></div>
+        <div class="egroup"><h3>Akcije</h3><ul>
+          <li>approvals</li><li>approval_decisions</li><li>action_executions</li><li>alert_rules</li><li>alerts</li></ul></div>
+        <div class="egroup"><h3>Nadzor</h3><ul>
+          <li>audit_logs</li><li>system_events</li><li>notifications</li><li>onboarding_tasks</li><li>report_definitions</li><li>report_runs</li><li>automation_workflows</li><li>automation_runs</li></ul></div>
+      </div>
+
+      <div class="wrap" style="margin-top:22px">
+        <h3>Revizioni trag se ne može izmeniti</h3>
+        <p style="color:var(--ink-2);margin-top:6px">Tabeli <code style="font-family:var(--mono);font-size:13.5px">audit_logs</code> oduzeta su prava <code style="font-family:var(--mono);font-size:13.5px">update</code> i <code style="font-family:var(--mono);font-size:13.5px">delete</code> za sve role, uključujući servisnu. Upis ide isključivo kroz jednu funkciju. Brisanje se dešava samo odbacivanjem stare mesečne particije, kao deo dokumentovane retencije.</p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section id="ekrani">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Mapa ekrana</h2></div>
+      <p class="lede wrap">Svaki ekran odgovara na tri pitanja, tim redom: šta treba da znam, šta traži moju pažnju, šta mogu da uradim sledeće. Element koji ne služi nijednom od njih ne ide na ekran.</p>
+
+      <div class="breakout">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="p-console" id="t-console">Konzola · Delta Pro</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-ws" id="t-ws">Radni prostor · klijent</button>
+        </div>
+
+        <div class="tscroll" id="p-console" role="tabpanel" aria-labelledby="t-console">
+          <table>
+            <thead><tr><th>Ruta</th><th>Ekran</th><th>Sadržaj</th></tr></thead>
+            <tbody>
+              <tr><td class="route">/console</td><td class="name">Pregled</td><td class="desc">Aktivni klijenti, zdravlje integracija, greške u 24h, odobrenja na čekanju, neuspele automatizacije, AI upotreba</td></tr>
+              <tr><td class="route">/clients</td><td class="name">Klijenti</td><td class="desc">Tabela sa statusom, zdravljem, brojem korisnika i integracija, planom i zaduženim konsultantom</td></tr>
+              <tr><td class="route">/clients/new</td><td class="name">Nova organizacija</td><td class="desc">Čarobnjak: podaci → brendiranje → pozivnice → prva integracija. Može se prekinuti i nastaviti.</td></tr>
+              <tr><td class="route">…/overview</td><td class="name">Pregled klijenta</td><td class="desc">Lista onboarding koraka sa napretkom i pokretanje sesije pristupa uz obavezan razlog</td></tr>
+              <tr><td class="route">…/branding</td><td class="name">Brendiranje</td><td class="desc">Logo, favicon, boje, poruka dobrodošlice. Boja koja pada ispod praga kontrasta se odbija sa objašnjenjem.</td></tr>
+              <tr><td class="route">…/integrations/new</td><td class="name">Graditelj integracija</td><td class="desc">Katalog → tip → okruženje → autentikacija → obim → test veze → izbor sposobnosti → aktivacija</td></tr>
+              <tr><td class="route">…/ai-tools</td><td class="name">AI sposobnosti</td><td class="desc">Uključivanje alata po organizaciji, vezivanje za integraciju, tražena permisija i klasifikacija</td></tr>
+              <tr><td class="route">…/dashboard</td><td class="name">Konfiguracija početne</td><td class="desc">Koje KPI kartice klijent vidi, kojim redom i po kojoj roli</td></tr>
+              <tr><td class="route">/health</td><td class="name">Zdravlje sistema</td><td class="desc">Aplikacija, baza, AI provajder, integracije, automatizacije, agenti — sa latencijom i istorijom grešaka</td></tr>
+              <tr><td class="route">/audit</td><td class="name">Revizija</td><td class="desc">Uključujući sve sesije pristupa osoblja — ko, gde, kada i zašto</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tscroll" id="p-ws" role="tabpanel" aria-labelledby="t-ws" hidden>
+          <table>
+            <thead><tr><th>Ruta</th><th>Ekran</th><th>Sadržaj</th></tr></thead>
+            <tbody>
+              <tr><td class="route">/w/[org]</td><td class="name">Početna</td><td class="desc">Tri do pet stavki koje danas traže reakciju, pa četiri do šest KPI kartica koje je Delta Pro konfigurisao. Svaka nosi izvor i vreme osvežavanja.</td></tr>
+              <tr><td class="route">/ask</td><td class="name">Pitajte svoje poslovanje</td><td class="desc">Odgovor sa vrednošću, poređenjem, izvorom, svežinom i oznakom klasifikacije. Detalji izvora se otvaraju na klik.</td></tr>
+              <tr><td class="route">/reports</td><td class="name">Izveštaji</td><td class="desc">Sačuvani, zakazani i generisani — sa periodom, filterima, izvorima i autorom</td></tr>
+              <tr><td class="route">/alerts</td><td class="name">Upozorenja</td><td class="desc">Ozbiljnost, izvor, status, zaduženi. Potvrdi · Reši · Odbaci · Dodeli.</td></tr>
+              <tr><td class="route">/approvals</td><td class="name">Odobrenja</td><td class="desc">Predložena akcija u punom kontekstu, sa razlogom, izvorom podataka i nivoom rizika. Odobri · Izmeni · Odbij.</td></tr>
+              <tr><td class="route">/operations</td><td class="name">Podaci</td><td class="desc">Poslovni podaci iz konektora u tabelama — pretraga, filteri, izvoz uz permisiju</td></tr>
+              <tr><td class="route">/documents</td><td class="name">Dokumenti</td><td class="desc">Fajlovi organizacije, uz permisiju za pregled dokumenata</td></tr>
+              <tr><td class="route">/settings</td><td class="name">Podešavanja</td><td class="desc">Profil, jezik, tema, obaveštenja. Za administratora klijenta: korisnici i role.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="wrap" style="margin-top:24px">
+        <h3>Stanja koja se često zaborave</h3>
+        <p style="color:var(--ink-2);margin-top:6px">Ekran nije gotov dok nema sva četiri: <strong>prazno</strong> (objašnjava šta je ovo i koji je sledeći korak, nikad samo „nema podataka"), <strong>učitavanje</strong> (skeleton koji odgovara stvarnom rasporedu), <strong>greška</strong> (šta se desilo, da li je privremeno, i identifikator zahteva za podršku — bez tehničkih detalja), <strong>bez dozvole</strong> (modul postoji, ali nemate pristup — obratite se administratoru).</p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section id="plan">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Plan isporuke</h2></div>
+      <p class="lede wrap">Svaka faza završava se stanjem koje je stvarno upotrebljivo. Ne prelazi se na sledeću dok TypeScript, lint i testovi ne prolaze.</p>
+
+      <div class="breakout phases">
+        <div class="phase done"><div class="phase-n">Faza 0</div><div class="phase-body">
+          <h3>Temelj <span class="tick">gotovo</span></h3><p>Next.js sa strogim TypeScript-om, granice modula u lintu, validacija okruženja, logger sa redakcijom tajni, dizajn tokeni, teme, skelet lokalizacije.</p></div></div>
+        <div class="phase done key"><div class="phase-n">Faza 1</div><div class="phase-body">
+          <h3>Identitet, tenancy i RLS <span class="tick">gotovo</span></h3><p>Migracije, zaključavanje privilegija, pomoćne funkcije, politike za sve tabele, autentikacija, pozivnice, tri demo organizacije.</p>
+          <span class="done">14 migracija · 46 tabela · 93 RLS politike · 72 tvrdnje u testovima izolacije prolaze, uključujući generisani test nad svih 29 tabela koje nose <code style="font-family:var(--mono);font-size:11.5px">organization_id</code>.</span></div></div>
+        <div class="phase"><div class="phase-n">Faza 2</div><div class="phase-body">
+          <h3>Konzola</h3><p>Klijenti, čarobnjak, brendiranje sa proverom kontrasta, korisnici i role, onboarding lista, tok sesije pristupa sa trakama u obe zone.</p></div></div>
+        <div class="phase"><div class="phase-n">Faza 3</div><div class="phase-body">
+          <h3>Konektori</h3><p>Interfejs, registar, izvršilac sa zaštitom od odlaznih zloupotreba. Implementacije: demo, REST, webhook. Vault za kredencijale. Graditelj integracija i test veze.</p></div></div>
+        <div class="phase"><div class="phase-n">Faza 4</div><div class="phase-body">
+          <h3>Radni prostor klijenta</h3><p>Početna sa konfigurabilnim KPI-jevima, Operacije, Dokumenti, mobilni raspored, sva četiri stanja ekrana.</p></div></div>
+        <div class="phase key"><div class="phase-n">Faza 5</div><div class="phase-body">
+          <h3>AI sloj</h3><p>Apstrakcija provajdera, registar alata, orkestrator sa dvostrukom proverom, poreklo i klasifikacija, „Pitajte svoje poslovanje", praćenje potrošnje.</p>
+          <span class="done">Gotovo kada bezbednosni testovi prolaze: podmetnuta organizacija se odbacuje, isključeni alati se ne nude, ubačena instrukcija ne izaziva akciju.</span></div></div>
+        <div class="phase"><div class="phase-n">Faza 6</div><div class="phase-body">
+          <h3>Akcije i praćenje</h3><p>Odobrenja sa idempotencijom, upozorenja i pravila, izveštaji i zakazivanje, obaveštenja.</p></div></div>
+        <div class="phase"><div class="phase-n">Faza 7</div><div class="phase-body">
+          <h3>Očvršćivanje</h3><p>Particionisana revizija i retencija, ograničavanje zahteva, bezbednosna zaglavlja, pun test paket, priprema interfejsa za SQL Server i lokalni agent.</p></div></div>
+      </div>
+
+      <div class="wrap" style="margin-top:26px">
+        <h3>Namerno izvan MVP-a</h3>
+        <p style="color:var(--ink-2);margin-top:6px">Da bi temelj ostao čist i isporučiv. Sve navedeno ima pripremljeno mesto u arhitekturi.</p>
+        <div class="notbuilt">
+          <span>Lokalni agent (binarni program)</span>
+          <span>SQL Server / MIS / Pantheon / SAP</span>
+          <span>PDF i Excel izvoz</span>
+          <span>Dvostruko odobrenje u UI-ju</span>
+          <span>SSO / SAML</span>
+          <span>Ćirilica</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section id="pitanja">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Otvorena pitanja</h2></div>
+      <p class="lede wrap">Nijedno ne blokira faze 0 i 1 — kod može da počne odmah. Navedena su uz fazu u kojoj postaju relevantna.</p>
+
+      <div class="breakout grid-2">
+        <div class="card qgroup" style="margin-bottom:0">
+          <div class="when">Pre faze 2 · konzola</div>
+          <ul class="qlist">
+            <li><span class="qn">1</span>Sme li administrator klijenta sam da poziva korisnike i menja role, ili to radi isključivo Delta Pro?</li>
+            <li><span class="qn">2</span>Podrazumevana valuta i prikaz PDV-a u KPI karticama — RSD sa pregledom u EUR, ili po organizaciji?</li>
+            <li><span class="qn">3</span>Je li dvofaktorska autentikacija obavezna i za klijentske korisnike, ili samo za Delta Pro osoblje?</li>
+          </ul>
+        </div>
+        <div class="card qgroup" style="margin-bottom:0">
+          <div class="when">Pre faze 3 · konektori</div>
+          <ul class="qlist">
+            <li><span class="qn">4</span>Koji je prvi stvarni ERP — MIS, Pantheon, nešto drugo? Ne menja arhitekturu, ali određuje koje se sposobnosti prve modeluju.</li>
+            <li><span class="qn">5</span>Može li prvi klijent da obezbedi read-only nalog na bazi, ili ide preko API-ja? Od toga zavisi da li lokalni agent postaje raniji prioritet.</li>
+            <li><span class="qn">6</span>Postoji li već n8n instanca i ko njome upravlja?</li>
+          </ul>
+        </div>
+        <div class="card qgroup" style="margin-bottom:0">
+          <div class="when">Pre faze 5 · AI</div>
+          <ul class="qlist">
+            <li><span class="qn">7</span>Kojih šest do osam pitanja klijent stvarno postavlja svakodnevno? To je specifikacija za početni set alata — vredi ih prikupiti od stvarnog korisnika, ne izmišljati.</li>
+            <li><span class="qn">8</span>Čuvaju li se AI razgovori trajno, koliko dugo, i može li klijent da ih obriše?</li>
+          </ul>
+        </div>
+        <div class="card qgroup" style="margin-bottom:0">
+          <div class="when">Pre produkcije</div>
+          <ul class="qlist">
+            <li><span class="qn">9</span>Zadržavanje revizionog traga — predlog je 24 meseca. Ima li klijent ugovornu obavezu dužeg roka?</li>
+            <li><span class="qn">10</span>Ko je kontrolor a ko obrađivač po GDPR-u, i treba li ugovor o obradi sa svakim klijentom?</li>
+            <li><span class="qn">11</span>Hostovanje Supabase projekta u EU regionu — pretpostavka koju treba potvrditi.</li>
+            <li><span class="qn">12</span>Ko i kojom dinamikom proverava da vraćanje rezervne kopije stvarno radi?</li>
+            <li><span class="qn">13</span>Model naplate — po organizaciji, korisniku, integraciji ili AI potrošnji?</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot wrap">
+      Puna dokumentacija sa DDL-om, politikama i strukturom foldera nalazi se u repozitorijumu, grana <code>claude/komanda-ai-command-center-85w2bm</code>, folder <code>docs/</code>.
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  // scroll-spy
+  var links = Array.prototype.slice.call(document.querySelectorAll('#nav a'));
+  var map = {};
+  links.forEach(function(a){
+    var el = document.getElementById(a.getAttribute('href').slice(1));
+    if (el) map[el.id] = a;
+  });
+  var sections = Object.keys(map).map(function(id){ return document.getElementById(id); });
+
+  function sync(){
+    var best = null, bestTop = -Infinity;
+    sections.forEach(function(s){
+      var top = s.getBoundingClientRect().top - 90;
+      if (top <= 0 && top > bestTop){ bestTop = top; best = s; }
+    });
+    if (!best) best = sections[0];
+    links.forEach(function(a){ a.classList.remove('on'); });
+    if (best && map[best.id]) map[best.id].classList.add('on');
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){ sync(); ticking = false; });
+  }, {passive:true});
+  sync();
+
+  // tabs
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  function select(tab){
+    tabs.forEach(function(t){
+      var on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ select(t); });
+    t.addEventListener('keydown', function(e){
+      var i = tabs.indexOf(t);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        e.preventDefault();
+        var next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus(); select(next);
+      }
+    });
+  });
+})();
+</script>

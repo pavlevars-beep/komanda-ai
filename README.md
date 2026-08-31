@@ -32,6 +32,7 @@ Dva odvojena iskustva:
 | [`docs/05-ui-mapa.md`](docs/05-ui-mapa.md) | Mapa ekrana i principi dizajna |
 | [`docs/06-plan-isporuke.md`](docs/06-plan-isporuke.md) | Faze isporuke |
 | [`docs/adr/`](docs/adr/) | Arhitektonske odluke sa obrazloženjem |
+| [`docs/pregled/arhitektura.html`](docs/pregled/arhitektura.html) | Pregledna verzija za klijenta i njegov IT — otvara se duplim klikom |
 
 ## Osnovna načela
 
