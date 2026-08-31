@@ -19,7 +19,16 @@ const NO_SERVICE_ROLE = {
 }
 
 export default tseslint.config(
-  { ignores: ['.next/**', 'node_modules/**', 'coverage/**', 'src/server/db/types.generated.ts'] },
+  {
+    // next-env.d.ts generiše Next i ne sme da se menja ručno.
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'coverage/**',
+      'next-env.d.ts',
+      'src/server/db/types.generated.ts',
+    ],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
