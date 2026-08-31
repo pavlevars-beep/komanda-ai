@@ -1,0 +1,50 @@
+# Komanda AI Command Center
+
+Platforma za integraciju poslovnih sistema klijenata u jedan bezbedan komandni centar.
+Proizvod kompanije **Delta Pro DOO**.
+
+> **Status:** faza projektovanja. Ovaj repozitorijum trenutno sadrži arhitektonsku
+> dokumentaciju. Implementacija počinje po planu iz `docs/06-plan-isporuke.md`.
+
+## Šta je ovo
+
+Sistem povezuje postojeće poslovne sisteme klijenta — ERP, CRM, baze podataka,
+e-poštu, sajt, fajlove i automatizacije — u jedan radni prostor u kome uprava vidi
+stanje poslovanja, postavlja pitanja i odobrava akcije.
+
+AI je sloj inteligencije **unutar** ozbiljne poslovne platforme. Platforma je
+upotrebljiva i bez AI-ja.
+
+Dva odvojena iskustva:
+
+- **Konzola** (`/console`) — Delta Pro: onboarding klijenata, integracije, dijagnostika, nadzor
+- **Radni prostor** (`/w/[orgSlug]`) — klijent: pregled poslovanja, pitanja, izveštaji, odobrenja
+
+## Dokumentacija
+
+| Dokument | Sadržaj |
+|---|---|
+| [`docs/00-otvorena-pitanja.md`](docs/00-otvorena-pitanja.md) | Donete odluke i pitanja koja tek treba rešiti |
+| [`docs/01-arhitektura.md`](docs/01-arhitektura.md) | Sistemska arhitektura, apstrakcije, konektori, AI sloj |
+| [`docs/02-baza-podataka.md`](docs/02-baza-podataka.md) | Kompletan model baze sa DDL-om |
+| [`docs/03-rls-i-bezbednost.md`](docs/03-rls-i-bezbednost.md) | Model izolacije podataka, RLS politike, rukovanje tajnama, testovi |
+| [`docs/04-struktura-projekta.md`](docs/04-struktura-projekta.md) | Struktura foldera i pravila granica modula |
+| [`docs/05-ui-mapa.md`](docs/05-ui-mapa.md) | Mapa ekrana i principi dizajna |
+| [`docs/06-plan-isporuke.md`](docs/06-plan-isporuke.md) | Faze isporuke |
+| [`docs/adr/`](docs/adr/) | Arhitektonske odluke sa obrazloženjem |
+
+## Osnovna načela
+
+1. **Izolacija klijenata na četiri nezavisna sloja** — privilegije, RLS, aplikativni scope, složeni strani ključevi.
+2. **Delta Pro nema tihi pristup podacima klijenta** — samo kroz vremenski ograničenu, obrazloženu i klijentu vidljivu sesiju.
+3. **AI ne piše SQL i ne izvršava akcije** — bira među unapred odobrenim sposobnostima; svaka spoljna akcija traži ljudsko odobrenje.
+4. **Svaka tvrdnja nosi poreklo** — izvor, vreme osvežavanja i klasifikaciju (činjenica / izračunato / tumačenje / prognoza).
+5. **Nema lažne funkcionalnosti** — nedovršeno je vidljivo označeno, nikad simulirano.
+
+## Tehnologija
+
+Next.js · TypeScript (strict) · React · Supabase (PostgreSQL, Auth, RLS, Vault) · Vercel · OpenAI (apstrahovan) · opciono n8n
+
+## Jezici
+
+Srpski (latinica) podrazumevano, engleski kao prekidač — ceo proizvod, uključujući konzolu.
