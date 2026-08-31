@@ -65,6 +65,23 @@ export const en: Messages = {
   'classification.interpretation.help': 'An AI conclusion based on the available data.',
   'classification.forecast.help': 'An estimate of future movement. Not a recorded figure.',
 
+  'alert.severity.info': 'Information',
+  'alert.severity.warning': 'Warning',
+  'alert.severity.critical': 'Critical',
+  'alert.status.new': 'New',
+  'alert.status.acknowledged': 'Acknowledged',
+  'alert.status.resolved': 'Resolved',
+  'alert.status.dismissed': 'Dismissed',
+  'alert.empty': 'No open alerts. Anything that needs attention will appear here.',
+
+  'home.greeting.morning': 'Good morning',
+  'home.greeting.day': 'Good afternoon',
+  'home.greeting.evening': 'Good evening',
+  'home.lede': 'Here is what needs attention today.',
+  'home.metrics': 'Key metrics',
+  'home.metrics.pending':
+    'Metrics appear once Delta Pro connects a business system and enables the relevant capabilities.',
+
   'freshness.fresh': 'Fresh',
   'freshness.aging': 'Ageing',
   'freshness.stale': 'Stale',

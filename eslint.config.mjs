@@ -38,7 +38,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       eqeqeq: ['error', 'always'],
-      'no-console': ['error', { allow: [] }],
+      'no-console': 'error',
     },
   },
 
@@ -104,6 +104,14 @@ export default tseslint.config(
   {
     files: ['src/server/logger.ts'],
     rules: { 'no-console': 'off' },
+  },
+
+  // Konfiguracioni fajlovi nisu deo tsconfig programa, pa pravila koja traže
+  // informacije o tipovima nad njima ne mogu ni da se izvrše. Blok mora da
+  // stoji POSLE tipiziranih blokova da bi ih nadjačao.
+  {
+    files: ['**/*.mjs', '*.config.ts', 'next.config.ts', 'vitest.config.ts'],
+    ...tseslint.configs.disableTypeChecked,
   },
 
   // Testovi i skripte smeju sve.

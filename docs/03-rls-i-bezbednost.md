@@ -6,28 +6,47 @@ Izolacija podataka ne oslanja se na jedan mehanizam. Da bi podatak iz organizaci
 
 | # | Sloj | Šta štiti | Gde živi |
 |---|---|---|---|
-| 1 | **GRANT / REVOKE** | `anon` i `authenticated` role nemaju prava nad tabelama | `supabase/migrations/0001_lockdown.sql` |
+| 1 | **GRANT / REVOKE** | `anon` nema nikakva prava; `authenticated` dobija samo ono što joj treba, po tabeli | `supabase/migrations/00010_lockdown.sql` |
 | 2 | **RLS politike** | red je vidljiv samo ako organizacija pripada korisniku | uz svaku tabelu |
 | 3 | **Aplikativni scope** | svaki upit ide kroz repozitorijum koji obavezno prima `OrgContext` | `src/core/**/repository.ts` |
 | 4 | **Složeni strani ključevi** | dete ne može pripadati drugoj organizaciji od roditelja | šema baze |
 
-Sloj 1 je poseban i vredi ga naglasiti: pošto browser ne priča direktno sa PostgREST-om, **oduzimamo sva prava rolama koje su dostupne iz browsera**. Čak i da neko dobije `anon` ključ i RLS politika ima grešku — nema `SELECT` pravo, upit pada na nivou privilegija.
+### Kako su privilegije stvarno podešene
+
+Rola `anon` **nema nijedno pravo** nad aplikativnim tabelama. Anon ključ, koji
+jedini stiže do pregledača, time je za podatke bezvredan — služi samo za
+autentikaciju.
+
+Rola `authenticated` dobija prava **po tabeli i po operaciji**, i uvek uz RLS
+politiku koja proverava i pripadnost organizaciji i permisiju:
 
 ```sql
--- 0001_lockdown.sql
-revoke all on all tables    in schema public from anon, authenticated;
-revoke all on all sequences in schema public from anon, authenticated;
-revoke all on all functions in schema public from anon, authenticated;
+-- 00010_lockdown.sql
+revoke all on all tables    in schema public from anon;
+revoke all on all sequences in schema public from anon;
 alter default privileges in schema public revoke all on tables from anon, authenticated;
 
--- servisni kod se povezuje kao dedikovana rola sa RLS-om koji I DALJE važi
-create role app_user nologin;
-grant usage on schema public, app to app_user;
-grant select, insert, update, delete on all tables in schema public to app_user;
-alter role app_user set row_security = on;   -- eksplicitno, nikad BYPASSRLS
+-- Šema `app` sa pomoćnim funkcijama nije izložena kroz PostgREST.
+revoke all on schema app from anon, authenticated;
+grant usage on schema app to authenticated, service_role;
 ```
 
-`app_user` **nema** `BYPASSRLS`. Čak i naš serverski kod prolazi kroz RLS.
+Posledica koju vredi razumeti: **autorizacija je sprovedena u bazi, ne u našoj
+API ruti.** Provera permisije stoji u samoj RLS politici, pa važi jednako i
+kada zahtev stigne kroz našu aplikaciju i kada bi neko sa ukradenim tokenom
+pozvao PostgREST direktno.
+
+Naš serverski kod koristi **anon ključ i korisnikov token**, dakle rolu
+`authenticated` — RLS važi i za njega. `service_role`, koji zaobilazi RLS,
+koristi se samo u migracijama, seed-u i pozadinskim poslovima, kroz jedan
+modul čiji uvoz iz `src/app/**` i `src/core/**` obara lint.
+
+Dve tabele idu korak dalje i **nemaju nijedan grant** roli `authenticated`:
+
+- `integration_credentials` — aplikacija do naznake dolazi kroz
+  `app.integration_credential_summary()`, koja ne vraća ni referencu na tajnu.
+- `audit_logs` — `update` i `delete` oduzeti su svima, uključujući
+  `service_role`; upis ide isključivo kroz `app.write_audit()`.
 
 ## 2. Pomoćne funkcije
 
@@ -96,13 +115,20 @@ $$;
 
 `app.membership_has_permission(membership_id, perm)` primenjuje: rola ∪ `override(grant)` − `override(deny)`, gde `deny` uvek pobeđuje.
 
-**Ključno za performanse:** politika `organization_id = any(app.accessible_org_ids())` bi pozivala funkciju za svaki red. Umesto toga koristi se oblik koji Postgres izvršava **jednom po naredbi** (InitPlan):
+**Ključno za performanse:** politika `organization_id = any(app.accessible_org_ids())` poziva funkciju za svaki red. Umesto toga koristi se oblik koji Postgres izvršava **jednom po naredbi**:
 
 ```sql
 using (organization_id in (select unnest(app.accessible_org_ids())))
 ```
 
-Ovaj oblik je obavezan u svim politikama. Postoji lint provera (`supabase/tests/policy_shape.sql`) koja odbija politiku napisanu na spori način.
+Usput, jedan detalj koji je koštao jedan pokušaj: oblik
+`= any ((select app.accessible_org_ids()))` **ne radi** — Postgres dvostruke
+zagrade tumači kao podupit koji vraća redove, pa poređenje `uuid = uuid[]`
+padne pri kreiranju politike.
+
+Ovaj oblik je obavezan u svim politikama, a proverava ga
+`app.policies_with_slow_shape()` iz migracije `00120_guards.sql`. CI pada ako
+neko napiše politiku na spori način.
 
 ## 3. Obrazac politika
 
@@ -111,21 +137,22 @@ Za svaku tenant tabelu — četiri politike, nikad `for all`:
 ```sql
 alter table public.alerts enable row level security;
 alter table public.alerts force row level security;   -- važi i za vlasnika tabele
+grant select, insert, update on public.alerts to authenticated;
 
-create policy alerts_select on public.alerts for select to app_user
+create policy alerts_select on public.alerts for select to authenticated
   using (organization_id in (select unnest(app.accessible_org_ids())));
 
-create policy alerts_insert on public.alerts for insert to app_user
+create policy alerts_insert on public.alerts for insert to authenticated
   with check (
     organization_id in (select unnest(app.accessible_org_ids()))
     and app.has_permission(organization_id, 'manage_alerts')
   );
 
-create policy alerts_update on public.alerts for update to app_user
+create policy alerts_update on public.alerts for update to authenticated
   using      (organization_id in (select unnest(app.accessible_org_ids())))
   with check (organization_id in (select unnest(app.accessible_org_ids())));
 
-create policy alerts_delete on public.alerts for delete to app_user
+create policy alerts_delete on public.alerts for delete to authenticated
   using (
     organization_id in (select unnest(app.accessible_org_ids()))
     and app.has_permission(organization_id, 'manage_alerts')
@@ -141,46 +168,58 @@ create policy alerts_delete on public.alerts for delete to app_user
 **`audit_logs` — samo dodavanje, nikad izmena:**
 
 ```sql
-revoke update, delete on public.audit_logs from app_user, authenticated, anon, service_role;
+revoke insert, update, delete on public.audit_logs from authenticated, anon;
+revoke update, delete on public.audit_logs from service_role;
 
-create policy audit_select on public.audit_logs for select to app_user
+create policy audit_select on public.audit_logs for select to authenticated
   using (
     organization_id in (select unnest(app.accessible_org_ids()))
     and app.has_permission(organization_id, 'view_audit_log')
   );
--- INSERT ide isključivo kroz app.write_audit() (SECURITY DEFINER); direktan INSERT nema politiku
+-- INSERT ide isključivo kroz app.write_audit(); direktan INSERT nema politiku
 ```
+
+Tabela je particionisana po mesecu. Particija **mora** da nosi sopstveni RLS:
+politika roditelja važi samo kada se pristupa preko roditelja, a direktan upit
+nad particijom vidi isključivo njene politike. `app.ensure_audit_partitions()`
+zato svakoj novoj particiji uključuje i `force` RLS.
 
 Revizija se ne može izmeniti ni obrisati — ni od strane aplikacije, ni `service_role`-om. Brisanje se vrši samo odbacivanjem stare particije, kao deo dokumentovane retencije.
 
 **`integration_credentials` — nikad ka klijentu:**
 
 ```sql
-create policy cred_select on public.integration_credentials for select to app_user
-  using (
-    organization_id in (select unnest(app.administrable_org_ids()))
-    and app.has_permission(organization_id, 'manage_integrations')
-  );
+-- Tabela nema nijedan grant roli authenticated. Pristup ide samo kroz funkciju:
+create function app.integration_credential_summary(p_integration_id uuid)
+returns table (integration_id uuid, auth_type text, hint text,
+               rotated_at timestamptz, expires_at timestamptz, is_expired boolean)
+security definer ...
 ```
 
-Vraća samo `hint`, `rotated_at`, `expires_at`. Kolona `vault_secret_id` se ne serijalizuje ka klijentu — repozitorijum je eksplicitno izostavlja iz svakog DTO-a, a test to proverava.
+Funkcija vraća samo naznaku i rokove. `vault_secret_id` nije u povratnom
+skupu, a test to proverava nad **stvarnim potpisom funkcije** — pa pada ako
+neko sutra doda tu kolonu.
 
 **`impersonation_sessions` — klijent sme da prekine:**
 
 ```sql
-create policy imp_select on public.impersonation_sessions for select to app_user
+create policy imp_select on public.impersonation_sessions for select to authenticated
   using (
     staff_user_id = auth.uid()
     or organization_id in (select unnest(app.accessible_org_ids()))  -- klijent vidi ko mu je unutra
   );
 
-create policy imp_end on public.impersonation_sessions for update to app_user
+create policy imp_end on public.impersonation_sessions for update to authenticated
   using (
     staff_user_id = auth.uid()
     or app.has_permission(organization_id, 'manage_users')          -- klijentski admin prekida
   )
   with check (ended_at is not null);
 ```
+
+`WITH CHECK` vidi samo novi red, pa ne može da spreči produžavanje sesije
+izmenom `expires_at`. Zato uz politiku stoji i trigger koji odbija promenu
+bilo kog polja osim zatvaranja — sesija se ne preinačava, samo se završava.
 
 **Katalozi bez tenant-a** (`connector_types`, `permissions`, `ai_tools`, sistemske `roles`): `SELECT` za sve prijavljene, `INSERT/UPDATE/DELETE` isključivo migracijama.
 
@@ -229,14 +268,32 @@ Ako ruta ne deklariše `permission`, build pada. Nema „zaboravljene" provere.
 
 Bez ovih testova model je samo namera. Tri nivoa:
 
-**A) pgTAP, na nivou baze** (`supabase/tests/`) — izvršava se u CI-ju nad realnom šemom:
-- za **svaku** tabelu sa `organization_id`: korisnik org A dobija 0 redova org B (`SELECT`, `UPDATE`, `DELETE`, `INSERT` sa tuđim `organization_id`)
-- pokušaj promene `organization_id` postojećeg reda pada (provera `WITH CHECK`)
-- generisani test koji **nabraja sve tabele** i pada ako neka ima `organization_id` a nema uključen RLS — tako nova tabela ne može da se doda bez politike
-- `audit_logs` ne prihvata `UPDATE` ni `DELETE` ni iz jedne role
-- pristup osoblja bez aktivne sesije = 0 redova; sa aktivnom sesijom = dozvoljeno; nakon `expires_at` = ponovo 0
+**A) Na nivou baze** (`supabase/tests/`) — izvršava se u CI-ju nad realnom šemom.
 
-**B) Integracioni, na nivou API-ja** (`tests/security/`):
+Testovi su pisani u običnom SQL-u sa malim skupom tvrdnji (`testkit.assert*`),
+a ne u pgTAP-u. Razlog je praktičan: `scripts/verify-db.sh` tako radi nad bilo
+kojim PostgreSQL-om — lokalno, u CI-ju i na Supabase-u — bez Docker-a i bez
+naloga u oblaku. Ništa se ne gubi, jer tvrdnje koje su nam potrebne staju u
+tridesetak linija.
+
+Pokriveno:
+- test se **generiše nad svim tabelama** koje nose `organization_id` (trenutno 29), pa nova tabela automatski ulazi u proveru
+- pre provere se traži da tuđa organizacija **stvarno ima podatke** — test koji prolazi zato što nema šta da procuri daje lažnu sigurnost
+- pokušaj promene `organization_id` postojećeg reda pada (provera `WITH CHECK`)
+- meta-test koji pada ako neka tabela ima `organization_id` a nema RLS, ako UPDATE politika nema `WITH CHECK`, ili ako politika koristi spori oblik poziva
+- `audit_logs` ne prihvata `UPDATE` ni `DELETE` ni iz jedne role
+- pristup osoblja bez aktivne sesije = 0 redova; sa aktivnom sesijom = dozvoljeno; nakon `expires_at` i nakon prekida od strane klijenta = ponovo 0
+- opozvano članstvo i korisnik bez ijednog članstva ne vide ništa
+- složeni strani ključ odbija poruku vezanu za razgovor druge organizacije
+
+**B) Na nivou aplikacije** (`tests/unit/`, `tests/security/`) — trenutno pokriveno:
+redakcija tajni u logovima i u revizionom tragu, provera odredišta
+preusmeravanja, ograničavanje broja zahteva, normalizacija brend boje.
+Skeniranje klijentskog bundle-a (`scripts/check-bundle.sh`) pada ako u
+pregledač procuri `service_role`, API ključ, connection string ili privatni
+ključ.
+
+Planirano uz rute (Faza 2 i dalje):
 - za svaku rutu: korisnik org A sa validnim ID-em resursa org B dobija `404` (ne `403` — ne potvrđujemo postojanje tuđeg resursa)
 - podmetanje `organization_id` u telo, zaglavlje i upitni parametar se ignoriše
 - korisnik bez permisije dobija `403` i audit zapis sa `status = 'denied'`

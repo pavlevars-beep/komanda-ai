@@ -216,3 +216,41 @@ select testkit.assert_denied(
 rollback;
 
 \echo '=== 30 — prošlo ==='
+
+-- ---------------------------------------------------------------------------
+-- API funkcije poštuju iste granice
+-- ---------------------------------------------------------------------------
+
+begin;
+select testkit.login_as('00000000-0000-0000-0000-0000000000b1');  -- Jelena, Distribucija
+
+select testkit.assert_equals(
+  (select count(*) from public.workspace_context('demo-distribucija'))::integer, 1,
+  'workspace_context vraća sopstvenu organizaciju'
+);
+select testkit.assert_equals(
+  (select count(*) from public.workspace_context('demo-hotel-grupa'))::integer, 0,
+  'workspace_context ne vraća ništa za tuđu organizaciju'
+);
+select testkit.assert_equals(
+  (select count(*) from public.my_memberships())::integer, 1,
+  'my_memberships vraća samo sopstvena članstva'
+);
+select testkit.assert(
+  'view_financial_data' = any (public.effective_permissions('00000000-0000-0000-0000-00000000d002')),
+  'vlasnik ima permisiju za finansijske podatke'
+);
+select testkit.assert_equals(
+  (select cardinality(public.effective_permissions('00000000-0000-0000-0000-00000000d003')))::integer, 0,
+  'nema nijednu permisiju u tuđoj organizaciji'
+);
+
+-- Super Admin bez sesije ne dobija kontekst radnog prostora klijenta.
+select testkit.login_as('00000000-0000-0000-0000-0000000000a1');
+select testkit.assert_equals(
+  (select count(*) from public.workspace_context('demo-distribucija'))::integer, 0,
+  'Super Admin bez sesije pristupa ne dobija kontekst radnog prostora klijenta'
+);
+rollback;
+
+\echo '=== 30 (API funkcije) — prošlo ==='

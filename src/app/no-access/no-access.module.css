@@ -1,0 +1,14 @@
+.screen { min-height: 100vh; display: grid; place-items: center; padding: var(--space-6); }
+.panel {
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+}
+.title { font-size: var(--text-md); }
+.body { font-size: var(--text-base); color: var(--muted); }

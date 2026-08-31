@@ -70,6 +70,25 @@ export const sr = {
   'classification.interpretation.help': 'Zaključak AI-ja na osnovu dostupnih podataka.',
   'classification.forecast.help': 'Procena budućeg kretanja. Nije podatak iz sistema.',
 
+  // --- Upozorenja ---
+  'alert.severity.info': 'Informacija',
+  'alert.severity.warning': 'Upozorenje',
+  'alert.severity.critical': 'Kritično',
+  'alert.status.new': 'Novo',
+  'alert.status.acknowledged': 'Potvrđeno',
+  'alert.status.resolved': 'Rešeno',
+  'alert.status.dismissed': 'Odbačeno',
+  'alert.empty': 'Nema otvorenih upozorenja. Kada nešto zatraži pažnju, pojaviće se ovde.',
+
+  // --- Početna radnog prostora ---
+  'home.greeting.morning': 'Dobro jutro',
+  'home.greeting.day': 'Dobar dan',
+  'home.greeting.evening': 'Dobro veče',
+  'home.lede': 'Evo šta danas traži pažnju.',
+  'home.metrics': 'Ključni pokazatelji',
+  'home.metrics.pending':
+    'Pokazatelji se prikazuju kada Delta Pro poveže poslovni sistem i uključi odgovarajuće sposobnosti.',
+
   // --- Svežina podataka ---
   'freshness.fresh': 'Sveže',
   'freshness.aging': 'Stariji podatak',
@@ -111,5 +130,14 @@ export const sr = {
   'theme.system': 'Sistemska',
 } as const
 
-export type Messages = typeof sr
-export type MessageKey = keyof Messages
+export type MessageKey = keyof typeof sr
+
+/**
+ * Namerno `Record<MessageKey, string>`, a ne `typeof sr`.
+ *
+ * `as const` na srpskom katalogu daje literalne tipove, pa bi `typeof sr`
+ * od drugog jezika tražio DOSLOVNO iste stringove. Ovako tip i dalje
+ * obavezuje na sve ključeve — nedostajući prevod obara build — ali dozvoljava
+ * da vrednost bude bilo koji tekst.
+ */
+export type Messages = Record<MessageKey, string>

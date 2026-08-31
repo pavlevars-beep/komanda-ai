@@ -1,0 +1,22 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4);
+  background: var(--warn-soft);
+  border-bottom: 1px solid var(--warn);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--warn);
+  flex: none;
+}
+.text { flex: 1; min-width: 200px; }
+.name { font-weight: 600; color: var(--ink); }
+.reason { color: var(--muted); }
+.until { font-family: var(--font-mono); font-size: var(--text-sm); }

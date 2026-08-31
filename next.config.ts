@@ -26,9 +26,7 @@ const nextConfig: NextConfig = {
     // Sprečava da se serverski moduli slučajno uvuku u klijentski bundle.
     typedEnv: true,
   },
-  async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
-  },
+  headers: () => Promise.resolve([{ source: '/:path*', headers: securityHeaders }]),
 }
 
 export default nextConfig

@@ -18,6 +18,7 @@
     "db:types": "supabase gen types typescript --local > src/server/db/types.generated.ts",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "check:bundle": "./scripts/check-bundle.sh",
     "verify": "npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {

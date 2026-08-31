@@ -2,13 +2,27 @@
 
 Svaka faza završava se stanjem koje je stvarno upotrebljivo i pokriveno testovima. Ne prelazi se na sledeću fazu dok TypeScript, lint i testovi ne prolaze.
 
-## Faza 0 — Temelj
+## Faza 0 — Temelj ✅
 Next.js + TypeScript (`strict`), ESLint sa boundaries pravilima, Prettier, Vitest, Playwright, CI, `.env.example`, Zod validacija okruženja, logger sa redakcijom, dizajn tokeni, tema (svetla/tamna/sistemska), i18n skelet (sr/en).
-**Gotovo kada:** aplikacija se diže, prazna ljuska obe zone, CI zelen.
+**Urađeno.** Uz plan, dodato: normalizacija brend boje sa proračunom WCAG
+kontrasta, i18n u kome nedostajući prevod obara build, i skeniranje
+klijentskog bundle-a na tajne.
 
-## Faza 1 — Identitet, tenancy, RLS ⟵ *najvažnija faza*
+## Faza 1 — Identitet, tenancy, RLS ✅ ⟵ *najvažnija faza*
 Migracije za organizacije, korisnike, članstva, role, permisije, osoblje, dodele, impersonation. `0001_lockdown.sql`. `app.*` funkcije. Politike za sve tabele. Supabase Auth, prijava, pozivnice. Seed za tri organizacije.
-**Gotovo kada:** pgTAP testovi izolacije prolaze, uključujući generisani test koji pada za svaku tabelu bez RLS-a.
+**Urađeno.** 14 migracija, 46 tabela, 93 RLS politike, tri demo organizacije.
+Testovi izolacije prolaze, uključujući generisani test nad svih 29 tabela sa
+`organization_id`.
+
+Odstupanja od plana, i zašto:
+- Testovi su u običnom SQL-u umesto u pgTAP-u, da bi `verify-db.sh` radio nad
+  bilo kojim PostgreSQL-om bez Docker-a — isti skript koriste programer i CI.
+- Rola `authenticated` nije ostala bez svih prava, jer kroz nju ide i naš
+  serverski kod. Umesto toga prava se daju po tabeli, a provera permisije je
+  ugrađena u samu RLS politiku — autorizacija time živi u bazi i važi i ako
+  neko zaobiđe našu API rutu. `anon` i dalje nema nijedno pravo.
+- Redovi iz baze se na granici repozitorijuma proveravaju Zod šemom umesto da
+  se veruje generisanim tipovima, koji ćute kada se šema promeni.
 
 ## Faza 2 — Delta Pro konzola
 Pregled, Klijenti, čarobnjak za novu organizaciju, radni prostor klijenta, brendiranje sa proverom kontrasta, korisnici i role, onboarding lista, impersonation tok sa trakama u obe zone.

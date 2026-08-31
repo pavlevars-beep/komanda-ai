@@ -258,3 +258,36 @@ select testkit.assert(
 rollback;
 
 \echo '=== 40 — prošlo ==='
+
+-- ---------------------------------------------------------------------------
+-- Revizija se ne može upisati u tuđu organizaciju
+-- ---------------------------------------------------------------------------
+
+begin;
+select testkit.login_as('00000000-0000-0000-0000-0000000000b1');  -- Jelena, Distribucija
+
+select testkit.assert_denied(
+  $q$select public.write_audit(
+       p_action => 'test.cross_org',
+       p_actor_type => 'user',
+       p_status => 'success',
+       p_request_id => 'test-request-0003',
+       p_organization_id => '00000000-0000-0000-0000-00000000d003')$q$,
+  'revizioni zapis se ne može ubaciti u tuđu organizaciju'
+);
+
+-- Upis u sopstvenu organizaciju prolazi.
+select public.write_audit(
+  p_action => 'workspace.opened',
+  p_actor_type => 'user',
+  p_status => 'success',
+  p_request_id => 'test-request-0004',
+  p_organization_id => '00000000-0000-0000-0000-00000000d002'
+);
+select testkit.assert_equals(
+  (select count(*) from public.audit_logs where request_id = 'test-request-0004')::integer, 1,
+  'revizioni zapis u sopstvenoj organizaciji prolazi'
+);
+rollback;
+
+\echo '=== 40 (revizija kroz API) — prošlo ==='

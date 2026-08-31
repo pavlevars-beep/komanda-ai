@@ -3,8 +3,8 @@
 Platforma za integraciju poslovnih sistema klijenata u jedan bezbedan komandni centar.
 Proizvod kompanije **Delta Pro DOO**.
 
-> **Status:** faza projektovanja. Ovaj repozitorijum trenutno sadrži arhitektonsku
-> dokumentaciju. Implementacija počinje po planu iz `docs/06-plan-isporuke.md`.
+> **Status:** Faza 0 i Faza 1 su gotove — skele, izolacija tenanta i testovi.
+> Sledi Faza 2 (konzola i onboarding). Plan je u `docs/06-plan-isporuke.md`.
 
 ## Šta je ovo
 
@@ -40,6 +40,33 @@ Dva odvojena iskustva:
 3. **AI ne piše SQL i ne izvršava akcije** — bira među unapred odobrenim sposobnostima; svaka spoljna akcija traži ljudsko odobrenje.
 4. **Svaka tvrdnja nosi poreklo** — izvor, vreme osvežavanja i klasifikaciju (činjenica / izračunato / tumačenje / prognoza).
 5. **Nema lažne funkcionalnosti** — nedovršeno je vidljivo označeno, nikad simulirano.
+
+## Pokretanje
+
+```bash
+npm install
+cp .env.example .env.local        # popuni Supabase vrednosti
+
+npm run dev                       # aplikacija na http://localhost:3000
+npm run verify                    # typecheck + lint + testovi
+```
+
+**Baza.** `scripts/verify-db.sh` podiže čistu bazu, primenjuje migracije i
+seed, pa pokreće testove izolacije. Radi nad bilo kojim PostgreSQL-om — ne
+traži Docker ni nalog na Supabase-u:
+
+```bash
+# uz lokalni PostgreSQL na portu 55432
+PGPORT=55432 ./scripts/verify-db.sh
+```
+
+Testovi izolacije se **generišu** nad svim tabelama koje nose
+`organization_id`, pa nova tabela automatski ulazi u proveru. CI pada ako
+tabela nema RLS, ako `UPDATE` politika nema `WITH CHECK`, ili ako politika
+poziva pomoćnu funkciju po redu umesto po naredbi.
+
+Razvojni nalozi se kreiraju seed-om; lozinke se postavljaju zasebno —
+vidi `scripts/set-dev-passwords.md`. Heš lozinke ne ide u repozitorijum.
 
 ## Tehnologija
 
