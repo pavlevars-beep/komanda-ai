@@ -6,7 +6,11 @@ import { currentUser } from '@/server/auth/current-user'
 import { callRpc } from '@/server/db/rpc'
 import { z } from 'zod'
 import { getConsoleClient } from '@/core/organizations/console-repository'
-import { getIntegration, listCapabilityState } from '@/core/integrations/repository'
+import {
+  getIntegration,
+  listCapabilityState,
+  listHealthChecks,
+} from '@/core/integrations/repository'
 import { declaredCapabilities } from '@/core/integrations/capabilities'
 import { availableConnectorTypes, getConnector, initialiseConnectors } from '@/core/connectors'
 import { resolveLocale } from '@/i18n/config'
@@ -50,9 +54,10 @@ export default async function IntegrationDetailPage({
 
   const { t, formatDate } = createTranslator(resolveLocale({ userLocale: user.locale }))
 
-  const credential = await callRpc(db, 'integration_credential_summary', {
-    p_integration_id: integrationId,
-  })
+  const [credential, health] = await Promise.all([
+    callRpc(db, 'integration_credential_summary', { p_integration_id: integrationId }),
+    listHealthChecks(db, orgId, integrationId),
+  ])
 
   // Vraća samo naznaku i rokove — vrednost tajne ne postoji u ovom odgovoru.
   const summary = z.array(credentialSummary).safeParse(credential.data)
@@ -178,6 +183,62 @@ export default async function IntegrationDetailPage({
               message: (key) => t(key as MessageKey),
             }}
           />
+        )}
+      </section>
+
+      <section className={styles.panel}>
+        <div className={styles.panelHead}>
+          <h2 className={styles.panelTitle}>{t('integrations.healthHistory')}</h2>
+        </div>
+
+        {!health.ok ? (
+          <p className={styles.hint}>{t(health.error.key as MessageKey)}</p>
+        ) : health.value.length === 0 ? (
+          // Prazna istorija nije greška: veza jednostavno još nije proveravana.
+          <p className={styles.hint}>{t('integrations.healthHistoryNone')}</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <caption className={styles.tableCaption}>
+                {t('integrations.healthHistoryCaption')}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">{t('integrations.healthWhen')}</th>
+                  <th scope="col">{t('integrations.healthOutcome')}</th>
+                  <th scope="col" className={styles.numeric}>
+                    {t('integrations.healthLatency')}
+                  </th>
+                  <th scope="col">{t('integrations.healthDetail')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {health.value.map((check) => (
+                  <tr key={check.id}>
+                    <td>{formatDate(check.checked_at)}</td>
+                    <td>
+                      <StatusBadge
+                        tone={check.ok ? 'ok' : 'critical'}
+                        label={
+                          check.ok
+                            ? t('integrations.healthOk')
+                            : t('integrations.healthFailed')
+                        }
+                      />
+                    </td>
+                    <td className={styles.numeric}>
+                      {check.latency_ms === null ? '—' : `${check.latency_ms} ms`}
+                    </td>
+                    <td className={styles.detail}>
+                      {check.error_code ?? ''}
+                      {check.error_message ? ` · ${check.error_message}` : ''}
+                      {!check.error_code && !check.error_message ? '—' : ''}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

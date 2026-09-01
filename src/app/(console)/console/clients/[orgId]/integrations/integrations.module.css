@@ -95,6 +95,21 @@
 .capabilityAction { display: flex; align-items: center; gap: var(--space-3); white-space: nowrap; }
 .capabilityState { font-size: var(--text-sm); color: var(--muted); }
 
+/* --- Tabela istorije --- */
+/* Uska tabela pomera stranicu vodoravno; zato skroluje ona, a ne telo. */
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+.tableCaption { caption-side: bottom; padding-top: var(--space-2); font-size: var(--text-sm); color: var(--muted); text-align: left; }
+.table th {
+  text-align: left; font-weight: 500; color: var(--muted); font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); vertical-align: middle; }
+.table tr:last-child td { border-bottom: none; }
+/* Odziv je kolona brojeva — tabularne cifre drže zareze poravnate. */
+.numeric { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.detail { color: var(--muted); }
+
 @media (max-width: 700px) {
   .row { grid-template-columns: 1fr; }
   .capability { flex-direction: column; align-items: stretch; }

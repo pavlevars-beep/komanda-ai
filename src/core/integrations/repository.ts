@@ -420,3 +420,49 @@ export async function setCapabilityEnabled(
     ? err(domainError('internal', 'error.internal', { detail: error.message }))
     : ok(true)
 }
+
+// ---------------------------------------------------------------------------
+// Istorija provera veze
+// ---------------------------------------------------------------------------
+
+const healthCheckRow = z.object({
+  id: uuid(),
+  checked_at: z.string(),
+  ok: z.boolean(),
+  latency_ms: z.number().int().nullable(),
+  error_code: z.string().nullable(),
+  error_message: z.string().nullable(),
+})
+
+export type HealthCheck = z.infer<typeof healthCheckRow>
+
+/**
+ * Poslednje provere veze, najnovija prva.
+ *
+ * Postoji zato što jedan trenutni status ne razlikuje integraciju koja je
+ * pala prvi put od one koja pada svaki drugi put. Prva se čeka, druga se
+ * popravlja — a bez istorije oba slučaja izgledaju isto.
+ *
+ * `error_message` je već redaktovana pri upisu; ovde se ne dodaje ništa.
+ */
+export async function listHealthChecks(
+  db: Db,
+  organizationId: string,
+  integrationId: string,
+  limit = 10,
+): Promise<Result<HealthCheck[]>> {
+  const { data, error } = await db
+    .from('integration_health_checks')
+    .select('id, checked_at, ok, latency_ms, error_code, error_message')
+    .eq('organization_id', organizationId)
+    .eq('integration_id', integrationId)
+    .order('checked_at', { ascending: false })
+    .limit(limit)
+
+  if (error) return err(domainError('internal', 'error.internal', { detail: error.message }))
+
+  const rows = z.array(healthCheckRow).safeParse(data)
+  return rows.success
+    ? ok(rows.data)
+    : err(domainError('internal', 'error.internal', { detail: rows.error.message }))
+}

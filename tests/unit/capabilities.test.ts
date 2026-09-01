@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { listCapabilityState, setCapabilityEnabled } from '@/core/integrations/repository'
+import {
+  listCapabilityState,
+  listHealthChecks,
+  setCapabilityEnabled,
+} from '@/core/integrations/repository'
 import { declaredCapabilities } from '@/core/integrations/capabilities'
 import { demoConnector } from '@/core/connectors/impl/demo'
 import type { Integration } from '@/core/integrations/repository'
@@ -185,5 +189,55 @@ describe('deklarisane sposobnosti', () => {
   it('spisak ne zavisi od permisija onoga ko gleda', () => {
     const declared = declaredCapabilities(demoConnector, integration, USER)
     expect(declared.length).toBeGreaterThan(0)
+  })
+})
+
+describe('istorija provera veze', () => {
+  function checkRow(over: Record<string, unknown> = {}) {
+    return {
+      id: '00000000-0000-0000-0000-0000000000f1',
+      checked_at: '2026-09-01T09:00:00.000Z',
+      ok: true,
+      latency_ms: 142,
+      error_code: null,
+      error_message: null,
+      ...over,
+    }
+  }
+
+  /** Dvojnik sa lancem koji istorija koristi: order i limit. */
+  function historyDb(rows: unknown[]) {
+    const query = {
+      select: () => query,
+      eq: () => query,
+      order: () => query,
+      limit: () => query,
+      then: (resolve: (v: unknown) => void) => resolve({ data: rows, error: null }),
+    }
+    return { from: () => query } as never
+  }
+
+  it('provera bez izmerenog odziva se učitava', async () => {
+    // Provera koja padne pre slanja zahteva nema latenciju. To nije greška u
+    // podatku i ne sme da obori učitavanje cele istorije.
+    const result = await listHealthChecks(
+      historyDb([checkRow({ ok: false, latency_ms: null, error_code: 'blocked_destination' })]),
+      ORG,
+      INTEGRATION,
+    )
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value[0]?.latency_ms).toBeNull()
+    expect(result.value[0]?.error_code).toBe('blocked_destination')
+  })
+
+  it('red koji se raziđe sa šemom se odbija, ne prikazuje pogrešno', async () => {
+    // Kolona `ok` nedostaje. Bez provere na granici, `undefined` bi se u UI-ju
+    // prikazalo kao „neuspešno" — tiho pogrešan podatak umesto greške.
+    const { ok: _dropped, ...withoutOk } = checkRow()
+    const result = await listHealthChecks(historyDb([withoutOk]), ORG, INTEGRATION)
+
+    expect(result.ok).toBe(false)
   })
 })
