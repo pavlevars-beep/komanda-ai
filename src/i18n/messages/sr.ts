@@ -119,6 +119,29 @@ export const sr = {
   'error.rate_limited': 'Previše zahteva. Sačekajte trenutak.',
   'error.internal': 'Došlo je do greške na našoj strani.',
 
+  // --- Konektori ---
+  'connector.error.invalidUrl': 'Adresa nije ispravna.',
+  'connector.error.insecureProtocol': 'U produkciji je dozvoljen samo HTTPS.',
+  'connector.error.credentialsInUrl': 'Korisničko ime i lozinka ne smeju biti deo adrese.',
+  'connector.error.blockedDestination': 'Ova adresa vodi u internu mrežu i nije dozvoljena.',
+  'connector.error.hostNotAllowed': 'Adresa nije na listi dozvoljenih za ovu integraciju.',
+  'connector.error.redirectBlocked': 'Sistem je pokušao preusmeravanje, koje nije dozvoljeno.',
+  'connector.error.unknownCapability': 'Tražena sposobnost ne postoji.',
+  'connector.error.capabilityDisabled': 'Ova sposobnost nije uključena za vašu organizaciju.',
+  'connector.error.approvalRequired': 'Akcija zahteva odobrenje pre izvršenja.',
+  'connector.error.invalidInput': 'Uneti podaci nisu ispravni.',
+  'connector.error.invalidOutput': 'Sistem je vratio odgovor u neočekivanom obliku.',
+  'connector.error.invalidConfig': 'Konfiguracija integracije nije ispravna.',
+  'connector.error.invalidDate': 'Datum mora biti u obliku GGGG-MM-DD.',
+  'connector.error.periodReversed': 'Početni datum mora biti pre krajnjeg.',
+  'connector.error.invalidFieldName': 'Naziv polja nije ispravan.',
+  'connector.error.invalidCapabilityKey': 'Oznaka sposobnosti nije ispravna.',
+  'connector.error.missingCredential': 'Kredencijal za ovu integraciju nije podešen.',
+  'connector.error.authFailed': 'Sistem je odbio kredencijal.',
+  'connector.error.timeout': 'Sistem nije odgovorio u zadatom roku.',
+  'connector.error.upstream': 'Sistem trenutno nije dostupan.',
+  'connector.error.readNotSupported': 'Ova integracija ne služi za čitanje podataka.',
+
   // --- Brendiranje ---
   'branding.color.invalid': 'Boja mora biti u obliku #RRGGBB.',
   'branding.color.unusable': 'Ova boja ne može da postigne dovoljan kontrast ni u jednoj temi.',
@@ -220,6 +243,8 @@ export const sr = {
   'impersonation.error.notAllowed': 'Nemate pravo da pokrenete sesiju nad ovom organizacijom.',
   'impersonation.error.cannotEnd': 'Sesija ne može da se završi.',
   'impersonation.error.notFound': 'Sesija ne postoji ili je već završena.',
+
+  // --- Konektori ---
 
   // --- Brendiranje ---
   'branding.title': 'Brendiranje',
