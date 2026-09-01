@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { Route } from 'next'
 import { z } from 'zod'
+import { uuid } from '@/core/shared/uuid'
 import { consoleAction, type ActionResultBase } from '@/server/http/with-action'
 import { formString } from '@/server/http/form'
 import { vaultSecretsProvider } from '@/server/secrets/vault-provider'
@@ -90,8 +91,8 @@ function parseConfig(raw: string | undefined): Record<string, unknown> {
 // ---------------------------------------------------------------------------
 
 const targetInput = z.object({
-  organizationId: z.string().uuid(),
-  integrationId: z.string().uuid(),
+  organizationId: uuid(),
+  integrationId: uuid(),
 })
 
 /**

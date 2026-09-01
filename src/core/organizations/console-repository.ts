@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { callRpc } from '@/server/db/rpc'
 import { err, ok, domainError, notFound, type Result } from '../shared/result'
@@ -6,7 +7,7 @@ import { err, ok, domainError, notFound, type Result } from '../shared/result'
 /** Redovi iz baze se proveravaju šemom, ne uzimaju zdravo za gotovo. */
 
 const clientRow = z.object({
-  organization_id: z.string().uuid(),
+  organization_id: uuid(),
   slug: z.string(),
   display_name: z.string(),
   industry: z.string().nullable(),
@@ -37,8 +38,8 @@ const onboardingRow = z.object({
 export type OnboardingTask = z.infer<typeof onboardingRow>
 
 const memberRow = z.object({
-  membership_id: z.string().uuid(),
-  user_id: z.string().uuid(),
+  membership_id: uuid(),
+  user_id: uuid(),
   full_name: z.string().nullable(),
   email: z.string().nullable(),
   role_key: z.string(),
@@ -53,8 +54,8 @@ const memberRow = z.object({
 export type OrgMember = z.infer<typeof memberRow>
 
 const openSessionRow = z.object({
-  session_id: z.string().uuid(),
-  organization_id: z.string().uuid(),
+  session_id: uuid(),
+  organization_id: uuid(),
   organization_slug: z.string(),
   organization_name: z.string(),
   reason: z.string(),

@@ -60,6 +60,8 @@ insert into public.organization_ai_tools
 values
   ('00000000-0000-0000-0000-00000000d002', 'get_daily_sales', true,
    '00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-0000000000a1', now()),
+  ('00000000-0000-0000-0000-00000000d002', 'get_sales_by_period', true,
+   '00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-0000000000a1', now()),
   ('00000000-0000-0000-0000-00000000d002', 'get_outstanding_invoices', true,
    '00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-0000000000a1', now()),
   ('00000000-0000-0000-0000-00000000d002', 'get_inventory_alerts', true,
@@ -141,3 +143,35 @@ cross join (values
   ('production_enabled', 10)
 ) as s(key, step_order)
 on conflict (organization_id, key) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- KPI kartice na početnoj
+-- ---------------------------------------------------------------------------
+--
+-- Namerno ih je malo. Šest kartica se pročitaju za nekoliko sekundi; dvadeset
+-- se ne čitaju uopšte, nego se preskaču.
+
+insert into public.dashboard_cards
+  (organization_id, ai_tool_key, integration_id, title, format, value_field,
+   compare_field, higher_is_better, input, step_order)
+values
+  ('00000000-0000-0000-0000-00000000d002', 'get_daily_sales',
+   '00000000-0000-0000-0000-00000000e001',
+   '{"sr":"Prodaja danas","en":"Sales today"}', 'money', 'total',
+   null, true, '{}', 1),
+
+  ('00000000-0000-0000-0000-00000000d002', 'get_sales_by_period',
+   '00000000-0000-0000-0000-00000000e001',
+   '{"sr":"Prodaja ove nedelje","en":"Sales this week"}', 'money', 'total',
+   'previousTotal', true, '{"period":"week"}', 2),
+
+  ('00000000-0000-0000-0000-00000000d002', 'get_outstanding_invoices',
+   '00000000-0000-0000-0000-00000000e001',
+   -- Rast dospelih potraživanja NIJE dobra vest.
+   '{"sr":"Dospela potraživanja","en":"Outstanding receivables"}', 'money', 'total',
+   null, false, '{"overdueDays":30}', 3),
+
+  ('00000000-0000-0000-0000-00000000d002', 'get_inventory_alerts',
+   '00000000-0000-0000-0000-00000000e001',
+   '{"sr":"Artikli ispod minimuma","en":"Items below minimum"}', 'count', 'items',
+   null, false, '{}', 4);

@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { err, ok, domainError, type Result } from '../shared/result'
 
 const clientRow = z.object({
-  id: z.string().uuid(),
+  id: uuid(),
   slug: z.string(),
   display_name: z.string(),
   industry: z.string().nullable(),

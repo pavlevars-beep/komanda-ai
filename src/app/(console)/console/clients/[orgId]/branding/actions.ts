@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { uuid } from '@/core/shared/uuid'
 import { consoleAction, type ActionResultBase } from '@/server/http/with-action'
 import { formString, formStringOrNull } from '@/server/http/form'
 import { saveBranding } from '@/core/branding/repository'
@@ -15,7 +16,7 @@ export interface BrandingState extends ActionResultBase {
 }
 
 const input = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: uuid(),
   workspaceName: z.string().trim().max(60).nullable(),
   welcomeSr: z.string().trim().max(300).nullable(),
   welcomeEn: z.string().trim().max(300).nullable(),

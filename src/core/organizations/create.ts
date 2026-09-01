@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { callRpc } from '@/server/db/rpc'
 import { err, ok, domainError, type Result } from '../shared/result'
@@ -51,7 +52,7 @@ export async function createClientOrganization(
     )
   }
 
-  const id = z.string().uuid().safeParse(data)
+  const id = uuid().safeParse(data)
   if (!id.success) {
     return err(domainError('internal', 'error.internal', { detail: 'neočekivan povratni tip' }))
   }

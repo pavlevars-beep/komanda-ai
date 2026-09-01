@@ -1,9 +1,10 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { err, ok, domainError, type Result } from '../shared/result'
 
 const brandingRow = z.object({
-  organization_id: z.string().uuid(),
+  organization_id: uuid(),
   logo_url: z.string().nullable(),
   favicon_url: z.string().nullable(),
   primary_color: z.string().nullable(),

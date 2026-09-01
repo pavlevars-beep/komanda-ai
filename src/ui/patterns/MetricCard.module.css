@@ -1,0 +1,71 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+
+/* Naziv u rečeničnom obliku, bez dvotačke. */
+.label {
+  font-size: var(--text-base);
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.valueRow { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+
+/*
+ * Velika samostalna vrednost koristi PROPORCIONALNE cifre.
+ * tabular-nums svakoj cifri daje širinu nule, pa broj poput 121 na ovoj
+ * veličini izgleda razvučeno. Tabularne cifre idu samo u kolone tabela.
+ */
+.value {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.delta { font-size: var(--text-base); font-weight: 500; white-space: nowrap; }
+.deltaGood { color: var(--ok); }
+.deltaBad { color: var(--critical); }
+.deltaPeriod { color: var(--muted); font-weight: 400; }
+
+/* --- Podnožje: odakle vrednost dolazi i koliko je sveža --- */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+  color: var(--faint);
+}
+.source { color: var(--muted); }
+.dot { color: var(--line-strong); }
+
+/* --- Nedostupna vrednost --- */
+.unavailable {
+  font-size: var(--text-md);
+  color: var(--muted);
+  line-height: 1.4;
+}
+.unavailableLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}

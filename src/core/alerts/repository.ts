@@ -1,10 +1,11 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
 import { err, ok, domainError, type Result } from '../shared/result'
 
 const alertRow = z.object({
-  id: z.string().uuid(),
+  id: uuid(),
   severity: z.enum(['info', 'warning', 'critical']),
   title: z.string(),
   body: z.record(z.string(), z.string()).nullable(),

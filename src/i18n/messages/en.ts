@@ -82,6 +82,17 @@ export const en: Messages = {
   'home.metrics.pending':
     'Metrics appear once Delta Pro connects a business system and enables the relevant capabilities.',
 
+  'metric.unavailable': 'Unavailable',
+  'metric.unavailable.no_integration': 'The system that provides this figure is not connected yet.',
+  'metric.unavailable.connector_missing': 'The connector for this system is not implemented yet.',
+  'metric.unavailable.capability_disabled': 'This capability is not enabled for your organisation.',
+  'metric.unavailable.no_permission': 'You are not authorised to see this figure.',
+  'metric.unavailable.integration_down': 'The system is not responding. The value is deliberately not shown.',
+  'metric.unavailable.no_data': 'The system returned no value for this period.',
+  'metric.comparePeriod.week': 'vs the previous week',
+  'metric.comparePeriod.day': 'vs yesterday',
+  'metric.empty': 'Delta Pro has not configured metrics for your workspace yet.',
+
   'freshness.fresh': 'Fresh',
   'freshness.aging': 'Ageing',
   'freshness.stale': 'Stale',

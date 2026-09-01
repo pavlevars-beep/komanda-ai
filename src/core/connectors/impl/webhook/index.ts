@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../../../shared/uuid'
 import type {
   ActionResult,
   CapabilityDescriptor,
@@ -43,7 +44,7 @@ export type WebhookConfig = z.infer<typeof webhookConfig>
 const actionPayload = z.object({
   /** Sadržaj akcije; oblik zavisi od vrste i validira ga tok odobrenja. */
   payload: z.record(z.string(), z.unknown()),
-  approvalId: z.string().uuid(),
+  approvalId: uuid(),
 })
 
 function parseConfig(ctx: Omit<ConnectorContext, 'signal'>): WebhookConfig | null {

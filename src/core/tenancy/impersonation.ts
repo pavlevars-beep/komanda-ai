@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { err, ok, domainError, type Result } from '../shared/result'
 
@@ -15,7 +16,7 @@ export const REASON_MIN = 10
 export const REASON_MAX = 500
 
 export const startSessionInput = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: uuid(),
   reason: z
     .string()
     .trim()
@@ -63,7 +64,7 @@ export async function startAccessSession(
     )
   }
 
-  const row = z.object({ id: z.string().uuid(), expires_at: z.string() }).safeParse(data)
+  const row = z.object({ id: uuid(), expires_at: z.string() }).safeParse(data)
   if (!row.success) {
     return err(domainError('internal', 'error.internal', { detail: row.error.message }))
   }

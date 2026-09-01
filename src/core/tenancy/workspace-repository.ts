@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { callRpc } from '@/server/db/rpc'
 import type { OrgContext } from './org-context'
@@ -21,7 +22,7 @@ const permissionArray = z
   .transform((keys) => keys.filter((k): k is Permission => (PERMISSIONS as readonly string[]).includes(k)))
 
 const workspaceContextRow = z.object({
-  organization_id: z.string().uuid(),
+  organization_id: uuid(),
   organization_slug: z.string(),
   organization_name: z.string(),
   default_locale: z.string(),
@@ -30,12 +31,12 @@ const workspaceContextRow = z.object({
   is_demo: z.boolean(),
   permissions: permissionArray,
   staff_role: z.enum(STAFF_ROLES).nullable(),
-  impersonation_session_id: z.string().uuid().nullable(),
+  impersonation_session_id: uuid().nullable(),
   impersonation_expires_at: z.string().nullable(),
 })
 
 const membershipRow = z.object({
-  organization_id: z.string().uuid(),
+  organization_id: uuid(),
   organization_slug: z.string(),
   organization_name: z.string(),
   role_key: z.string(),
@@ -43,7 +44,7 @@ const membershipRow = z.object({
 })
 
 export const accessSessionRow = z.object({
-  session_id: z.string().uuid(),
+  session_id: uuid(),
   staff_name: z.string().nullable(),
   reason: z.string(),
   scope: z.enum(['read_only', 'full']),

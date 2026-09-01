@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
 import { err, ok, domainError, notFound, type Result } from '../shared/result'
 
@@ -14,8 +15,8 @@ const connectorTypeRow = z.object({
 export type ConnectorType = z.infer<typeof connectorTypeRow>
 
 const integrationRow = z.object({
-  id: z.string().uuid(),
-  organization_id: z.string().uuid(),
+  id: uuid(),
+  organization_id: uuid(),
   connector_type_key: z.string(),
   name: z.string(),
   environment: z.enum(['sandbox', 'production']),
@@ -110,7 +111,7 @@ export async function getIntegration(
 }
 
 export const createIntegrationInput = z.object({
-  organizationId: z.string().uuid(),
+  organizationId: uuid(),
   connectorTypeKey: z.string().min(2).max(40),
   name: z.string().trim().min(2, 'integrations.error.nameRequired').max(80),
   environment: z.enum(['sandbox', 'production']),
@@ -153,7 +154,7 @@ export async function createIntegration(
     )
   }
 
-  const id = z.object({ id: z.string().uuid() }).safeParse(data)
+  const id = z.object({ id: uuid() }).safeParse(data)
   return id.success
     ? ok(id.data.id)
     : err(domainError('internal', 'error.internal', { detail: 'neočekivan povratni tip' }))

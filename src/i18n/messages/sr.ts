@@ -89,6 +89,18 @@ export const sr = {
   'home.metrics.pending':
     'Pokazatelji se prikazuju kada Delta Pro poveže poslovni sistem i uključi odgovarajuće sposobnosti.',
 
+  // --- KPI kartice ---
+  'metric.unavailable': 'Nedostupno',
+  'metric.unavailable.no_integration': 'Sistem koji daje ovaj podatak još nije povezan.',
+  'metric.unavailable.connector_missing': 'Konektor za ovaj sistem još nije implementiran.',
+  'metric.unavailable.capability_disabled': 'Ova sposobnost nije uključena za vašu organizaciju.',
+  'metric.unavailable.no_permission': 'Nemate ovlašćenje da vidite ovaj podatak.',
+  'metric.unavailable.integration_down': 'Sistem trenutno ne odgovara. Vrednost namerno nije prikazana.',
+  'metric.unavailable.no_data': 'Sistem nije vratio vrednost za ovaj period.',
+  'metric.comparePeriod.week': 'u odnosu na prethodnu nedelju',
+  'metric.comparePeriod.day': 'u odnosu na juče',
+  'metric.empty': 'Delta Pro još nije podesio pokazatelje za vaš radni prostor.',
+
   // --- Svežina podataka ---
   'freshness.fresh': 'Sveže',
   'freshness.aging': 'Stariji podatak',

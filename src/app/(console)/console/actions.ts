@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { uuid } from '@/core/shared/uuid'
 import { consoleAction, workspaceAction, type ActionResultBase } from '@/server/http/with-action'
 import { env } from '@/server/env'
 import {
@@ -59,7 +60,7 @@ export const startAccessSessionAction = consoleAction<AccessSessionState>(
   },
 )
 
-const endInput = z.object({ sessionId: z.string().uuid() })
+const endInput = z.object({ sessionId: uuid() })
 
 /** Prekid sesije iz konzole — zatvara je sam konsultant. */
 export const endAccessSessionAction = consoleAction<AccessSessionState>(

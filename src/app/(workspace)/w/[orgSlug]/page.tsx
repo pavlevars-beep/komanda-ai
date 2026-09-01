@@ -5,7 +5,12 @@ import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { listOpenAlerts } from '@/core/alerts/repository'
-import { createTranslator } from '@/i18n/translator'
+import { loadDashboard } from '@/core/dashboard/loader'
+import { formatCardValue, formatChange } from '@/core/dashboard/format'
+import { initialiseConnectors } from '@/core/connectors'
+import { MetricCard, MetricGrid } from '@/ui/patterns/MetricCard'
+import { INTL_LOCALE } from '@/i18n/config'
+import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { writeAudit } from '@/core/audit/writer'
 import styles from './page.module.css'
@@ -14,6 +19,19 @@ const SEVERITY_TONE: Record<'info' | 'warning' | 'critical', Tone> = {
   info: 'info',
   warning: 'warn',
   critical: 'critical',
+}
+
+/**
+ * Klasifikacija se prikazuje bojom I tekstom.
+ *
+ * Prognoza i činjenica ne smeju da se razlikuju samo nijansom — razlika mora
+ * da preživi crno-belu štampu izveštaja i daltonizam.
+ */
+const CLASSIFICATION_TONE: Record<string, Tone> = {
+  fact: 'neutral',
+  calculation: 'neutral',
+  interpretation: 'warn',
+  forecast: 'warn',
 }
 
 function greetingKey(hour: number) {
@@ -47,7 +65,12 @@ export default async function WorkspaceHome({
   const locale = user.locale ?? org.locale
   const { t, formatRelative } = createTranslator(locale)
 
-  const alerts = await listOpenAlerts(db, org)
+  initialiseConnectors()
+
+  const [alerts, cards] = await Promise.all([
+    listOpenAlerts(db, org),
+    loadDashboard(db, org),
+  ])
 
   await writeAudit(db, {
     action: 'workspace.opened',
@@ -105,17 +128,49 @@ export default async function WorkspaceHome({
         )}
       </section>
 
-      {/*
-        Nema lažne funkcionalnosti: KPI kartice traže konektore, koji dolaze
-        u Fazi 3. Umesto praznih kartica koje izgledaju kao da će proraditi,
-        ovde stoji jasna oznaka šta nedostaje.
-      */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>{t('home.metrics')}</h2>
-        <div className={styles.pending}>
-          <span className={styles.pendingLabel}>{t('state.unavailable')}</span>
-          <span>{t('home.metrics.pending')}</span>
-        </div>
+
+        {cards.length === 0 ? (
+          <div className={styles.pending}>
+            <span className={styles.pendingLabel}>{t('state.unavailable')}</span>
+            <span>{t('metric.empty')}</span>
+          </div>
+        ) : (
+          <MetricGrid>
+            {cards.map((card) => {
+              const source = card.provenance?.sources[0]
+              const change = formatChange(card.changePercent, INTL_LOCALE[locale])
+
+              return (
+                <MetricCard
+                  key={card.cardId}
+                  label={card.title[locale] ?? card.title.sr ?? ''}
+                  value={formatCardValue(card, INTL_LOCALE[locale])}
+                  changeLabel={change}
+                  changeIsGood={card.changeIsGood}
+                  comparePeriodLabel={change ? t('metric.comparePeriod.week') : undefined}
+                  unavailableLabel={card.unavailable ? t('metric.unavailable') : undefined}
+                  unavailableReason={
+                    card.unavailable
+                      ? t(`metric.unavailable.${card.unavailable}` as MessageKey)
+                      : undefined
+                  }
+                  sourceLabel={source?.label}
+                  isDemo={source?.isDemo}
+                  demoLabel={t('common.demoData')}
+                  freshnessLabel={
+                    card.freshness && card.freshness !== 'unknown'
+                      ? t(`freshness.${card.freshness}` as MessageKey)
+                      : undefined
+                  }
+                  classificationLabel={t(`classification.${card.classification}` as MessageKey)}
+                  classificationTone={CLASSIFICATION_TONE[card.classification] ?? 'neutral'}
+                />
+              )
+            })}
+          </MetricGrid>
+        )}
       </section>
     </div>
   )
