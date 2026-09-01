@@ -16,6 +16,10 @@ import { safeInternalPath } from '@/core/shared/safe-path'
 
 const PUBLIC_PATHS = ['/login', '/invite', '/reset-password', '/auth/callback']
 
+export function isPublicPath(path: string): boolean {
+  return PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`))
+}
+
 function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): string {
   return [
     `default-src 'self'`,
@@ -49,7 +53,32 @@ export async function middleware(request: NextRequest) {
 
   let response = NextResponse.next({ request: { headers: requestHeaders } })
 
-  if (supabaseUrl && anonKey) {
+  // Bez Supabase konfiguracije se NE MOŽE utvrditi ko je korisnik.
+  //
+  // Ranije je ovaj slučaj tiho preskakao ceo blok za autentikaciju: zahtev bi
+  // prošao pored provere i stigao do stranice. To je otkazivanje na otvorenu
+  // stranu — nedostajuća promenljiva okruženja gasila je zaštitu ruta. Ovde je
+  // spasla okolnost što stranica ionako pukne na `env()`, ali oslanjati se na
+  // to znači da zaštita zavisi od greške u sloju ispod.
+  //
+  // Sada se odbija sve. Aplikacija bez konfiguracije ne radi ni na jednoj
+  // putanji, pa ni `/login` ne sme da izgleda ispravno — prijava sa te
+  // stranice ne bi mogla da uspe.
+  if (!supabaseUrl || !anonKey) {
+    return new NextResponse('Aplikacija nije konfigurisana.', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+        // Naziv promenljive, nikad vrednost — ovo zaglavlje vidi svako.
+        'X-Configuration-Error': supabaseUrl
+          ? 'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+          : 'NEXT_PUBLIC_SUPABASE_URL',
+      },
+    })
+  }
+
+  {
     const supabase = createServerClient(supabaseUrl, anonKey, {
       cookies: {
         getAll() {
@@ -74,9 +103,8 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     const path = request.nextUrl.pathname
-    const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`))
 
-    if (!user && !isPublic) {
+    if (!user && !isPublicPath(path)) {
       const redirect = request.nextUrl.clone()
       redirect.pathname = '/login'
       // Pamti se samo putanja unutar aplikacije, da se preusmeravanje ne bi
