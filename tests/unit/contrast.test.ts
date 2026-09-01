@@ -53,3 +53,33 @@ describe('kontrast brend boje', () => {
     }
   })
 })
+
+describe('odluka koju donosi ekran za brendiranje', () => {
+  it('prihvata boje koje se u praksi biraju kao korporativne', () => {
+    for (const hex of ['#1f5fa8', '#0e6e6b', '#7a1f5c', '#3d5a2b', '#8b1a1a']) {
+      expect(checkBrandColor(hex).valid, `${hex} bi trebalo da prođe`).toBe(true)
+    }
+  })
+
+  it('prijavlja korekciju kada je boja presvetla za svetlu podlogu', () => {
+    // Bez ovoga bi klijent u radnom prostoru dobio nečitljiv tekst.
+    const check = checkBrandColor('#ffe680')
+    expect(check.valid).toBe(true)
+    expect(check.adjustedFrom).toBe('#ffe680')
+  })
+
+  it('ne prijavljuje korekciju kada boja već prolazi', () => {
+    expect(checkBrandColor('#1f5fa8').adjustedFrom).toBeUndefined()
+  })
+
+  it('boja koja prođe proveru je upotrebljiva i u tamnoj temi', () => {
+    const ground = parseHex('#0d1113')!
+    for (const hex of ['#1f5fa8', '#8b1a1a', '#0e6e6b']) {
+      const dark = deriveBrandPalette({ hex, scheme: 'dark' })!
+      expect(
+        contrastRatio(parseHex(dark.brand)!, ground),
+        `${hex} u tamnoj temi`,
+      ).toBeGreaterThanOrEqual(3)
+    }
+  })
+})

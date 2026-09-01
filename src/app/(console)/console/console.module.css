@@ -1,8 +1,9 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; background: var(--ground); }
+
 .shell {
-  min-height: 100vh;
+  flex: 1;
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-  background: var(--ground);
 }
 
 .sidebar {

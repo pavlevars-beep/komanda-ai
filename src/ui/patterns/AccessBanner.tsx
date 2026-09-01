@@ -17,11 +17,12 @@ export interface AccessBannerSession {
 export function AccessBanner({
   sessions,
   labels,
-  action,
+  renderAction,
 }: {
   sessions: readonly AccessBannerSession[]
-  labels: { banner: (name: string, until: string) => string; reason: string; end: string }
-  action?: React.ReactNode
+  labels: { banner: (name: string, until: string) => string; reason: string }
+  /** Radnja se iscrtava po sesiji, jer se prekida tačno određena sesija. */
+  renderAction?: (sessionId: string) => React.ReactNode
 }) {
   if (sessions.length === 0) return null
 
@@ -38,7 +39,7 @@ export function AccessBanner({
               {labels.reason.replace('{reason}', s.reason)}
             </span>
           </span>
-          {action}
+          {renderAction?.(s.sessionId)}
         </div>
       ))}
     </>

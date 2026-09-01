@@ -30,9 +30,11 @@ export function isLocale(value: unknown): value is Locale {
  * Accept-Language -> podrazumevani.
  */
 export function resolveLocale(input: {
-  userLocale?: string | null
-  organizationLocale?: string | null
-  acceptLanguage?: string | null
+  // `| undefined` je eksplicitno zbog exactOptionalPropertyTypes: polje sme
+  // da nedostaje, ali sme i da bude prosleđeno kao undefined.
+  userLocale?: string | null | undefined
+  organizationLocale?: string | null | undefined
+  acceptLanguage?: string | null | undefined
 }): Locale {
   if (isLocale(input.userLocale)) return input.userLocale
   if (isLocale(input.organizationLocale)) return input.organizationLocale

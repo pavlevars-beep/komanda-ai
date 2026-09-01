@@ -126,10 +126,10 @@ values
 -- Onboarding liste
 -- ---------------------------------------------------------------------------
 
-insert into public.onboarding_tasks (organization_id, key, position, status, completed_at)
-select o.id, s.key, s.position,
-       case when s.position <= o.done_through then 'done' else 'pending' end,
-       case when s.position <= o.done_through then now() - interval '2 days' else null end
+insert into public.onboarding_tasks (organization_id, key, step_order, status, completed_at)
+select o.id, s.key, s.step_order,
+       case when s.step_order <= o.done_through then 'done' else 'pending' end,
+       case when s.step_order <= o.done_through then now() - interval '2 days' else null end
 from (values
   ('00000000-0000-0000-0000-00000000d002'::uuid, 9),
   ('00000000-0000-0000-0000-00000000d003'::uuid, 4)
@@ -139,5 +139,5 @@ cross join (values
   ('data_source_connected', 4), ('connection_tested', 5), ('permissions_configured', 6),
   ('ai_tools_enabled', 7), ('dashboard_configured', 8), ('first_report_generated', 9),
   ('production_enabled', 10)
-) as s(key, position)
+) as s(key, step_order)
 on conflict (organization_id, key) do nothing;

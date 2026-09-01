@@ -24,9 +24,16 @@ Odstupanja od plana, i zašto:
 - Redovi iz baze se na granici repozitorijuma proveravaju Zod šemom umesto da
   se veruje generisanim tipovima, koji ćute kada se šema promeni.
 
-## Faza 2 — Delta Pro konzola
+## Faza 2 — Delta Pro konzola ◐
 Pregled, Klijenti, čarobnjak za novu organizaciju, radni prostor klijenta, brendiranje sa proverom kontrasta, korisnici i role, onboarding lista, impersonation tok sa trakama u obe zone.
-**Gotovo kada:** klijent se može kreirati, brendirati, pozvati korisnike i aktivirati, sa punim revizionim tragom.
+**Urađeno:** lista klijenata sa agregatima, detalj klijenta sa onboarding
+listom i korisnicima, brendiranje sa proverom kontrasta i živim pregledom, i
+pun tok sesije pristupa — pokretanje sa obaveznim razlogom, traka u konzoli
+sa preostalim vremenom, prekid iz konzole i iz klijentskog radnog prostora.
+
+**Preostaje:** čarobnjak za kreiranje klijenta, pozivanje korisnika i izmena
+rola. Do tada su te radnje u UI-ju označene kao nedostupne, ne prikazane kao
+dugmad koja ne rade.
 
 ## Faza 3 — Konektori
 `Connector` interfejs, registry, runner (timeout, retry, SSRF zaštita, zapis zdravlja). Implementacije: `demo`, `rest`, `webhook`. Vault integracija za kredencijale. Graditelj integracija. Test veze. Zdravlje sistema.

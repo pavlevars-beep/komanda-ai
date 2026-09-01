@@ -4,6 +4,8 @@ import { currentUser } from '@/server/auth/current-user'
 import { resolveLocale } from '@/i18n/config'
 import { createTranslator } from '@/i18n/translator'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
+import { listMyOpenAccessSessions } from '@/core/organizations/console-repository'
+import { ConsoleAccessBanner } from './access-banner'
 import styles from './console.module.css'
 
 /**
@@ -21,35 +23,59 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
 
   if (!user?.staffRole) notFound()
 
-  const { t } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const { t, formatDate } = createTranslator(resolveLocale({ userLocale: user.locale }))
+
+  const openSessions = await listMyOpenAccessSessions(db)
+  const now = Date.now()
 
   // Ruta postoji samo za ono što je stvarno implementirano; ostalo se
   // prikazuje kao neaktivno i označeno. Ekrani dolaze u fazama 2 i 3.
   const nav: NavItem[] = [
     { href: '/console', label: t('console.overview') },
-    { label: t('console.clients') },
+    { href: '/console/clients', label: t('console.clients') },
     { label: t('console.integrations') },
     { label: t('console.health') },
     { label: t('console.audit') },
   ]
 
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          <span className={styles.brandName}>Delta Pro</span>
-          <span className={styles.brandMeta}>Konzola</span>
-        </div>
+    <div className={styles.page}>
+      {openSessions.ok ? (
+        <ConsoleAccessBanner
+          sessions={openSessions.value.map((s) => ({
+            sessionId: s.session_id,
+            organizationName: s.organization_name,
+            untilLabel: formatDate(s.expires_at, { timeStyle: 'short' }),
+            minutesLeft: Math.max(
+              0,
+              Math.round((new Date(s.expires_at).getTime() - now) / 60000),
+            ),
+          }))}
+          labels={{
+            openIn: (name, until) => t('access.openIn', { name, until }),
+            remaining: (minutes) => t('access.remaining', { minutes }),
+            end: t('access.end'),
+          }}
+        />
+      ) : null}
 
-        <NavList items={nav} soonLabel={t('state.unavailable')} />
+      <div className={styles.shell}>
+        <aside className={styles.sidebar}>
+          <div className={styles.brand}>
+            <span className={styles.brandName}>Delta Pro</span>
+            <span className={styles.brandMeta}>Konzola</span>
+          </div>
 
-        <div className={styles.footer}>
-          <span className={styles.user}>{user.fullName ?? user.email}</span>
-          <span className={styles.role}>{user.staffRole}</span>
-        </div>
-      </aside>
+          <NavList items={nav} soonLabel={t('state.unavailable')} />
 
-      <main className={styles.main}>{children}</main>
+          <div className={styles.footer}>
+            <span className={styles.user}>{user.fullName ?? user.email}</span>
+            <span className={styles.role}>{user.staffRole}</span>
+          </div>
+        </aside>
+
+        <main className={styles.main}>{children}</main>
+      </div>
     </div>
   )
 }

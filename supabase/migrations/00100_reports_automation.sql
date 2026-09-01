@@ -234,7 +234,7 @@ create table public.onboarding_tasks (
   id              uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
   key             text not null,
-  position        integer not null,
+  step_order      integer not null,
   status          text not null default 'pending',
   completed_at    timestamptz,
   completed_by    uuid references auth.users(id),

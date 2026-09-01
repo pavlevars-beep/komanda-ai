@@ -10,9 +10,11 @@ import {
 } from '@/core/tenancy/workspace-repository'
 import { createTranslator } from '@/i18n/translator'
 import { deriveBrandPalette } from '@/core/branding/contrast'
+import { getBranding } from '@/core/branding/repository'
 import { AccessBanner } from '@/ui/patterns/AccessBanner'
 import { DemoBadge } from '@/ui/patterns/StatusBadge'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
+import { EndAccessButton } from './end-access-button'
 import styles from '../../layout.module.css'
 
 /**
@@ -48,12 +50,16 @@ export default async function WorkspaceLayout({
   const org = resolved.value
   const { t, formatDate } = createTranslator(user.locale ?? org.locale)
 
-  const sessions = await listActiveAccessSessions(db, org.organizationId)
+  const [sessions, branding] = await Promise.all([
+    listActiveAccessSessions(db, org.organizationId),
+    getBranding(db, org.organizationId),
+  ])
 
-  // Brend boja se ne primenjuje sirova — prolazi kroz korekciju kontrasta.
-  // TODO(Faza 2): boja se učitava iz organization_branding; do tada se
-  // koristi podrazumevani akcent platforme.
-  const palette = deriveBrandPalette({ hex: '#0e6e6b', scheme: 'light' })
+  // Boja klijenta se ne primenjuje sirova — prolazi kroz istu korekciju
+  // kontrasta koju konsultant vidi u pregledu pri podešavanju. Kada boja nije
+  // podešena, ostaje podrazumevani akcent platforme.
+  const brandHex = (branding.ok && branding.value?.primary_color) || null
+  const palette = brandHex ? deriveBrandPalette({ hex: brandHex, scheme: 'light' }) : null
   const brandVars = palette
     ? ({
         '--brand': palette.brand,
@@ -87,15 +93,29 @@ export default async function WorkspaceLayout({
           labels={{
             banner: (name, until) => t('impersonation.banner', { name, until }),
             reason: t('impersonation.reason', { reason: '{reason}' }),
-            end: t('impersonation.end'),
           }}
+          // Prekid sme administrator klijenta. Ostali vide traku, ali bez dugmeta —
+          // obaveštenje ide svima, kontrola samo onome ko za nju odgovara.
+          {...(org.permissions.includes('manage_users')
+            ? {
+                renderAction: (sessionId: string) => (
+                  <EndAccessButton
+                    sessionId={sessionId}
+                    organizationId={org.organizationId}
+                    label={t('impersonation.end')}
+                  />
+                ),
+              }
+            : {})}
         />
       ) : null}
 
       <div className={styles.body}>
         <aside className={styles.sidebar}>
           <div className={styles.org}>
-            <span className={styles.orgName}>{org.organizationName}</span>
+            <span className={styles.orgName}>
+              {(branding.ok && branding.value?.workspace_name) || org.organizationName}
+            </span>
             <span className={styles.orgMeta}>{t('app.name')}</span>
             {org.isDemo ? <DemoBadge label={t('common.demoData')} /> : null}
           </div>
