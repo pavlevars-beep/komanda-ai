@@ -31,9 +31,13 @@ listom i korisnicima, brendiranje sa proverom kontrasta i živim pregledom, i
 pun tok sesije pristupa — pokretanje sa obaveznim razlogom, traka u konzoli
 sa preostalim vremenom, prekid iz konzole i iz klijentskog radnog prostora.
 
-**Preostaje:** čarobnjak za kreiranje klijenta, pozivanje korisnika i izmena
-rola. Do tada su te radnje u UI-ju označene kao nedostupne, ne prikazane kao
-dugmad koja ne rade.
+Čarobnjak za novog klijenta je gotov: organizacija, brend i prva integracija u
+jednom toku, sa proverom kontrasta pre snimanja.
+
+**Preostaje:** pozivanje korisnika i izmena rola. Oba traže Auth Admin API
+živog Supabase projekta, pa se ne mogu dovršiti nad lokalnom bazom. Do tada su
+te radnje u UI-ju označene kao nedostupne, ne prikazane kao dugmad koja ne
+rade.
 
 ## Faza 3 — Konektori ✅
 `Connector` interfejs, registry, runner (timeout, retry, SSRF zaštita, zapis zdravlja). Implementacije: `demo`, `rest`, `webhook`. Vault integracija za kredencijale. Graditelj integracija. Test veze. Zdravlje sistema.
@@ -55,12 +59,28 @@ veze. Status integracije se izvodi iz ishoda provere, pa dugme „označi kao
 povezano" ne postoji. Tipovi konektora koji nisu registrovani u kodu vide se u
 katalogu, ali se ne mogu izabrati — i UI i akcija na serveru to proveravaju.
 
-**Preostaje:** uključivanje pojedinačnih sposobnosti kroz UI (za sada se
-podešava direktno u bazi) i istorija zdravlja na ekranu integracije.
+Sposobnosti se uključuju pojedinačno iz konzole. Spisak dolazi iz konektora u
+kodu, kroz istu funkciju koju runner koristi pri traženju deskriptora, pa se u
+konzoli ne može pojaviti prekidač za nešto što runner odbija. Režim i tražena
+permisija se pri upisu čitaju iz deklaracije, nikad iz forme — inače bi
+izmenjen zahtev mogao da upiše EXECUTE sposobnost sa permisijom za gledanje
+table. Red za sposobnost koje u kodu više nema ne skriva se nego se prikazuje
+kao nepoznat, sa jedinom mogućom radnjom — isključivanjem.
 
-## Faza 4 — Klijentski radni prostor
+Istorija provera veze pokazuje poslednjih deset pokušaja. Postoji zato što
+jedan trenutni status ne razlikuje integraciju koja je pala prvi put od one
+koja pada svaki drugi put.
+
+## Faza 4 — Klijentski radni prostor ◐
 Početna sa konfigurabilnim KPI-jevima, Operacije, Dokumenti, Podešavanja, mobilni raspored, sva četiri stanja ekrana.
 **Gotovo kada:** demo klijent vidi svoje podatke sa oznakom izvora i svežine, i ništa tuđe.
+
+**Urađeno:** KPI kartice na početnoj. Vrednost prolazi kroz isti runner kao
+svaki drugi poziv i ne kešira se; kartica koja ne uspe da se učita prikazuje
+razlog, ne nulu. Boja promene se izvodi iz toga da li je rast dobra vest za tu
+meru, ne iz znaka broja.
+
+**Preostaje:** Operacije, Dokumenti, Podešavanja i mobilni raspored.
 
 ## Faza 5 — AI sloj
 `AIProvider`, registar alata, orkestrator sa dvostrukom proverom permisija, provenance i klasifikacija, „Pitajte svoje poslovanje", `ai_tool_calls` trag, praćenje potrošnje.
