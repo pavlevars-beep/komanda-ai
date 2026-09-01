@@ -60,6 +60,37 @@ jobs:
         with:
           version: latest
 
+      # Provera oblika pre poziva CLI-ja.
+      #
+      # Bez ovoga, pogrešan project ref daje poruku o "branch name" koja ne
+      # kaže šta je stvarno pogrešno ni gde se ispravlja. Vrednost se NE
+      # ispisuje — samo njena dužina, što je dovoljno za dijagnozu.
+      - name: Proveri oblik identifikatora projekta
+        env:
+          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          if [ -z "$REF" ]; then
+            echo "::error::SUPABASE_PROJECT_REF nije postavljen."
+            exit 1
+          fi
+          if ! printf '%s' "$REF" | grep -Eq '^[a-z]{20}$'; then
+            echo "::error::SUPABASE_PROJECT_REF nije ispravan. Očekuje se tačno 20 malih slova (dobijeno znakova: ${#REF})."
+            echo "::error::To je poddomen iz adrese projekta: https://<ovaj-deo>.supabase.co"
+            echo "::error::Ne cela adresa, ne naziv projekta. Nalazi se i u Settings -> General -> Reference ID."
+            exit 1
+          fi
+          echo "Identifikator projekta je ispravnog oblika."
+
+      - name: Proveri da je lozinka baze postavljena
+        env:
+          PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          if [ -z "$PASSWORD" ]; then
+            echo "::error::SUPABASE_DB_PASSWORD nije postavljen. Postavlja se u Supabase -> Settings -> Database -> Reset database password."
+            exit 1
+          fi
+          echo "Lozinka baze je postavljena."
+
       - name: Poveži se sa projektom
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

@@ -53,9 +53,22 @@ Repozitorijum → *Settings* → *Secrets and variables* → *Actions*:
 
 ```
 SUPABASE_ACCESS_TOKEN    supabase.com/dashboard/account/tokens
-SUPABASE_PROJECT_REF     <ref> iz adrese https://<ref>.supabase.co
+SUPABASE_PROJECT_REF     tačno 20 malih slova — poddomen iz adrese projekta
 SUPABASE_DB_PASSWORD     lozinka baze, iz Supabase → Settings → Database
 ```
+
+> **Oblik `SUPABASE_PROJECT_REF`-a.** To je **tačno 20 malih slova**, bez
+> ičega drugog:
+>
+> ```
+> https://abcdefghijklmnopqrst.supabase.co
+>         └──────── ovo, i samo ovo ────┘
+> ```
+>
+> Ne cela adresa, ne naziv projekta, bez razmaka i novog reda na kraju.
+> Isti niz stoji u *Settings → General → Reference ID*. Workflow proverava
+> oblik pre nego što pozove Supabase, pa pogrešan unos daje jasnu poruku
+> umesto zbunjujuće greške o „branch name".
 
 Workflow `.github/workflows/deploy-db.yml` se pokreće **samo** na push na
 `main` koji dira `supabase/migrations/**`, i to u dva koraka:
