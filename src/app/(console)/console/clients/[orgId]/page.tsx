@@ -127,6 +127,9 @@ export default async function ClientDetailPage({
         <Link href={`/console/clients/${orgId}/branding` as Route} className={styles.subnavLink}>
           {t('branding.title')}
         </Link>
+        <Link href={`/console/clients/${orgId}/integrations` as Route} className={styles.subnavLink}>
+          {t('integrations.title')}
+        </Link>
       </nav>
 
       <section className={styles.card}>
@@ -238,8 +241,7 @@ export default async function ClientDetailPage({
       <section className={styles.pending}>
         <span className={styles.pendingLabel}>{t('state.unavailable')}</span>
         <span>
-          Pozivanje korisnika, izmena rola i graditelj integracija dodaju se u
-          nastavku faza 2 i 3.
+          Pozivanje korisnika i izmena rola dodaju se u nastavku Faze 2.
         </span>
       </section>
     </div>

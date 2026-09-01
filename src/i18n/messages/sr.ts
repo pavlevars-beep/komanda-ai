@@ -119,6 +119,44 @@ export const sr = {
   'error.rate_limited': 'Previše zahteva. Sačekajte trenutak.',
   'error.internal': 'Došlo je do greške na našoj strani.',
 
+  // --- Integracije ---
+  'integrations.title': 'Integracije',
+  'integrations.lede': 'Sistemi klijenta povezani sa komandnim centrom.',
+  'integrations.empty': 'Nijedna integracija još nije podešena.',
+  'integrations.new': 'Nova integracija',
+  'integrations.catalog': 'Katalog konektora',
+  'integrations.field.name': 'Naziv',
+  'integrations.field.type': 'Tip konektora',
+  'integrations.field.environment': 'Okruženje',
+  'integrations.field.authType': 'Autentikacija',
+  'integrations.field.config': 'Konfiguracija (JSON)',
+  'integrations.field.configHint': 'Bez tajni. Kredencijal se unosi zasebno i čuva se šifrovan.',
+  'integrations.environment.sandbox': 'Testno',
+  'integrations.environment.production': 'Produkcija',
+  'integrations.create': 'Kreiraj integraciju',
+  'integrations.test': 'Testiraj vezu',
+  'integrations.testOk': 'Veza uspostavljena za {ms} ms.',
+  'integrations.testFailed': 'Veza nije uspostavljena.',
+  'integrations.lastSuccess': 'Poslednja uspešna veza',
+  'integrations.lastError': 'Poslednja greška',
+  'integrations.never': 'Nikad',
+  'integrations.credential': 'Kredencijal',
+  'integrations.credentialHint': 'Vrednost se čuva šifrovana i više se ne prikazuje. Jedina izmena je zamena.',
+  'integrations.credentialSave': 'Sačuvaj kredencijal',
+  'integrations.credentialSaved': 'Kredencijal je sačuvan.',
+  'integrations.credentialNone': 'Kredencijal još nije podešen.',
+  'integrations.capabilities': 'Sposobnosti',
+  'integrations.capabilitiesNone': 'Nijedna sposobnost još nije uključena.',
+  'integrations.availability.ga': 'Dostupno',
+  'integrations.availability.beta': 'Beta',
+  'integrations.availability.planned': 'Pripremljeno',
+  'integrations.plannedHint': 'Interfejs postoji, implementacija dolazi po prvom klijentu.',
+  'integrations.error.nameRequired': 'Naziv je obavezan.',
+  'integrations.error.nameTaken': 'Integracija sa tim nazivom već postoji u ovom okruženju.',
+  'integrations.error.notImplemented': 'Ovaj tip konektora još nije implementiran.',
+  'integrations.error.credentialRequired': 'Kredencijal ne sme biti prazan.',
+  'integrations.error.credentialNotSaved': 'Kredencijal nije sačuvan.',
+
   // --- Konektori ---
   'connector.error.invalidUrl': 'Adresa nije ispravna.',
   'connector.error.insecureProtocol': 'U produkciji je dozvoljen samo HTTPS.',
@@ -243,8 +281,6 @@ export const sr = {
   'impersonation.error.notAllowed': 'Nemate pravo da pokrenete sesiju nad ovom organizacijom.',
   'impersonation.error.cannotEnd': 'Sesija ne može da se završi.',
   'impersonation.error.notFound': 'Sesija ne postoji ili je već završena.',
-
-  // --- Konektori ---
 
   // --- Brendiranje ---
   'branding.title': 'Brendiranje',

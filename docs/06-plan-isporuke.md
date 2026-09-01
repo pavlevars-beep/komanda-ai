@@ -35,9 +35,28 @@ sa preostalim vremenom, prekid iz konzole i iz klijentskog radnog prostora.
 rola. Do tada su te radnje u UI-ju označene kao nedostupne, ne prikazane kao
 dugmad koja ne rade.
 
-## Faza 3 — Konektori
+## Faza 3 — Konektori ✅
 `Connector` interfejs, registry, runner (timeout, retry, SSRF zaštita, zapis zdravlja). Implementacije: `demo`, `rest`, `webhook`. Vault integracija za kredencijale. Graditelj integracija. Test veze. Zdravlje sistema.
-**Gotovo kada:** REST integracija se konfiguriše kroz UI, testira, i njene sposobnosti se uključuju — bez ijedne tajne u odgovoru API-ja.
+**Urađeno.** Konektor izlaže imenovane sposobnosti sa Zod šemama; `query(sql)`
+u interfejsu ne postoji. Runner sprovodi permisiju, validaciju ulaza i izlaza,
+vremensko ograničenje i redakciju grešaka, pa implementacije konektora ne pišu
+nijedan bezbednosni korak i ne mogu ga zaboraviti.
+
+Zaštita od SSRF-a pokrivena je sa 26 testova koji dokumentuju napadnu površinu:
+metadata servis oblaka, naš sopstveni Supabase na petlji, brojčani zapisi
+adrese, IPv4 upisan u IPv6, preusmeravanje.
+
+Kredencijali idu u Vault kroz funkcije dostupne isključivo servisnoj roli.
+Vlasnik organizacije sa punom permisijom `manage_integrations` ne može da
+pročita vrednost — nedostaje mu grant, pa RLS nije ni u igri.
+
+Graditelj integracija u konzoli: katalog, kreiranje, unos kredencijala, test
+veze. Status integracije se izvodi iz ishoda provere, pa dugme „označi kao
+povezano" ne postoji. Tipovi konektora koji nisu registrovani u kodu vide se u
+katalogu, ali se ne mogu izabrati — i UI i akcija na serveru to proveravaju.
+
+**Preostaje:** uključivanje pojedinačnih sposobnosti kroz UI (za sada se
+podešava direktno u bazi) i istorija zdravlja na ekranu integracije.
 
 ## Faza 4 — Klijentski radni prostor
 Početna sa konfigurabilnim KPI-jevima, Operacije, Dokumenti, Podešavanja, mobilni raspored, sva četiri stanja ekrana.
