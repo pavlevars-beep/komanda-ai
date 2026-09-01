@@ -50,6 +50,31 @@ begin
 end;
 $$;
 
+-- Tvrdnja da operacija pada sa TAČNO određenim SQLSTATE-om.
+--
+-- Postoji odvojeno od assert_denied namerno: „odbijen pristup" i „narušeno
+-- ograničenje" su različite stvari, i test koji ih meša prolazi i kada
+-- autorizacija otkaže a slučajno se aktivira neki drugi CHECK.
+create or replace function testkit.assert_raises(p_sql text, p_sqlstate text, p_message text)
+returns void
+language plpgsql
+as $$
+begin
+  begin
+    execute p_sql;
+  exception when others then
+    if sqlstate = p_sqlstate then
+      raise notice '  ok — %', p_message;
+      return;
+    end if;
+    raise exception 'PAO TEST: % (očekivan SQLSTATE %, dobijen %: %)',
+      p_message, p_sqlstate, sqlstate, sqlerrm;
+  end;
+  raise exception 'PAO TEST: % (operacija je PROŠLA, a nije smela)', p_message
+    using errcode = 'triggered_action_exception';
+end;
+$$;
+
 -- Tvrdnja da operacija pada zbog nedostatka privilegija ili RLS-a.
 create or replace function testkit.assert_denied(p_sql text, p_message text)
 returns void

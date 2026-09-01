@@ -29,14 +29,24 @@ export default async function ClientsPage() {
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <h1 className={styles.title}>{t('clients.title')}</h1>
+        <div className={styles.headRow}>
+          <h1 className={styles.title}>{t('clients.title')}</h1>
+          <Link href="/console/clients/new" className={styles.primaryLink}>
+            {t('clients.new')}
+          </Link>
+        </div>
         <p className={styles.lede}>{t('clients.lede')}</p>
       </header>
 
       {!clients.ok ? (
         <p className={styles.empty}>{t('state.error.title')}</p>
       ) : clients.value.length === 0 ? (
-        <p className={styles.empty}>{t('clients.empty')}</p>
+        <div className={styles.empty}>
+          <p>{t('clients.empty')}</p>
+          <Link href="/console/clients/new" className={styles.primaryLink}>
+            {t('clients.new')}
+          </Link>
+        </div>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>

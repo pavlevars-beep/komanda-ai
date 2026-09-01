@@ -188,3 +188,80 @@ select testkit.assert_denied(
 rollback;
 
 \echo '=== 50 (brendiranje) — prošlo ==='
+
+-- ---------------------------------------------------------------------------
+-- Kreiranje klijenta
+-- ---------------------------------------------------------------------------
+
+begin;
+select testkit.login_as('00000000-0000-0000-0000-0000000000a2');  -- Marko, konsultant
+
+select public.create_client_organization(
+  'test-firma', 'Test Firma d.o.o.', 'Test Firma', 'Proizvodnja'
+) as new_org \gset
+
+select testkit.assert_equals(
+  (select status::text from public.organizations where id = :'new_org'),
+  'onboarding',
+  'nova organizacija kreće u statusu onboarding'
+);
+select testkit.assert_equals(
+  (select count(*) from public.onboarding_tasks where organization_id = :'new_org')::integer,
+  10,
+  'onboarding lista se pravi automatski'
+);
+select testkit.assert_equals(
+  (select status from public.onboarding_tasks
+   where organization_id = :'new_org' and key = 'company_created'),
+  'done',
+  'prvi korak je odmah označen kao završen'
+);
+select testkit.assert_equals(
+  (select count(*) from public.organization_branding where organization_id = :'new_org')::integer,
+  1,
+  'red za brendiranje se pravi unapred'
+);
+
+-- Ključno: kreator odmah ima administrativni pristup, inače bi napravio
+-- organizaciju koju u sledećem trenutku ne vidi.
+select testkit.assert_equals(
+  (select count(*) from public.console_clients() where organization_id = :'new_org')::integer,
+  1,
+  'kreator odmah vidi novu organizaciju u konzoli'
+);
+
+-- Ali i dalje NEMA poslovne podatke bez sesije — kreiranje nije prečica.
+select testkit.assert(
+  not (:'new_org'::uuid = any (app.accessible_org_ids())),
+  'kreiranje organizacije ne otvara pristup poslovnim podacima'
+);
+rollback;
+
+-- Zauzeta adresa se odbija.
+begin;
+select testkit.login_as('00000000-0000-0000-0000-0000000000a1');
+-- 23505 = unique_violation. Provera je namerno na tačan kod: da test ne bi
+-- prošao ako kreiranje jednog dana počne da pada iz nekog drugog razloga.
+select testkit.assert_raises(
+  $q$select public.create_client_organization(
+       'demo-distribucija', 'Duplikat d.o.o.', 'Duplikat')$q$,
+  '23505',
+  'adresa radnog prostora mora da bude jedinstvena'
+);
+rollback;
+
+-- Provera zauzetosti adrese radi samo za osoblje — inače bi bila način
+-- da se spolja nabroje postojeći klijenti.
+begin;
+select testkit.login_as('00000000-0000-0000-0000-0000000000a1');
+select testkit.assert(public.slug_available('slobodna-adresa'), 'slobodna adresa je dostupna');
+select testkit.assert(not public.slug_available('demo-distribucija'), 'zauzeta adresa nije dostupna');
+
+select testkit.login_as('00000000-0000-0000-0000-0000000000b1');
+select testkit.assert(
+  not public.slug_available('slobodna-adresa'),
+  'klijentski nalog ne može da ispituje zauzetost adresa'
+);
+rollback;
+
+\echo '=== 50 (kreiranje klijenta) — prošlo ==='
