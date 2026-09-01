@@ -16,18 +16,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm run lint
-      - run: npm test
 
-      # Build je i bezbednosna provera: typedRoutes hvata linkove ka
-      # nepostojećim stranicama, a skeniranje bundle-a hvata sve što je
-      # procurilo iz serverskog koda u pregledač.
-      - run: npm run build
+      # Jedna komanda, ista lokalno i ovde.
+      #
+      # Redosled nije proizvoljan: `next build` generiše tipove ruta
+      # (.next/types/routes.d.ts) koje typedRoutes koristi. Bez njih `Route`
+      # degradira na `string`, pa typecheck tiho prestaje da proverava linkove,
+      # a lint prijavljuje suvišnim baš one konverzije koje su potrebne.
+      #
+      # Ranije su ovi koraci išli obrnuto, pa je CI mesecima bio slabiji od
+      # lokalne provere — i to bez ijednog znaka da nešto nije u redu.
+      - run: npm run verify
         env:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ '0000000000000000000000000000000000000000' }}
-      - run: ./scripts/check-bundle.sh
 
   database:
     name: Migracije i izolacija tenanta

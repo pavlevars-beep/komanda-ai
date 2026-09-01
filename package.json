@@ -19,7 +19,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "check:bundle": "./scripts/check-bundle.sh",
-    "verify": "npm run typecheck && npm run lint && npm run test"
+    "verify": "npm run build && npm run typecheck && npm run lint && npm run test && npm run check:bundle",
+    "verify:quick": "npm run typecheck && npm run lint && npm run test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

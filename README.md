@@ -50,8 +50,14 @@ npm install
 cp .env.example .env.local        # popuni Supabase vrednosti
 
 npm run dev                       # aplikacija na http://localhost:3000
-npm run verify                    # typecheck + lint + testovi
+npm run verify                    # build + typecheck + lint + testovi + provera bundle-a
+npm run verify:quick              # bez build-a, za brzu iteraciju
 ```
+
+`npm run verify` je ista komanda koju pokreće CI. Build ide **prvi** jer
+generiše tipove ruta: bez njih `Route` degradira na `string`, typecheck
+prestaje da proverava linkove ka stranicama, a lint prijavljuje suvišnim
+konverzije koje su zapravo potrebne.
 
 **Baza.** `scripts/verify-db.sh` podiže čistu bazu, primenjuje migracije i
 seed, pa pokreće testove izolacije. Radi nad bilo kojim PostgreSQL-om — ne
