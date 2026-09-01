@@ -1,4 +1,21 @@
 import type { NextConfig } from 'next'
+import { parseEnv } from './src/server/env-schema'
+
+/**
+ * Okruženje se proverava PRI BUILD-U, ne tek pri prvom zahtevu.
+ *
+ * Ovo je odgovor na stvarni kvar: `APP_URL` je bio proveravan strogo a nigde
+ * korišćen, pa je jedna pogrešno uneta vrednost prolazila build i obarala
+ * SVAKI zahtev sa praznom 500 stranicom. Uzrok se video samo kopanjem po
+ * runtime logovima — ako uopšte znate da tamo treba da gledate.
+ *
+ * Sada ista greška obara build, a razlog stoji u build logu, imenom
+ * promenljive. Poruka nikad ne sadrži vrednosti, pa sme da stoji u logu.
+ */
+const environment = parseEnv(process.env)
+if (!environment.ok) {
+  throw new Error(environment.message)
+}
 
 /**
  * Bezbednosna zaglavlja se postavljaju ovde i u middleware-u.

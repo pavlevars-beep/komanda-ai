@@ -30,7 +30,7 @@ Podešavanja projekta → *Environment Variables*. Za `Production` i `Preview`:
 NEXT_PUBLIC_SUPABASE_URL        https://<ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY   <anon ključ>
 SUPABASE_SERVICE_ROLE_KEY       <service role ključ>     ← označiti kao Sensitive
-APP_URL                         https://<domen>
+APP_URL                         https://<domen>          ← može i goli domen
 NODE_ENV                        production
 LOG_LEVEL                       info
 AI_PROVIDER                     none                     ← dok se Faza 5 ne uključi
@@ -39,6 +39,19 @@ IMPERSONATION_MAX_MINUTES       60
 
 `SUPABASE_SERVICE_ROLE_KEY` je opcion u šemi okruženja — aplikacija radi i bez
 njega. Potreban je tek za pozadinske poslove i pozivanje korisnika.
+
+> **Pogrešna vrednost obara BUILD, ne zahtev.** `next.config.ts` proverava
+> okruženje pre nego što se išta izgradi, pa razlog stoji u build logu, imenom
+> promenljive:
+>
+> ```
+> Konfiguracija okruženja nije ispravna:
+>   - LOG_LEVEL: Invalid option: expected one of "debug"|"info"|"warn"|"error"
+> ```
+>
+> Poruka nikad ne sadrži vrednosti, samo nazive i razloge — sme da se prekopira.
+> Ranije je ovakva greška prolazila build i vraćala praznu 500 stranicu na
+> svakom zahtevu, a uzrok se video samo kopanjem po runtime logovima.
 
 > **Provera:** ako Vercel↔Supabase integracija sama ubaci `SUPABASE_URL` i
 > `SUPABASE_ANON_KEY` (bez `NEXT_PUBLIC_` prefiksa), te dve nam ne koriste —
