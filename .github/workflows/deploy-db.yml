@@ -60,26 +60,44 @@ jobs:
         with:
           version: latest
 
-      # Provera oblika pre poziva CLI-ja.
+      # Vrednosti se čiste pre upotrebe.
       #
-      # Bez ovoga, pogrešan project ref daje poruku o "branch name" koja ne
-      # kaže šta je stvarno pogrešno ni gde se ispravlja. Vrednost se NE
-      # ispisuje — samo njena dužina, što je dovoljno za dijagnozu.
-      - name: Proveri oblik identifikatora projekta
+      # Polje za unos secrets-a na GitHub-u lako ostavi novi red na kraju
+      # zalepljene vrednosti. On je nevidljiv u UI-ju i maskiran u logu, a
+      # Supabase CLI ga odbija uz poruku koja govori o "branch name" i ne
+      # navodi pravi uzrok.
+      #
+      # Prva verzija ove provere je taj slučaj PROPUSTILA: `grep` završni novi
+      # red tretira kao kraj linije, pa je `^[a-z]{20}$` prolazio nad
+      # vrednošću koja ga sadrži. Zato se sada prvo čisti, pa proverava.
+      - name: Pripremi identifikator projekta
+        id: ref
         env:
-          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          RAW: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
+          REF="$(printf '%s' "$RAW" | tr -d '[:space:]')"
+
           if [ -z "$REF" ]; then
             echo "::error::SUPABASE_PROJECT_REF nije postavljen."
             exit 1
           fi
+
+          if [ "${#REF}" -ne "${#RAW}" ]; then
+            echo "::warning::Identifikator je sadržao razmak ili novi red; uklonjeni su."
+          fi
+
           if ! printf '%s' "$REF" | grep -Eq '^[a-z]{20}$'; then
-            echo "::error::SUPABASE_PROJECT_REF nije ispravan. Očekuje se tačno 20 malih slova (dobijeno znakova: ${#REF})."
+            echo "::error::SUPABASE_PROJECT_REF nije ispravan. Očekuje se tačno 20 malih slova (posle čišćenja: ${#REF} znakova)."
             echo "::error::To je poddomen iz adrese projekta: https://<ovaj-deo>.supabase.co"
-            echo "::error::Ne cela adresa, ne naziv projekta. Nalazi se i u Settings -> General -> Reference ID."
+            echo "::error::Nalazi se i u Settings -> General -> Reference ID."
             exit 1
           fi
-          echo "Identifikator projekta je ispravnog oblika."
+
+          # Očišćena vrednost se razlikuje od originalne, pa je GitHub više ne
+          # maskira sam. Identifikator projekta jeste javan, ali se u logu
+          # svejedno ne ispisuje bez potrebe.
+          echo "::add-mask::$REF"
+          echo "value=$REF" >> "$GITHUB_OUTPUT"
 
       - name: Proveri da je lozinka baze postavljena
         env:
@@ -89,30 +107,40 @@ jobs:
             echo "::error::SUPABASE_DB_PASSWORD nije postavljen. Postavlja se u Supabase -> Settings -> Database -> Reset database password."
             exit 1
           fi
+          case "$PASSWORD" in
+            *[![:print:]]*) echo "::warning::Lozinka sadrži znak koji nije za štampu; pri primeni se uklanjaju CR i LF." ;;
+          esac
           echo "Lozinka baze je postavljena."
 
       - name: Poveži se sa projektom
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+        run: supabase link --project-ref "${{ steps.ref.outputs.value }}"
 
-      # Šta će se tačno primeniti — zapisano u logu pre nego što se primeni.
       - name: Prikaži razliku
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: supabase migration list --linked
+          RAW_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          # Iz lozinke se uklanjaju samo CR i LF. Razmaci se NE diraju — oni
+          # mogu biti deo lozinke, novi red ne može.
+          export SUPABASE_DB_PASSWORD="$(printf '%s' "$RAW_PASSWORD" | tr -d '\r\n')"
+          supabase migration list --linked
 
       - name: Primeni migracije
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          RAW_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         # Seed se NE pušta. supabase/seed sadrži demo organizacije, a migracija
-        # 00170 ih ionako odbija u bazi bez razvojne oznake — ovo je druga brava.
-        run: supabase db push --include-all
+        # environment_guard ih ionako odbija u bazi bez razvojne oznake.
+        run: |
+          export SUPABASE_DB_PASSWORD="$(printf '%s' "$RAW_PASSWORD" | tr -d '\r\n')"
+          supabase db push --include-all
 
       - name: Potvrdi stanje posle primene
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: supabase migration list --linked
+          RAW_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          export SUPABASE_DB_PASSWORD="$(printf '%s' "$RAW_PASSWORD" | tr -d '\r\n')"
+          supabase migration list --linked
