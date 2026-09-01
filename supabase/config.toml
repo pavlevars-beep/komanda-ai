@@ -7,7 +7,10 @@ project_id = "komanda-ai"
 
 [db]
 port = 54322
-major_version = 16
+# Verzija PostgreSQL-a lokalnog razvojnog kontejnera. Supabase CLI prihvata
+# samo 15 i 17; 16 se odbija sa "Invalid db.major_version". Nema uticaja na
+# `db push` prema povezanom projektu — tamo verziju određuje sam projekat.
+major_version = 17
 
 [api]
 port = 54321
@@ -21,8 +24,9 @@ max_rows = 1000
 [studio]
 port = 54323
 
-[inbucket]
+[local_smtp]
 # Hvata poštu u lokalnom razvoju (pozivnice, reset lozinke).
+# Ranije se ova sekcija zvala [inbucket] — CLI je od v2 označava kao zastarelu.
 port = 54324
 
 [auth]

@@ -31,6 +31,43 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ '0000000000000000000000000000000000000000' }}
 
+  supabase-config:
+    name: Supabase config.toml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # supabase/config.toml čita se tek pri isporuci, pa je greška u njemu
+      # ranije stizala kao pad koraka `supabase link` nad ŽIVIM projektom.
+      # Tako je pala jedna isporuka: `Invalid db.major_version: 16` — vrednost
+      # koju je stariji CLI prihvatao, a noviji odbija.
+      #
+      # Ovaj posao pušta isti, pinovani CLI nad config-om na svakom push-u, pa
+      # se takva greška vidi ovde umesto u produkciji.
+      - name: Pročitaj pinovanu verziju CLI-ja
+        id: cli
+        run: echo "version=$(tr -d '[:space:]' < .github/supabase-cli-version)" >> "$GITHUB_OUTPUT"
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: ${{ steps.cli.outputs.version }}
+
+      - name: Proveri da CLI ume da pročita config
+        run: |
+          # `supabase status` prvo parsira config, pa tek onda gleda kontejnere.
+          # Zanima nas isključivo prvi deo: ostale greške (stack nije podignut)
+          # su ovde očekivane i ne obaraju posao.
+          IZLAZ="$(supabase status 2>&1 || true)"
+          echo "$IZLAZ"
+
+          if printf '%s' "$IZLAZ" | grep -qiE 'invalidconfig|Failed reading config'; then
+            echo "::error::Supabase CLI $(supabase --version) ne može da pročita supabase/config.toml."
+            echo "::error::Ispravite config.toml (ili pinovanu verziju u .github/supabase-cli-version) pre isporuke."
+            exit 1
+          fi
+
+          echo "config.toml je ispravan za CLI $(supabase --version)."
+
   database:
     name: Migracije i izolacija tenanta
     runs-on: ubuntu-latest

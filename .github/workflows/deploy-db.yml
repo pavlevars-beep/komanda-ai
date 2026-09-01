@@ -56,9 +56,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Verzija CLI-ja se PINUJE, ne uzima se `latest`.
+      #
+      # Sa `latest` je jedna isporuka pala na `Invalid db.major_version: 16`:
+      # config.toml se nije menjao, ali je novi CLI promenio šta prihvata.
+      # Verzija stoji u .github/supabase-cli-version i deli je sa proverom u
+      # CI-ju, da provera nikad ne bi validirala config drugim CLI-jem od onog
+      # koji ga stvarno čita pri isporuci.
+      - name: Pročitaj pinovanu verziju CLI-ja
+        id: cli
+        run: echo "version=$(tr -d '[:space:]' < .github/supabase-cli-version)" >> "$GITHUB_OUTPUT"
+
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: ${{ steps.cli.outputs.version }}
 
       # Vrednosti se čiste pre upotrebe.
       #
