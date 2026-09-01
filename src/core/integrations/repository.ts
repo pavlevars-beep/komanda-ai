@@ -267,3 +267,156 @@ export async function connectorCatalogEntry(
   return found ? ok(found) : err(notFound('integration'))
 }
 
+
+// ---------------------------------------------------------------------------
+// Uključivanje sposobnosti
+// ---------------------------------------------------------------------------
+
+/**
+ * Stanje jedne sposobnosti za konkretnu integraciju.
+ *
+ * `declared` razlikuje dva različita slučaja koja u bazi izgledaju isto:
+ * sposobnost koju konektor u kodu i dalje nudi, i red koji je ostao za
+ * sposobnošću koje više nema. Drugi slučaj se NE skriva — red postoji, može
+ * biti uključen, i konsultant mora da ga vidi da bi mogao da ga ugasi.
+ */
+export interface CapabilityState {
+  readonly capabilityKey: string
+  readonly mode: 'read' | 'prepare' | 'execute'
+  readonly requiredPermission: string
+  readonly classification: string | null
+  readonly enabled: boolean
+  readonly declared: boolean
+}
+
+const capabilityRow = z.object({
+  capability_key: z.string(),
+  mode: z.enum(['read', 'prepare', 'execute']),
+  required_permission: z.string(),
+  enabled: z.boolean(),
+})
+
+/**
+ * Spaja ono što konektor UME (iz koda) sa onim što je UKLJUČENO (iz baze).
+ *
+ * Spisak sposobnosti dolazi iz koda i samo iz koda. Baza kaže koje su od njih
+ * uključene — ne može da doda sposobnost koja ne postoji, niti da promeni
+ * njen režim ili traženu permisiju.
+ */
+export async function listCapabilityState(
+  db: Db,
+  organizationId: string,
+  integrationId: string,
+  declared: readonly {
+    key: string
+    mode: 'read' | 'prepare' | 'execute'
+    requiredPermission: string
+    classification: string
+  }[],
+): Promise<Result<CapabilityState[]>> {
+  const { data, error } = await db
+    .from('integration_capabilities')
+    .select('capability_key, mode, required_permission, enabled')
+    .eq('organization_id', organizationId)
+    .eq('integration_id', integrationId)
+
+  if (error) return err(domainError('internal', 'error.internal', { detail: error.message }))
+
+  const rows = z.array(capabilityRow).safeParse(data)
+  if (!rows.success) {
+    return err(domainError('internal', 'error.internal', { detail: rows.error.message }))
+  }
+
+  const stored = new Map(rows.data.map((r) => [r.capability_key, r]))
+
+  const fromCode: CapabilityState[] = declared.map((d) => ({
+    capabilityKey: d.key,
+    // Režim i permisija se čitaju iz deklaracije, ne iz reda u bazi. Red koji
+    // se razišao sa kodom ne sme da prikaže blaži uslov nego što runner
+    // stvarno primenjuje.
+    mode: d.mode,
+    requiredPermission: d.requiredPermission,
+    classification: d.classification,
+    enabled: stored.get(d.key)?.enabled ?? false,
+    declared: true,
+  }))
+
+  const declaredKeys = new Set(declared.map((d) => d.key))
+  const orphans: CapabilityState[] = rows.data
+    .filter((r) => !declaredKeys.has(r.capability_key))
+    .map((r) => ({
+      capabilityKey: r.capability_key,
+      mode: r.mode,
+      requiredPermission: r.required_permission,
+      classification: null,
+      enabled: r.enabled,
+      declared: false,
+    }))
+
+  return ok([...fromCode, ...orphans])
+}
+
+/**
+ * Uključuje ili isključuje jednu sposobnost.
+ *
+ * Poziv prima samo ključ i željeno stanje. Režim i tražena permisija se uzimaju
+ * iz deklaracije sposobnosti u kodu, koju pozivalac prosleđuje pošto ju je
+ * pronašao u registru konektora — nikad iz forme. Bez toga bi izmenjen zahtev
+ * mogao da upiše `required_permission: 'view_dashboard'` za EXECUTE sposobnost
+ * i time spusti prag za pozivanje.
+ *
+ * Isključivanje je dozvoljeno i za sposobnost koje više nema u kodu, jer je to
+ * jedini način da se takav red ugasi.
+ */
+export async function setCapabilityEnabled(
+  db: Db,
+  input: {
+    organizationId: string
+    integrationId: string
+    capabilityKey: string
+    enabled: boolean
+    /** Iz deklaracije u kodu. Izostaje samo kada se gasi sposobnost koje nema. */
+    descriptor?: { mode: 'read' | 'prepare' | 'execute'; requiredPermission: string }
+    changedBy: string
+  },
+): Promise<Result<true>> {
+  if (input.enabled && !input.descriptor) {
+    // Uključivanje sposobnosti koju kod ne poznaje bi napravilo red koji
+    // runner ionako odbija — a u konzoli bi izgledao kao da radi.
+    return err(domainError('invalid_input', 'integrations.error.capabilityUnknown'))
+  }
+
+  if (!input.enabled) {
+    const { error } = await db
+      .from('integration_capabilities')
+      .update({ enabled: false, enabled_by: null, enabled_at: null })
+      .eq('organization_id', input.organizationId)
+      .eq('integration_id', input.integrationId)
+      .eq('capability_key', input.capabilityKey)
+
+    return error
+      ? err(domainError('internal', 'error.internal', { detail: error.message }))
+      : ok(true)
+  }
+
+  const descriptor = input.descriptor
+  if (!descriptor) return err(domainError('invalid_input', 'integrations.error.capabilityUnknown'))
+
+  const { error } = await db.from('integration_capabilities').upsert(
+    {
+      organization_id: input.organizationId,
+      integration_id: input.integrationId,
+      capability_key: input.capabilityKey,
+      enabled: true,
+      mode: descriptor.mode,
+      required_permission: descriptor.requiredPermission,
+      enabled_by: input.changedBy,
+      enabled_at: new Date().toISOString(),
+    },
+    { onConflict: 'integration_id,capability_key' },
+  )
+
+  return error
+    ? err(domainError('internal', 'error.internal', { detail: error.message }))
+    : ok(true)
+}

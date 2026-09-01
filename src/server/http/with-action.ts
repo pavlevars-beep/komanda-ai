@@ -34,12 +34,38 @@ export interface ActionResultBase {
   /** Ključ za prevod poruke o grešci; izostaje kada je akcija uspela. */
   readonly error?: string
   readonly requestId?: string
+  /**
+   * Koji je od dozvoljenih događaja stvarno nastupio.
+   *
+   * Koristi se samo kada akcija u konfiguraciji navede više događaja — na
+   * primer uključivanje i isključivanje sposobnosti, koji imaju isti tok ali
+   * u reviziji ne smeju da izgledaju isto.
+   */
+  readonly auditAction?: AuditAction
 }
 
 export interface ConsoleActionConfig {
+  /**
+   * Događaj koji se upisuje kada akcija uspe.
+   *
+   * Može biti i spisak — tada rukovalac bira jedan od njih preko
+   * `auditAction`. Spisak i dalje stoji ovde, na mestu poziva: rukovalac bira
+   * IZ zatvorenog skupa, ne izmišlja ključ. Vrednost van spiska se odbacuje i
+   * upisuje se prvi navedeni, da revizija ne bi ostala bez zapisa.
+   */
+  readonly audit: AuditAction | readonly [AuditAction, ...AuditAction[]]
   readonly rateLimit: RateLimitBucket
-  /** Događaj koji se upisuje kada akcija uspe. */
-  readonly audit: AuditAction
+}
+
+function auditActionFor(
+  declared: AuditAction | readonly [AuditAction, ...AuditAction[]],
+  chosen: AuditAction | undefined,
+): AuditAction {
+  if (!Array.isArray(declared)) return declared as AuditAction
+
+  const allowed = declared as readonly AuditAction[]
+  const fallback = allowed[0] as AuditAction
+  return chosen && allowed.includes(chosen) ? chosen : fallback
 }
 
 /**
@@ -79,7 +105,7 @@ export function consoleAction<TState extends ActionResultBase>(
 
       if (!result.error) {
         await writeAudit(db, {
-          action: config.audit,
+          action: auditActionFor(config.audit, result.auditAction),
           status: 'success',
           actorType: 'staff',
           requestId: reqId,
@@ -129,7 +155,7 @@ export function workspaceAction<TState extends ActionResultBase>(
 
       if (!result.error) {
         await writeAudit(db, {
-          action: config.audit,
+          action: auditActionFor(config.audit, result.auditAction),
           status: 'success',
           actorType: user.staffRole ? 'staff' : 'user',
           requestId: reqId,

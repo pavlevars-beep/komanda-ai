@@ -15,7 +15,9 @@ import {
   createIntegrationInput,
   getIntegration,
   recordHealthCheck,
+  setCapabilityEnabled,
 } from '@/core/integrations/repository'
+import { declaredCapabilities } from '@/core/integrations/capabilities'
 
 export interface IntegrationState extends ActionResultBase {
   readonly tested?: {
@@ -24,6 +26,8 @@ export interface IntegrationState extends ActionResultBase {
     readonly message?: string
   }
   readonly credentialSaved?: boolean
+  /** Ključ sposobnosti čije se stanje upravo promenilo. */
+  readonly capabilityChanged?: string
   readonly fieldErrors?: Readonly<Record<string, string>>
 }
 
@@ -225,5 +229,84 @@ export const saveCredentialAction = consoleAction<IntegrationState>(
       `/console/clients/${parsed.data.organizationId}/integrations/${parsed.data.integrationId}`,
     )
     return { credentialSaved: true }
+  },
+)
+
+// ---------------------------------------------------------------------------
+// Uključivanje sposobnosti
+// ---------------------------------------------------------------------------
+
+const capabilityInput = targetInput.extend({
+  capabilityKey: z.string().min(1).max(80),
+  enabled: z.enum(['on', 'off']),
+})
+
+/**
+ * Uključivanje i isključivanje pojedinačne sposobnosti.
+ *
+ * Forma šalje SAMO ključ i željeno stanje. Režim (read/prepare/execute) i
+ * tražena permisija se ovde traže u registru konektora i uzimaju odatle —
+ * nikad iz zahteva. Da forma sme da ih pošalje, izmenjen zahtev bi mogao da
+ * upiše EXECUTE sposobnost sa permisijom za gledanje table i time zaobiđe
+ * ceo prag odobrenja.
+ */
+export const setCapabilityAction = consoleAction<IntegrationState>(
+  {
+    rateLimit: 'write',
+    // Uključivanje i isključivanje se u reviziji NE beleže isto. Uključena
+    // EXECUTE sposobnost je događaj koji neko sutra traži po imenu.
+    audit: ['integration.capability_enabled', 'integration.capability_disabled'],
+  },
+  async ({ db, user }, _prev, formData) => {
+    initialiseConnectors()
+
+    const parsed = capabilityInput.safeParse({
+      organizationId: formString(formData, 'organizationId'),
+      integrationId: formString(formData, 'integrationId'),
+      capabilityKey: formString(formData, 'capabilityKey'),
+      enabled: formString(formData, 'enabled'),
+    })
+    if (!parsed.success) return { error: 'error.invalid_input' }
+
+    const integration = await getIntegration(
+      db,
+      parsed.data.organizationId,
+      parsed.data.integrationId,
+    )
+    if (!integration.ok) return { error: integration.error.key }
+
+    const connector = getConnector(integration.value.connector_type_key)
+    if (!connector) return { error: 'integrations.error.notImplemented' }
+
+    const declared = declaredCapabilities(connector, integration.value, user.id)
+    const descriptor = declared.find((d) => d.key === parsed.data.capabilityKey)
+
+    const changed = await setCapabilityEnabled(db, {
+      organizationId: parsed.data.organizationId,
+      integrationId: parsed.data.integrationId,
+      capabilityKey: parsed.data.capabilityKey,
+      enabled: parsed.data.enabled === 'on',
+      ...(descriptor
+        ? {
+            descriptor: {
+              mode: descriptor.mode,
+              requiredPermission: descriptor.requiredPermission,
+            },
+          }
+        : {}),
+      changedBy: user.id,
+    })
+    if (!changed.ok) return { error: changed.error.key }
+
+    revalidatePath(
+      `/console/clients/${parsed.data.organizationId}/integrations/${parsed.data.integrationId}`,
+    )
+    return {
+      capabilityChanged: parsed.data.capabilityKey,
+      auditAction:
+        parsed.data.enabled === 'on'
+          ? 'integration.capability_enabled'
+          : 'integration.capability_disabled',
+    }
   },
 )

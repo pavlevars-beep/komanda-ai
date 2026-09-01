@@ -6,12 +6,14 @@ import { currentUser } from '@/server/auth/current-user'
 import { callRpc } from '@/server/db/rpc'
 import { z } from 'zod'
 import { getConsoleClient } from '@/core/organizations/console-repository'
-import { getIntegration, listEnabledCapabilities } from '@/core/integrations/repository'
-import { availableConnectorTypes } from '@/core/connectors'
+import { getIntegration, listCapabilityState } from '@/core/integrations/repository'
+import { declaredCapabilities } from '@/core/integrations/capabilities'
+import { availableConnectorTypes, getConnector, initialiseConnectors } from '@/core/connectors'
 import { resolveLocale } from '@/i18n/config'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { IntegrationPanel } from './integration-panel'
+import { CapabilityList } from './capability-list'
 import styles from '../integrations.module.css'
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -48,17 +50,26 @@ export default async function IntegrationDetailPage({
 
   const { t, formatDate } = createTranslator(resolveLocale({ userLocale: user.locale }))
 
-  const [capabilities, credential] = await Promise.all([
-    listEnabledCapabilities(db, orgId, integrationId),
-    callRpc(db, 'integration_credential_summary', { p_integration_id: integrationId }),
-  ])
+  const credential = await callRpc(db, 'integration_credential_summary', {
+    p_integration_id: integrationId,
+  })
 
   // Vraća samo naznaku i rokove — vrednost tajne ne postoji u ovom odgovoru.
   const summary = z.array(credentialSummary).safeParse(credential.data)
   const hint = summary.success ? (summary.data[0]?.hint ?? null) : null
 
   const value = integration.value
+  initialiseConnectors()
+  const connector = getConnector(value.connector_type_key)
   const implemented = availableConnectorTypes().includes(value.connector_type_key)
+
+  // Spisak sposobnosti dolazi iz konektora u kodu; baza samo kaže koje su
+  // uključene. Kada konektor nije implementiran, spiska nema — i tada se ne
+  // prikazuje prazna lista nego razlog.
+  const declared = connector ? declaredCapabilities(connector, value, user.id) : []
+  const capabilities = connector
+    ? await listCapabilityState(db, orgId, integrationId, declared)
+    : null
 
   return (
     <div className={styles.page}>
@@ -133,22 +144,40 @@ export default async function IntegrationDetailPage({
       <section className={styles.panel}>
         <div className={styles.panelHead}>
           <h2 className={styles.panelTitle}>{t('integrations.capabilities')}</h2>
-          <span className={styles.hint}>{capabilities.ok ? capabilities.value.length : 0}</span>
+          <span className={styles.hint}>
+            {capabilities?.ok
+              ? t('integrations.capabilityCount', {
+                  enabled: capabilities.value.filter((c) => c.enabled).length,
+                  total: capabilities.value.length,
+                })
+              : ''}
+          </span>
         </div>
 
-        {!capabilities.ok || capabilities.value.length === 0 ? (
+        {!capabilities ? (
+          <p className={styles.hint}>{t('integrations.error.notImplemented')}</p>
+        ) : !capabilities.ok ? (
+          <p className={styles.hint}>{t(capabilities.error.key as MessageKey)}</p>
+        ) : capabilities.value.length === 0 ? (
           <p className={styles.hint}>{t('integrations.capabilitiesNone')}</p>
         ) : (
-          <div className={styles.facts}>
-            {capabilities.value.map((c) => (
-              <span key={c.capabilityKey} className={styles.fact}>
-                <span className={styles.factValue}>{c.capabilityKey}</span>
-                <span className={styles.factLabel}>
-                  {c.mode} · {c.requiredPermission}
-                </span>
-              </span>
-            ))}
-          </div>
+          <CapabilityList
+            organizationId={orgId}
+            integrationId={integrationId}
+            capabilities={capabilities.value}
+            labels={{
+              enable: t('integrations.capabilityEnable'),
+              disable: t('integrations.capabilityDisable'),
+              enabled: t('integrations.capabilityEnabled'),
+              disabled: t('integrations.capabilityDisabled'),
+              mode: (mode) => t(`integrations.capabilityMode.${mode}` as MessageKey),
+              permission: t('integrations.capabilityPermission'),
+              unknown: t('integrations.capabilityUnknown'),
+              unknownHint: t('integrations.capabilityUnknownHint'),
+              executeHint: t('integrations.capabilityExecuteHint'),
+              message: (key) => t(key as MessageKey),
+            }}
+          />
         )}
       </section>
     </div>
