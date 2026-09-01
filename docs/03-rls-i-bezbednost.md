@@ -6,7 +6,7 @@ Izolacija podataka ne oslanja se na jedan mehanizam. Da bi podatak iz organizaci
 
 | # | Sloj | Šta štiti | Gde živi |
 |---|---|---|---|
-| 1 | **GRANT / REVOKE** | `anon` nema nikakva prava; `authenticated` dobija samo ono što joj treba, po tabeli | `supabase/migrations/00010_lockdown.sql` |
+| 1 | **GRANT / REVOKE** | `anon` nema nikakva prava; `authenticated` dobija samo ono što joj treba, po tabeli | `supabase/migrations/…_lockdown.sql` |
 | 2 | **RLS politike** | red je vidljiv samo ako organizacija pripada korisniku | uz svaku tabelu |
 | 3 | **Aplikativni scope** | svaki upit ide kroz repozitorijum koji obavezno prima `OrgContext` | `src/core/**/repository.ts` |
 | 4 | **Složeni strani ključevi** | dete ne može pripadati drugoj organizaciji od roditelja | šema baze |
@@ -21,7 +21,7 @@ Rola `authenticated` dobija prava **po tabeli i po operaciji**, i uvek uz RLS
 politiku koja proverava i pripadnost organizaciji i permisiju:
 
 ```sql
--- 00010_lockdown.sql
+-- …_lockdown.sql
 revoke all on all tables    in schema public from anon;
 revoke all on all sequences in schema public from anon;
 alter default privileges in schema public revoke all on tables from anon, authenticated;
@@ -127,7 +127,7 @@ zagrade tumači kao podupit koji vraća redove, pa poređenje `uuid = uuid[]`
 padne pri kreiranju politike.
 
 Ovaj oblik je obavezan u svim politikama, a proverava ga
-`app.policies_with_slow_shape()` iz migracije `00120_guards.sql`. CI pada ako
+`app.policies_with_slow_shape()` iz migracije `…_guards.sql`. CI pada ako
 neko napiše politiku na spori način.
 
 ## 3. Obrazac politika

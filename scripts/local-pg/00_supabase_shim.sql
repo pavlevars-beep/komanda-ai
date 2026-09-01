@@ -22,6 +22,14 @@ $$;
 
 grant usage on schema public to anon, authenticated, service_role;
 
+-- Označava ovu bazu kao razvojnu. Produkcijska baza ovu oznaku NEMA, pa
+-- migracija 00170 tamo odbija svaki upis demo podataka.
+do $$
+begin
+  execute format('alter database %I set app.environment = %L', current_database(), 'development');
+end
+$$;
+
 create schema if not exists auth;
 
 create table auth.users (

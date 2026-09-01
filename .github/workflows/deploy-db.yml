@@ -1,0 +1,87 @@
+name: Migracije baze
+
+# Migracije se puštaju SAMO sa podrazumevane grane i samo kada se promeni
+# nešto u supabase/migrations. Ručno pokretanje postoji za slučaj ponovnog
+# pokušaja posle prekida.
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  workflow_dispatch:
+
+# Dve isporuke odjednom nad istom bazom su siguran način da se dobije
+# poluprimenjena šema.
+concurrency:
+  group: db-deploy
+  cancel-in-progress: false
+
+jobs:
+  provera:
+    name: Provera pre isporuke
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      # Ista provera koja štiti svaki push: migracije moraju da prođu na
+      # čistoj bazi, sa svim testovima izolacije, PRE nego što dotaknu živu.
+      - name: Migracije i testovi izolacije nad čistom bazom
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: ./scripts/verify-db.sh
+
+  isporuka:
+    name: Primeni na Supabase
+    needs: provera
+    runs-on: ubuntu-latest
+    # Okruženje omogućava da se kasnije uključi ručno odobrenje pred produkciju,
+    # bez prepravke workflow-a.
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Poveži se sa projektom
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+
+      # Šta će se tačno primeniti — zapisano u logu pre nego što se primeni.
+      - name: Prikaži razliku
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase migration list --linked
+
+      - name: Primeni migracije
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        # Seed se NE pušta. supabase/seed sadrži demo organizacije, a migracija
+        # 00170 ih ionako odbija u bazi bez razvojne oznake — ovo je druga brava.
+        run: supabase db push --include-all
+
+      - name: Potvrdi stanje posle primene
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase migration list --linked

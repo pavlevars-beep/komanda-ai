@@ -2,7 +2,7 @@
  * Permisije kao zatvoren skup.
  *
  * Vrednosti moraju da odgovaraju tabeli `permissions` u bazi; migracija
- * 00130_catalog.sql je izvor istine, a ova lista postoji da bi promašen
+ * …_catalog.sql je izvor istine, a ova lista postoji da bi promašen
  * naziv bio greška u kompajliranju umesto tiho odbijenog pristupa.
  */
 

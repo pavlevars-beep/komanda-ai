@@ -667,7 +667,7 @@ Baza tada **fizički ne dozvoljava** da dete pokazuje na roditelja iz druge orga
 
 ## 10. Migracije i seed
 
-- `supabase/migrations/` — numerisane, jednosmerne, svaka sa `-- description:` zaglavljem.
+- `supabase/migrations/` — imenovane po Supabase konvenciji `<vreme>_naziv.sql`, jednosmerne, svaka sa `-- description:` zaglavljem.
 - Nijedna migracija ne uključuje tajne ni realne kredencijale.
 - `supabase/seed/` — deterministički, isključivo za razvoj:
   - **Delta Pro** (platformska organizacija, Super Admin + Konsultant)

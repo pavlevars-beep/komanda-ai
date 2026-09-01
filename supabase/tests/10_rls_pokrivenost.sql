@@ -111,3 +111,43 @@ end
 $$;
 
 \echo '=== 10 — prošlo ==='
+
+-- ---------------------------------------------------------------------------
+-- Demo podaci ne mogu u produkcijsku bazu
+-- ---------------------------------------------------------------------------
+
+do $$
+begin
+  perform testkit.assert(
+    app.is_development_database(),
+    'razvojna baza je označena kao razvojna'
+  );
+end
+$$;
+
+-- Simulacija produkcije: skida se oznaka i proverava da upis demo podataka pada.
+begin;
+set local app.environment = 'production';
+
+do $$
+begin
+  perform testkit.assert(
+    not app.is_development_database(),
+    'bez oznake se baza smatra produkcijskom'
+  );
+
+  begin
+    insert into public.organizations (slug, legal_name, display_name, is_demo)
+    values ('demo-u-produkciji', 'Demo d.o.o.', 'Demo u produkciji', true);
+    raise exception 'PAO TEST: demo organizacija je upisana u produkcijsku bazu';
+  exception when insufficient_privilege then
+    raise notice '  ok — demo podaci se odbijaju u produkcijskoj bazi';
+  end;
+
+  -- Obična organizacija i dalje prolazi — zabrana pogađa samo demo.
+  insert into public.organizations (slug, legal_name, display_name, is_demo)
+  values ('stvarni-klijent', 'Stvarni Klijent d.o.o.', 'Stvarni Klijent', false);
+  raise notice '  ok — obična organizacija prolazi i u produkcijskoj bazi';
+end
+$$;
+rollback;
