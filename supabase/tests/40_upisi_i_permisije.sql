@@ -291,3 +291,110 @@ select testkit.assert_equals(
 rollback;
 
 \echo '=== 40 (revizija kroz API) — prošlo ==='
+
+-- ---------------------------------------------------------------------------
+-- Vault: vrednost tajne ne prolazi kroz rolu dostupnu iz browsera
+-- ---------------------------------------------------------------------------
+
+begin;
+-- Upis ide servisnom rolom (u aplikaciji: serverski modul, nikad UI).
+select public.vault_store_integration_secret(
+  '00000000-0000-0000-0000-00000000e002',
+  '00000000-0000-0000-0000-00000000d002',
+  'stvarni-api-kljuc-abcd1234',
+  'ak-••••1234',
+  'api_key'
+);
+
+select testkit.assert_equals(
+  public.vault_read_integration_secret(
+    '00000000-0000-0000-0000-00000000e002',
+    '00000000-0000-0000-0000-00000000d002'
+  ),
+  'stvarni-api-kljuc-abcd1234',
+  'servisni sloj čita kredencijal'
+);
+
+-- Pogrešan par integracija/organizacija ne vraća ništa, iako integracija postoji.
+select testkit.assert_equals(
+  public.vault_read_integration_secret(
+    '00000000-0000-0000-0000-00000000e002',
+    '00000000-0000-0000-0000-00000000d003'
+  ),
+  null::text,
+  'kredencijal se ne dobija uz pogrešnu organizaciju'
+);
+
+-- A ovo je suština: vlasnik organizacije, sa permisijom manage_integrations,
+-- i dalje NE MOŽE da dođe do vrednosti.
+select testkit.login_as('00000000-0000-0000-0000-0000000000b1');
+
+select testkit.assert(
+  app.has_permission('00000000-0000-0000-0000-00000000d002', 'manage_integrations'),
+  'vlasnik ima permisiju za upravljanje integracijama'
+);
+select testkit.assert_denied(
+  $q$select public.vault_read_integration_secret(
+       '00000000-0000-0000-0000-00000000e002',
+       '00000000-0000-0000-0000-00000000d002')$q$,
+  'ni vlasnik sa punom permisijom ne može da pročita vrednost kredencijala'
+);
+select testkit.assert_denied(
+  $q$select public.vault_store_integration_secret(
+       '00000000-0000-0000-0000-00000000e002',
+       '00000000-0000-0000-0000-00000000d002',
+       'podmetnuto', 'x', 'api_key')$q$,
+  'kredencijal se ne može upisati mimo serverskog sloja'
+);
+select testkit.assert_denied(
+  $q$select count(*) from vault.secrets$q$,
+  'skladište tajni je nedostupno prijavljenom korisniku'
+);
+
+-- Ali naznaka jeste dostupna — po njoj konsultant prepoznaje koji je ključ.
+select testkit.assert_equals(
+  (select hint from app.integration_credential_summary('00000000-0000-0000-0000-00000000e002')),
+  'ak-••••1234',
+  'naznaka kredencijala je dostupna kroz kontrolisanu funkciju'
+);
+rollback;
+
+-- Rotacija ne ostavlja staru tajnu u skladištu.
+begin;
+select public.vault_store_integration_secret(
+  '00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000d002',
+  'prvi-kljuc-1111', 'ak-••••1111', 'api_key');
+select count(*) as pre_rotacije from vault.secrets \gset
+
+select public.vault_store_integration_secret(
+  '00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000d002',
+  'drugi-kljuc-2222', 'ak-••••2222', 'api_key');
+
+select testkit.assert_equals(
+  (select count(*)::integer from vault.secrets), :'pre_rotacije'::integer,
+  'rotacija ne gomila stare tajne u skladištu'
+);
+select testkit.assert_equals(
+  public.vault_read_integration_secret(
+    '00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000d002'),
+  'drugi-kljuc-2222',
+  'posle rotacije važi novi kredencijal'
+);
+rollback;
+
+-- Brisanje integracije briše i tajnu.
+begin;
+select public.vault_store_integration_secret(
+  '00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000d002',
+  'kljuc-za-brisanje', 'ak-••••9999', 'api_key');
+select count(*) as pre_brisanja from vault.secrets \gset
+
+delete from public.integrations where id = '00000000-0000-0000-0000-00000000e002';
+
+select testkit.assert_equals(
+  (select count(*)::integer from vault.secrets), :'pre_brisanja'::integer - 1,
+  'brisanje integracije uklanja i njenu tajnu iz skladišta'
+);
+rollback;
+
+\echo '=== 40 (Vault) — prošlo ==='

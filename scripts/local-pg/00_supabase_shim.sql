@@ -77,5 +77,10 @@ as $$
   insert into vault.secrets (secret, name) values (new_secret, new_name) returning id;
 $$;
 
+-- Na Supabase-u je ovo pogled nad pgsodium dešifrovanjem; lokalno je vrednost
+-- u čistom obliku, jer se testira TOK, a ne sama kriptografija.
+create or replace view vault.decrypted_secrets as
+  select id, name, secret as decrypted_secret, created_at from vault.secrets;
+
 -- Namerno bez ijednog granta: ni lokalno rola authenticated ne sme do tajni.
 revoke all on schema vault from anon, authenticated;
