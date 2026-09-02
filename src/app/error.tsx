@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import styles from './error.module.css'
 
 /**
@@ -16,6 +15,9 @@ import styles from './error.module.css'
  *
  * `digest` se PRIKAZUJE. To je jedini trag koji spaja ono što korisnik vidi sa
  * zapisom u logu; bez njega prijava kvara glasi „nešto ne radi".
+ *
+ * Ovde se namerno NIŠTA ne beleži: server je grešku već zapisao, a `console`
+ * iz klijenta bi samo dodao zapis bez ijednog novog podatka.
  */
 export default function AppError({
   error,
@@ -24,11 +26,6 @@ export default function AppError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  useEffect(() => {
-    // Poruka na serveru je već zabeležena; ovde se beleži da ju je korisnik video.
-    console.error('Render je pao', error.digest ?? '(bez oznake)')
-  }, [error])
-
   return (
     <main className={styles.screen}>
       <div className={styles.panel}>
