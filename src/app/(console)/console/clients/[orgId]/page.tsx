@@ -134,6 +134,9 @@ export default async function ClientDetailPage({
         <Link href={`/console/clients/${orgId}/integrations` as Route} className={styles.subnavLink}>
           {t('integrations.title')}
         </Link>
+        <Link href={`/console/clients/${orgId}/dashboard` as Route} className={styles.subnavLink}>
+          {t('dashboard.title')}
+        </Link>
       </nav>
 
       <section className={styles.card}>

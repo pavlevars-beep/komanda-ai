@@ -123,10 +123,21 @@ jobs:
           esac
           echo "Lozinka baze je postavljena."
 
+      # CLI na istekao ili opozvan token odgovara samo sa `Unauthorized`, bez
+      # naznake KOJI je kredencijal u pitanju. Pošto ih ovaj posao koristi tri,
+      # poruka se ovde dopunjuje — inače se gubi vreme na proveru sva tri.
       - name: Poveži se sa projektom
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase link --project-ref "${{ steps.ref.outputs.value }}"
+        run: |
+          if ! supabase link --project-ref "${{ steps.ref.outputs.value }}"; then
+            echo "::error::Povezivanje nije uspelo."
+            echo "::error::Ako gore piše 'Unauthorized', problem je u SUPABASE_ACCESS_TOKEN — istekao je ili je opozvan."
+            echo "::error::Nov token: https://supabase.com/dashboard/account/tokens"
+            echo "::error::Zatim: Settings -> Secrets and variables -> Actions -> SUPABASE_ACCESS_TOKEN"
+            echo "::error::Lozinka baze i identifikator projekta su već provereni u prethodnim koracima."
+            exit 1
+          fi
 
       - name: Prikaži razliku
         env:
