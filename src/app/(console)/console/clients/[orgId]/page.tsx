@@ -12,6 +12,8 @@ import {
 } from '@/core/organizations/console-repository'
 import { resolveLocale } from '@/i18n/config'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { listAssignableRoles } from '@/core/organizations/invitations'
+import { InviteForm } from './invite-form'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { AccessPanel } from './access-panel'
 import styles from './detail.module.css'
@@ -52,10 +54,11 @@ export default async function ClientDetailPage({
   const locale = resolveLocale({ userLocale: user.locale })
   const { t, formatDate, formatRelative } = createTranslator(locale)
 
-  const [onboarding, members, openSessions] = await Promise.all([
+  const [onboarding, members, openSessions, roles] = await Promise.all([
     listOnboarding(db, orgId),
     listOrgMembers(db, orgId),
     listMyOpenAccessSessions(db),
+    listAssignableRoles(db, orgId),
   ])
 
   const org = client.value
@@ -230,6 +233,26 @@ export default async function ClientDetailPage({
               </tbody>
             </table>
           </div>
+        )}
+
+        {roles.ok && roles.value.length > 0 ? (
+          <InviteForm
+            organizationId={orgId}
+            roles={roles.value.map((r) => ({ key: r.key, name: r.name[locale] ?? r.key }))}
+            labels={{
+              title: t('members.invite.title'),
+              email: t('members.invite.email'),
+              role: t('members.invite.role'),
+              submit: t('members.invite.submit'),
+              hint: t('members.invite.hint'),
+              sent: (email) => t('members.invite.sent', { email }),
+              added: (email) => t('members.invite.added', { email }),
+              message: (key) => t(key as MessageKey),
+            }}
+          />
+        ) : (
+          // Nema dodeljive role — dugme koje ne bi imalo šta da pošalje se NE prikazuje.
+          <p className={styles.empty}>{t('members.invite.noRoles')}</p>
         )}
       </section>
 

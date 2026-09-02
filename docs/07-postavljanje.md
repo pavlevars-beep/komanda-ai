@@ -22,6 +22,35 @@ onim što se stvarno isporuči, i CI pada ako nešto procuri.
 
 ---
 
+## 2b. Vercel — tip promenljive: Config, ne Secret
+
+**`NEXT_PUBLIC_*` promenljive MORAJU biti tipa `Config`.**
+
+Vercel nudi dva tipa. `Secret` je write-only i **ne prosleđuje se u build za
+ugradnju u klijentski paket** — što je i smisao tog tipa. Ali `NEXT_PUBLIC_*`
+vrednosti se upravo ugrađuju u klijentski paket, pa promenljiva sa tim
+prefiksom sačuvana kao `Secret` nikad ne stigne do aplikacije.
+
+Vercel na to i upozorava pri unosu:
+
+> Remove the public framework prefix to keep this value private. Public
+> prefixes expose values to the browser. If that's safe, change the variable
+> to Config.
+
+Simptom kada se to previdi: build prolazi, ali `connect-src 'self' ;` u CSP
+zaglavlju nema adresu Supabase-a, a aplikacija vraća 503 sa
+`x-configuration-error`. Promenljiva pritom uredno stoji u listi.
+
+| Promenljiva | Tip |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | **Config** — adresa je javna, vidi je svaki posetilac |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Config** — namenjen browseru, bez prava nad tabelama |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secret** — jedina koja to zaista jeste |
+| `APP_URL`, `LOG_LEVEL`, `NODE_ENV` | Config |
+
+> **Sačuvan `Secret` se ne može prebaciti u `Config`** — vrednost je write-only.
+> Mora da se obriše i doda ponovo sa tipom `Config`.
+
 ## 2a. Vercel — sa koje grane se gradi
 
 **Vercel ne gradi sa `main`.** Produkciona grana ovog projekta je

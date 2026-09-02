@@ -106,3 +106,21 @@
   background: var(--surface);
 }
 .subnavLink:hover { background: var(--surface-sunk); color: var(--ink); }
+
+/* --- Pozivanje korisnika --- */
+.inviteForm { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); }
+.inviteRow { display: flex; gap: var(--space-3); align-items: flex-end; flex-wrap: wrap; }
+.inviteField { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; flex: 1 1 200px; }
+.inviteLabel { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.inviteInput {
+  height: 36px; padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--ink); font-size: var(--text-md); font-family: inherit;
+}
+.inviteInput[aria-invalid='true'] { border-color: var(--critical); }
+.inviteHint { font-size: var(--text-sm); color: var(--muted); }
+.inviteMessage { font-size: var(--text-base); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+.inviteOk { color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok); }
+.inviteBad { color: var(--critical); background: var(--critical-soft); border: 1px solid var(--critical); }
+
+@media (max-width: 640px) { .inviteRow { flex-direction: column; align-items: stretch; } }
