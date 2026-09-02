@@ -10,6 +10,11 @@ import {
 } from '../../actions'
 import styles from './access-panel.module.css'
 
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
+
 export interface AccessPanelLabels {
   readonly title: string
   readonly explain: string
@@ -24,7 +29,14 @@ export interface AccessPanelLabels {
   readonly open: string
   readonly ended: string
   /** Prevodi ključeva grešaka koje vraća akcija. */
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 export interface ActiveSession {
@@ -93,7 +105,7 @@ export function AccessPanel({
           </form>
         </div>
 
-        {error ? <p className={`${styles.message} ${styles.bad}`}>{labels.message(error)}</p> : null}
+        {error ? <p className={`${styles.message} ${styles.bad}`}>{translate(labels.messages, error)}</p> : null}
       </section>
     )
   }
@@ -124,7 +136,7 @@ export function AccessPanel({
           />
           {startState.fieldErrors?.reason ? (
             <p className={styles.fieldError} role="alert">
-              {labels.message(startState.fieldErrors.reason)}
+              {translate(labels.messages, startState.fieldErrors.reason)}
             </p>
           ) : (
             <p id="reason-hint" className={styles.hint}>
@@ -172,7 +184,7 @@ export function AccessPanel({
           ) : null}
         </div>
 
-        {error ? <p className={`${styles.message} ${styles.bad}`}>{labels.message(error)}</p> : null}
+        {error ? <p className={`${styles.message} ${styles.bad}`}>{translate(labels.messages, error)}</p> : null}
       </form>
     </section>
   )

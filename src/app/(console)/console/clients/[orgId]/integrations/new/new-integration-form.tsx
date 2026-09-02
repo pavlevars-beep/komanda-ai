@@ -6,6 +6,11 @@ import { StatusBadge } from '@/ui/patterns/StatusBadge'
 import { createIntegrationAction, type IntegrationState } from '../actions'
 import styles from '../integrations.module.css'
 
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
+
 export interface CatalogEntry {
   readonly key: string
   readonly name: string
@@ -26,9 +31,17 @@ export interface NewIntegrationLabels {
   readonly sandbox: string
   readonly production: string
   readonly create: string
-  readonly availability: (a: 'ga' | 'beta' | 'planned') => string
+  /** Rečnik po dostupnosti; funkcija ne može da pređe granicu ka klijentu. */
+  readonly availability: Readonly<Record<'ga' | 'beta' | 'planned', string>>
   readonly plannedHint: string
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 /**
@@ -88,7 +101,7 @@ export function NewIntegrationForm({
                 <span className={styles.typeMeta}>{entry.category}</span>
                 <StatusBadge
                   tone={entry.implemented ? 'ok' : 'neutral'}
-                  label={labels.availability(entry.availability)}
+                  label={labels.availability[entry.availability]}
                 />
                 {disabled ? <span className={styles.typeMeta}>{labels.plannedHint}</span> : null}
               </button>
@@ -111,7 +124,7 @@ export function NewIntegrationForm({
         />
         {state.fieldErrors?.name ? (
           <p className={styles.fieldError} role="alert">
-            {labels.message(state.fieldErrors.name)}
+            {translate(labels.messages, state.fieldErrors.name)}
           </p>
         ) : null}
       </div>
@@ -166,7 +179,7 @@ export function NewIntegrationForm({
 
       {state.error ? (
         <p className={`${styles.message} ${styles.bad}`} role="alert">
-          {labels.message(state.error)}
+          {translate(labels.messages, state.error)}
         </p>
       ) : null}
     </form>

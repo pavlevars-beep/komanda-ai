@@ -1,4 +1,5 @@
 import styles from './AccessBanner.module.css'
+import { interpolate } from '@/i18n/translator'
 
 export interface AccessBannerSession {
   readonly sessionId: string
@@ -20,7 +21,9 @@ export function AccessBanner({
   renderAction,
 }: {
   sessions: readonly AccessBannerSession[]
-  labels: { banner: (name: string, until: string) => string; reason: string }
+  // `banner` je ŠABLON sa {name} i {until}. Funkcija ovde ne sme da stoji:
+  // serverska komponenta ne može da je prosledi klijentskoj.
+  labels: { banner: string; reason: string }
   /** Radnja se iscrtava po sesiji, jer se prekida tačno određena sesija. */
   renderAction?: (sessionId: string) => React.ReactNode
 }) {
@@ -33,7 +36,7 @@ export function AccessBanner({
           <span className={styles.dot} aria-hidden="true" />
           <span className={styles.text}>
             <span className={styles.name}>
-              {labels.banner(s.staffName ?? 'Delta Pro', s.expiresAtLabel)}
+              {interpolate(labels.banner, { name: s.staffName ?? 'Delta Pro', until: s.expiresAtLabel })}
             </span>{' '}
             <span className={styles.reason}>
               {labels.reason.replace('{reason}', s.reason)}

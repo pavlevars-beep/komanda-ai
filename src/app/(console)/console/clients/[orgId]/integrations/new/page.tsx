@@ -7,7 +7,7 @@ import { getConsoleClient } from '@/core/organizations/console-repository'
 import { listConnectorTypes } from '@/core/integrations/repository'
 import { availableConnectorTypes } from '@/core/connectors'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, messagesFor } from '@/i18n/translator'
 import { NewIntegrationForm } from './new-integration-form'
 import styles from '../integrations.module.css'
 
@@ -28,6 +28,7 @@ export default async function NewIntegrationPage({
 
   const locale = await requestLocale(user.locale)
   const { t } = createTranslator(locale)
+  const messages = messagesFor(locale, ['error.', 'integrations.'])
 
   const types = await listConnectorTypes(db)
   // Katalog kaže šta je planirano; registar kaže šta stvarno radi.
@@ -67,9 +68,13 @@ export default async function NewIntegrationPage({
             sandbox: t('integrations.environment.sandbox'),
             production: t('integrations.environment.production'),
             create: t('integrations.create'),
-            availability: (a) => t(`integrations.availability.${a}` as MessageKey),
+            availability: {
+              ga: t('integrations.availability.ga'),
+              beta: t('integrations.availability.beta'),
+              planned: t('integrations.availability.planned'),
+            },
             plannedHint: t('integrations.plannedHint'),
-            message: (key) => t(key as MessageKey),
+            messages,
           }}
         />
       )}

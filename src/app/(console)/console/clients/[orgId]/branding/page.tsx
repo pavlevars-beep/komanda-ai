@@ -6,7 +6,7 @@ import { currentUser } from '@/server/auth/current-user'
 import { getConsoleClient } from '@/core/organizations/console-repository'
 import { getBranding } from '@/core/branding/repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, messagesFor } from '@/i18n/translator'
 import { BrandingForm } from './branding-form'
 import styles from './branding.module.css'
 
@@ -24,7 +24,11 @@ export default async function BrandingPage({ params }: { params: Promise<{ orgId
   const branding = await getBranding(db, orgId)
   const current = branding.ok ? branding.value : null
 
-  const { t } = createTranslator(await requestLocale(user.locale))
+  const locale = await requestLocale(user.locale)
+
+  const { t } = createTranslator(locale)
+
+  const messages = messagesFor(locale, ['error.', 'branding.'])
 
   return (
     <div className={styles.page}>
@@ -55,7 +59,7 @@ export default async function BrandingPage({ params }: { params: Promise<{ orgId
           preview: t('branding.preview'),
           contrastOk: t('branding.contrastOk'),
           adjusted: t('branding.color.adjusted'),
-          message: (key) => t(key as MessageKey),
+          messages,
         }}
       />
     </div>

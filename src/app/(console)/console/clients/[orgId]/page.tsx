@@ -11,7 +11,7 @@ import {
   listOrgMembers,
 } from '@/core/organizations/console-repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translator'
 import { listAssignableRoles } from '@/core/organizations/invitations'
 import { InviteForm } from './invite-form'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
@@ -53,6 +53,7 @@ export default async function ClientDetailPage({
 
   const locale = await requestLocale(user.locale)
   const { t, formatDate, formatRelative } = createTranslator(locale)
+  const messages = messagesFor(locale, ['error.', 'access.', 'members.'])
 
   const [onboarding, members, openSessions, roles] = await Promise.all([
     listOnboarding(db, orgId),
@@ -122,7 +123,7 @@ export default async function ClientDetailPage({
           ended: t('access.ended'),
           // Akcija vraća ključ poruke; prevod se radi ovde, na serveru,
           // da klijentska komponenta ne nosi ceo katalog.
-          message: (key) => t(key as MessageKey),
+          messages,
         }}
       />
 
@@ -245,9 +246,9 @@ export default async function ClientDetailPage({
               role: t('members.invite.role'),
               submit: t('members.invite.submit'),
               hint: t('members.invite.hint'),
-              sent: (email) => t('members.invite.sent', { email }),
-              added: (email) => t('members.invite.added', { email }),
-              message: (key) => t(key as MessageKey),
+              sent: t('members.invite.sent'),
+              added: t('members.invite.added'),
+              messages,
             }}
           />
         ) : (

@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, messagesFor } from '@/i18n/translator'
 import { NewClientForm } from './new-client-form'
 import styles from './new-client.module.css'
 
@@ -15,7 +15,11 @@ export default async function NewClientPage() {
   const user = await currentUser(db)
   if (!user?.staffRole) notFound()
 
-  const { t } = createTranslator(await requestLocale(user.locale))
+  const locale = await requestLocale(user.locale)
+
+  const { t } = createTranslator(locale)
+
+  const messages = messagesFor(locale, ['error.', 'clients.'])
 
   return (
     <div className={styles.page}>
@@ -32,13 +36,13 @@ export default async function NewClientPage() {
           displayName: t('clients.field.displayName'),
           legalName: t('clients.field.legalName'),
           slug: t('clients.field.slug'),
-          slugHint: (slug) => t('clients.field.slugHint', { slug }),
+          slugHint: t('clients.field.slugHint'),
           industry: t('clients.field.industry'),
           currency: t('clients.field.currency'),
           plan: t('clients.field.plan'),
           locale: t('clients.field.locale'),
           create: t('clients.create'),
-          message: (key) => t(key as MessageKey),
+          messages,
         }}
       />
     </div>

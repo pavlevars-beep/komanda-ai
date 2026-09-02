@@ -1,19 +1,33 @@
 'use client'
 
+import { interpolate } from '@/i18n/translator'
 import { useActionState } from 'react'
 import { Button } from '@/ui/primitives/Button'
 import { inviteMemberAction, type MemberState } from './actions'
 import styles from './detail.module.css'
+
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
 
 export interface InviteLabels {
   readonly title: string
   readonly email: string
   readonly role: string
   readonly submit: string
-  readonly sent: (email: string) => string
-  readonly added: (email: string) => string
+  /** Šabloni sa {email}; funkcija ne može da pređe granicu ka klijentu. */
+  readonly sent: string
+  readonly added: string
   readonly hint: string
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 export interface RoleOption {
@@ -85,12 +99,12 @@ export function InviteForm({
       {state.invited ? (
         <p className={`${styles.inviteMessage} ${styles.inviteOk}`} role="status">
           {state.invited.accountCreated
-            ? labels.sent(state.invited.email)
-            : labels.added(state.invited.email)}
+            ? interpolate(labels.sent, { email: state.invited.email })
+            : interpolate(labels.added, { email: state.invited.email })}
         </p>
       ) : state.error ? (
         <p className={`${styles.inviteMessage} ${styles.inviteBad}`} role="alert">
-          {labels.message(state.fieldErrors?.['email'] ?? state.error)}
+          {translate(labels.messages, state.fieldErrors?.['email'] ?? state.error)}
         </p>
       ) : null}
     </form>

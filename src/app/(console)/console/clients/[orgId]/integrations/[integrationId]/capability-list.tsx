@@ -6,6 +6,11 @@ import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { setCapabilityAction, type IntegrationState } from '../actions'
 import styles from '../integrations.module.css'
 
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
+
 export interface CapabilityRow {
   readonly capabilityKey: string
   readonly mode: 'read' | 'prepare' | 'execute'
@@ -20,12 +25,20 @@ export interface CapabilityLabels {
   readonly disable: string
   readonly enabled: string
   readonly disabled: string
-  readonly mode: (mode: 'read' | 'prepare' | 'execute') => string
+  /** Rečnik po režimu; funkcija ne može da pređe granicu ka klijentu. */
+  readonly mode: Readonly<Record<'read' | 'prepare' | 'execute', string>>
   readonly permission: string
   readonly unknown: string
   readonly unknownHint: string
   readonly executeHint: string
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 const MODE_TONE: Record<CapabilityRow['mode'], Tone> = {
@@ -69,7 +82,7 @@ export function CapabilityList({
               <span className={styles.capabilityKey}>{c.capabilityKey}</span>
               <span className={styles.capabilityMeta}>
                 {c.declared ? (
-                  <StatusBadge tone={MODE_TONE[c.mode]} label={labels.mode(c.mode)} />
+                  <StatusBadge tone={MODE_TONE[c.mode]} label={labels.mode[c.mode]} />
                 ) : (
                   <StatusBadge tone="critical" label={labels.unknown} />
                 )}
@@ -112,7 +125,7 @@ export function CapabilityList({
 
       {state.error ? (
         <p className={`${styles.message} ${styles.bad}`} role="alert">
-          {labels.message(state.error)}
+          {translate(labels.messages, state.error)}
         </p>
       ) : null}
     </>

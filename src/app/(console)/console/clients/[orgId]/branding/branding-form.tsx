@@ -6,6 +6,11 @@ import { deriveBrandPalette } from '@/core/branding/contrast'
 import { saveBrandingAction, type BrandingState } from './actions'
 import styles from './branding.module.css'
 
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
+
 export interface BrandingLabels {
   readonly workspaceName: string
   readonly primaryColor: string
@@ -16,7 +21,14 @@ export interface BrandingLabels {
   readonly preview: string
   readonly contrastOk: string
   readonly adjusted: string
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 export interface BrandingInitial {
@@ -95,7 +107,7 @@ export function BrandingForm({
 
           {colorError ? (
             <p className={styles.fieldError} role="alert">
-              {labels.message(colorError)}
+              {translate(labels.messages, colorError)}
             </p>
           ) : palette?.adjusted ? (
             <p className={styles.correction}>
@@ -148,7 +160,7 @@ export function BrandingForm({
         {state.saved ? (
           <p className={`${styles.message} ${styles.ok}`}>{labels.saved}</p>
         ) : state.error && !colorError ? (
-          <p className={`${styles.message} ${styles.bad}`}>{labels.message(state.error)}</p>
+          <p className={`${styles.message} ${styles.bad}`}>{translate(labels.messages, state.error)}</p>
         ) : null}
       </form>
 

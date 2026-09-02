@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { interpolate } from '@/i18n/translator'
 import { Button } from '@/ui/primitives/Button'
 import { endAccessSessionAction, type AccessSessionState } from './actions'
 import styles from './access-banner.module.css'
@@ -20,12 +21,25 @@ export interface OpenSessionView {
  * radi nešto drugo, a otvorena sesija znači da su tuđi poslovni podaci i
  * dalje dostupni.
  */
+export interface AccessBannerLabels {
+  /**
+   * ŠABLONI, ne funkcije.
+   *
+   * Serverska komponenta ne sme da prosledi funkciju klijentskoj — React to
+   * odbija pri serijalizaciji i ceo render pukne. Zato ovde stiže tekst sa
+   * mestima za umetanje, a umetanje se radi ovde.
+   */
+  readonly openIn: string
+  readonly remaining: string
+  readonly end: string
+}
+
 export function ConsoleAccessBanner({
   sessions,
   labels,
 }: {
   sessions: readonly OpenSessionView[]
-  labels: { openIn: (name: string, until: string) => string; remaining: (m: number) => string; end: string }
+  labels: AccessBannerLabels
 }) {
   const [, endAction, ending] = useActionState<AccessSessionState, FormData>(
     endAccessSessionAction,
@@ -40,8 +54,12 @@ export function ConsoleAccessBanner({
         <div key={s.sessionId} className={styles.bar} role="status">
           <span className={styles.dot} aria-hidden="true" />
           <span className={styles.text}>
-            <span className={styles.org}>{labels.openIn(s.organizationName, s.untilLabel)}</span>{' '}
-            <span className={styles.remaining}>{labels.remaining(s.minutesLeft)}</span>
+            <span className={styles.org}>
+              {interpolate(labels.openIn, { name: s.organizationName, until: s.untilLabel })}
+            </span>{' '}
+            <span className={styles.remaining}>
+              {interpolate(labels.remaining, { minutes: s.minutesLeft })}
+            </span>
           </span>
           <form action={endAction} className={styles.form}>
             <input type="hidden" name="sessionId" value={s.sessionId} />

@@ -5,18 +5,32 @@ import { Button } from '@/ui/primitives/Button'
 import { slugify } from '@/core/shared/slug'
 import { createClientAction, type CreateClientState } from './actions'
 import styles from './new-client.module.css'
+import { interpolate } from '@/i18n/translator'
+
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
 
 export interface NewClientLabels {
   readonly displayName: string
   readonly legalName: string
   readonly slug: string
-  readonly slugHint: (slug: string) => string
+  /** Šablon sa {slug}; funkcija ne može da pređe granicu ka klijentu. */
+  readonly slugHint: string
   readonly industry: string
   readonly currency: string
   readonly plan: string
   readonly locale: string
   readonly create: string
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 /**
@@ -58,7 +72,7 @@ export function NewClientForm({ labels }: { labels: NewClientLabels }) {
         />
         {state.fieldErrors?.displayName ? (
           <p className={styles.fieldError} role="alert">
-            {labels.message(state.fieldErrors.displayName)}
+            {translate(labels.messages, state.fieldErrors.displayName)}
           </p>
         ) : null}
       </div>
@@ -77,7 +91,7 @@ export function NewClientForm({ labels }: { labels: NewClientLabels }) {
         />
         {state.fieldErrors?.legalName ? (
           <p className={styles.fieldError} role="alert">
-            {labels.message(state.fieldErrors.legalName)}
+            {translate(labels.messages, state.fieldErrors.legalName)}
           </p>
         ) : null}
       </div>
@@ -102,11 +116,11 @@ export function NewClientForm({ labels }: { labels: NewClientLabels }) {
         />
         {state.fieldErrors?.slug ? (
           <p className={styles.fieldError} role="alert">
-            {labels.message(state.fieldErrors.slug)}
+            {translate(labels.messages, state.fieldErrors.slug)}
           </p>
         ) : (
           <p id="slug-hint" className={styles.hint}>
-            {labels.slugHint(effectiveSlug || '…')}
+            {interpolate(labels.slugHint, { slug: effectiveSlug || '…' })}
           </p>
         )}
       </div>
@@ -160,7 +174,7 @@ export function NewClientForm({ labels }: { labels: NewClientLabels }) {
 
       {state.error && !state.fieldErrors ? (
         <p className={styles.error} role="alert">
-          {labels.message(state.error)}
+          {translate(labels.messages, state.error)}
         </p>
       ) : null}
     </form>

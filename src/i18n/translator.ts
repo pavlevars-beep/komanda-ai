@@ -15,7 +15,14 @@ export interface Translator {
   formatRelative: (value: Date | string, now?: Date) => string
 }
 
-function interpolate(template: string, params?: TranslateParams): string {
+/**
+ * Umeće parametre oblika {naziv}.
+ *
+ * Izvezeno jer ga koriste i klijentske komponente. Serverska komponenta ne
+ * sme da prosledi funkciju klijentskoj — React to odbija pri serijalizaciji —
+ * pa se prosleđuje ŠABLON, a umetanje se radi na klijentu.
+ */
+export function interpolate(template: string, params?: TranslateParams): string {
   if (!params) return template
   return template.replace(/\{(\w+)\}/g, (match, name: string) => {
     const value = params[name]
@@ -65,6 +72,34 @@ export function createTranslator(locale: Locale): Translator {
       return rtf.format(seconds, 'second')
     },
   }
+}
+
+/**
+ * Rečnik prevoda za prosleđivanje klijentskoj komponenti.
+ *
+ * Postoji zbog stvarnog kvara: kroz ceo projekat su klijentske komponente
+ * dobijale funkciju `(key) => t(key)` da bi prevele poruku koju akcija vrati
+ * tek pri izvršavanju. Funkcija ne može da pređe granicu server→klijent i
+ * render puca — a to se vidi tek kada se ekran stvarno otvori.
+ *
+ * Umesto funkcije prosleđuje se OBIČAN OBJEKAT sa ključevima koji toj
+ * komponenti mogu zatrebati. Serijalizuje se bez problema.
+ *
+ * Prosleđuje se samo ono što komponenti treba, po prefiksu — ceo katalog na
+ * svakoj stranici bio bi nepotrebna težina.
+ */
+export function messagesFor(
+  locale: Locale,
+  prefixes: readonly string[],
+): Record<string, string> {
+  const catalogue = CATALOGUE[locale]
+  const out: Record<string, string> = {}
+
+  for (const [key, value] of Object.entries(catalogue)) {
+    if (prefixes.some((p) => key.startsWith(p))) out[key] = value
+  }
+
+  return out
 }
 
 export type { MessageKey }

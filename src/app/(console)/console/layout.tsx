@@ -53,9 +53,10 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
               Math.round((new Date(s.expires_at).getTime() - now) / 60000),
             ),
           }))}
+          // Šabloni, ne funkcije — funkcija ne može da pređe granicu ka klijentu.
           labels={{
-            openIn: (name, until) => t('access.openIn', { name, until }),
-            remaining: (minutes) => t('access.remaining', { minutes }),
+            openIn: t('access.openIn'),
+            remaining: t('access.remaining'),
             end: t('access.end'),
           }}
         />

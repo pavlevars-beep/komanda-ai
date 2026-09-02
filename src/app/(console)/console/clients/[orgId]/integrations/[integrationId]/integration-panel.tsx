@@ -1,5 +1,6 @@
 'use client'
 
+import { interpolate } from '@/i18n/translator'
 import { useActionState } from 'react'
 import { Button } from '@/ui/primitives/Button'
 import {
@@ -9,9 +10,15 @@ import {
 } from '../actions'
 import styles from '../integrations.module.css'
 
+/** Prevod iz rečnika; nepoznat ključ se prikazuje kao takav, ne kao prazno. */
+function translate(messages: Readonly<Record<string, string>>, key: string): string {
+  return messages[key] ?? key
+}
+
 export interface PanelLabels {
   readonly test: string
-  readonly testOk: (ms: number) => string
+  /** Šablon sa {ms}; funkcija ne može da pređe granicu ka klijentu. */
+  readonly testOk: string
   readonly testFailed: string
   readonly credential: string
   readonly credentialHint: string
@@ -19,7 +26,14 @@ export interface PanelLabels {
   readonly credentialSaved: string
   readonly credentialNone: string
   readonly currentHint: string | null
-  readonly message: (key: string) => string
+  /**
+   * Rečnik prevoda, ne funkcija.
+   *
+   * Akcija vraća KLJUČ poruke tek pri izvršavanju, pa prevod mora da se desi
+   * ovde. Funkcija `(key) => t(key)` ne može da pređe granicu server→klijent —
+   * React je odbija pri serijalizaciji i ceo render pukne.
+   */
+  readonly messages: Readonly<Record<string, string>>
 }
 
 /**
@@ -71,14 +85,14 @@ export function IntegrationPanel({
             role="status"
           >
             {testState.tested.ok
-              ? labels.testOk(testState.tested.latencyMs)
+              ? interpolate(labels.testOk, { ms: testState.tested.latencyMs })
               : `${labels.testFailed}${testState.tested.message ? ` ${testState.tested.message}` : ''}`}
           </p>
         ) : null}
 
         {testState.error ? (
           <p className={`${styles.message} ${styles.bad}`} role="alert">
-            {labels.message(testState.error)}
+            {translate(labels.messages, testState.error)}
           </p>
         ) : null}
       </section>
@@ -122,7 +136,7 @@ export function IntegrationPanel({
             </p>
           ) : credState.error ? (
             <p className={`${styles.message} ${styles.bad}`} role="alert">
-              {labels.message(credState.fieldErrors?.value ?? credState.error)}
+              {translate(labels.messages, credState.fieldErrors?.value ?? credState.error)}
             </p>
           ) : null}
         </section>

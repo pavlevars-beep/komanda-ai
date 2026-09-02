@@ -8,6 +8,8 @@ import {
   listMyOpenAccessSessions,
 } from '@/core/organizations/console-repository'
 import { listClientOrganizations } from '@/core/organizations/repository'
+import ConsoleLayout from '@/app/(console)/console/layout'
+import ConsoleOverview from '@/app/(console)/console/page'
 
 /**
  * Dijagnostika konzole.
@@ -69,6 +71,22 @@ export async function GET(): Promise<NextResponse> {
     await step('lista klijenata (RPC)', async () => {
       const r = await listConsoleClients(db)
       return r.ok ? { broj: r.value.length } : { greska: r.error }
+    }),
+  )
+
+  // Podaci prolaze, a konzola i dalje puca — znači izuzetak je u iscrtavanju.
+  // Serverske komponente su obične async funkcije, pa se mogu pozvati i ovde:
+  // telo se izvrši i stablo elemenata se sastavi, što hvata većinu izuzetaka.
+  steps.push(
+    await step('render: stranica pregleda', async () => {
+      await ConsoleOverview()
+      return 'sastavljeno'
+    }),
+  )
+  steps.push(
+    await step('render: layout konzole', async () => {
+      await ConsoleLayout({ children: null })
+      return 'sastavljeno'
     }),
   )
 

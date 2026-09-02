@@ -14,7 +14,7 @@ import {
 import { declaredCapabilities } from '@/core/integrations/capabilities'
 import { availableConnectorTypes, getConnector, initialiseConnectors } from '@/core/connectors'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { IntegrationPanel } from './integration-panel'
 import { CapabilityList } from './capability-list'
@@ -52,7 +52,11 @@ export default async function IntegrationDetailPage({
   ])
   if (!client.ok || !integration.ok) notFound()
 
-  const { t, formatDate } = createTranslator(await requestLocale(user.locale))
+  const locale = await requestLocale(user.locale)
+
+  const { t, formatDate } = createTranslator(locale)
+
+  const messages = messagesFor(locale, ['error.', 'integrations.', 'connector.'])
 
   const [credential, health] = await Promise.all([
     callRpc(db, 'integration_credential_summary', { p_integration_id: integrationId }),
@@ -127,7 +131,7 @@ export default async function IntegrationDetailPage({
           authType={value.auth_type}
           labels={{
             test: t('integrations.test'),
-            testOk: (ms) => t('integrations.testOk', { ms }),
+            testOk: t('integrations.testOk'),
             testFailed: t('integrations.testFailed'),
             credential: t('integrations.credential'),
             credentialHint: t('integrations.credentialHint'),
@@ -135,7 +139,7 @@ export default async function IntegrationDetailPage({
             credentialSaved: t('integrations.credentialSaved'),
             credentialNone: t('integrations.credentialNone'),
             currentHint: hint,
-            message: (key) => t(key as MessageKey),
+            messages,
           }}
         />
       ) : (
@@ -175,12 +179,16 @@ export default async function IntegrationDetailPage({
               disable: t('integrations.capabilityDisable'),
               enabled: t('integrations.capabilityEnabled'),
               disabled: t('integrations.capabilityDisabled'),
-              mode: (mode) => t(`integrations.capabilityMode.${mode}` as MessageKey),
+              mode: {
+                read: t('integrations.capabilityMode.read'),
+                prepare: t('integrations.capabilityMode.prepare'),
+                execute: t('integrations.capabilityMode.execute'),
+              },
               permission: t('integrations.capabilityPermission'),
               unknown: t('integrations.capabilityUnknown'),
               unknownHint: t('integrations.capabilityUnknownHint'),
               executeHint: t('integrations.capabilityExecuteHint'),
-              message: (key) => t(key as MessageKey),
+              messages,
             }}
           />
         )}

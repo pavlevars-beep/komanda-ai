@@ -96,7 +96,7 @@ export default async function WorkspaceLayout({
             expiresAtLabel: formatDate(s.expires_at, { timeStyle: 'short' }),
           }))}
           labels={{
-            banner: (name, until) => t('impersonation.banner', { name, until }),
+            banner: t('impersonation.banner'),
             reason: t('impersonation.reason', { reason: '{reason}' }),
           }}
           // Prekid sme administrator klijenta. Ostali vide traku, ali bez dugmeta —
