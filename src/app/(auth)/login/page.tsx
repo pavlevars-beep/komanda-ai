@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { cookies, headers } from 'next/headers'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
+import { LocaleToggle } from '@/app/locale-toggle'
 import { LoginForm } from './login-form'
 import styles from './login.module.css'
 
@@ -12,16 +12,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>
 }) {
-  const [cookieStore, headerList, params] = await Promise.all([
-    cookies(),
-    headers(),
-    searchParams,
-  ])
-
-  const locale = resolveLocale({
-    userLocale: cookieStore.get('locale')?.value ?? null,
-    acceptLanguage: headerList.get('accept-language'),
-  })
+  const [locale, params] = await Promise.all([requestLocale(), searchParams])
   const { t } = createTranslator(locale)
 
   return (
@@ -31,6 +22,8 @@ export default async function LoginPage({
           <span className={styles.mark}>{t('app.name')}</span>
           <span className={styles.tagline}>Delta Pro</span>
         </div>
+
+        <LocaleToggle current={locale} label={t('common.language')} />
 
         <div className={styles.panel}>
           <div className={styles.heading}>

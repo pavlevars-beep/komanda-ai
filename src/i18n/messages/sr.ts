@@ -16,6 +16,7 @@ export const sr = {
   'common.retry': 'Pokušaj ponovo',
   'common.back': 'Nazad',
   'common.demoData': 'Demo podaci',
+  'common.language': 'Jezik',
   'common.updatedAt': 'Ažurirano {time}',
   'common.source': 'Izvor',
 

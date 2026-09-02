@@ -6,7 +6,7 @@ import { currentUser } from '@/server/auth/current-user'
 import { getConsoleClient } from '@/core/organizations/console-repository'
 import { listConnectorTypes } from '@/core/integrations/repository'
 import { availableConnectorTypes } from '@/core/connectors'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { NewIntegrationForm } from './new-integration-form'
 import styles from '../integrations.module.css'
@@ -26,7 +26,7 @@ export default async function NewIntegrationPage({
   const client = await getConsoleClient(db, orgId)
   if (!client.ok) notFound()
 
-  const locale = resolveLocale({ userLocale: user.locale })
+  const locale = await requestLocale(user.locale)
   const { t } = createTranslator(locale)
 
   const types = await listConnectorTypes(db)

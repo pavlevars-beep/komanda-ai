@@ -13,7 +13,7 @@ import {
 } from '@/core/integrations/repository'
 import { declaredCapabilities } from '@/core/integrations/capabilities'
 import { availableConnectorTypes, getConnector, initialiseConnectors } from '@/core/connectors'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { IntegrationPanel } from './integration-panel'
@@ -52,7 +52,7 @@ export default async function IntegrationDetailPage({
   ])
   if (!client.ok || !integration.ok) notFound()
 
-  const { t, formatDate } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const { t, formatDate } = createTranslator(await requestLocale(user.locale))
 
   const [credential, health] = await Promise.all([
     callRpc(db, 'integration_credential_summary', { p_integration_id: integrationId }),

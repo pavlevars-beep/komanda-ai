@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
+import { LocaleToggle } from '@/app/locale-toggle'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
 import { listMyOpenAccessSessions } from '@/core/organizations/console-repository'
 import { ConsoleAccessBanner } from './access-banner'
@@ -23,7 +24,8 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
 
   if (!user?.staffRole) notFound()
 
-  const { t, formatDate } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const locale = await requestLocale(user.locale)
+  const { t, formatDate } = createTranslator(locale)
 
   const openSessions = await listMyOpenAccessSessions(db)
   const now = Date.now()
@@ -71,6 +73,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
           <div className={styles.footer}>
             <span className={styles.user}>{user.fullName ?? user.email}</span>
             <span className={styles.role}>{user.staffRole}</span>
+            <LocaleToggle current={locale} label={t('common.language')} />
           </div>
         </aside>
 

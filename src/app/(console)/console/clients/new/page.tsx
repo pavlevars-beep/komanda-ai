@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { NewClientForm } from './new-client-form'
 import styles from './new-client.module.css'
@@ -15,7 +15,7 @@ export default async function NewClientPage() {
   const user = await currentUser(db)
   if (!user?.staffRole) notFound()
 
-  const { t } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const { t } = createTranslator(await requestLocale(user.locale))
 
   return (
     <div className={styles.page}>

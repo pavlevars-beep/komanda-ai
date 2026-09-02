@@ -16,6 +16,7 @@ export const en: Messages = {
   'common.retry': 'Try again',
   'common.back': 'Back',
   'common.demoData': 'Demo data',
+  'common.language': 'Language',
   'common.updatedAt': 'Updated {time}',
   'common.source': 'Source',
 

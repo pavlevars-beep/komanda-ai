@@ -5,7 +5,7 @@ import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { getConsoleClient } from '@/core/organizations/console-repository'
 import { getBranding } from '@/core/branding/repository'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { BrandingForm } from './branding-form'
 import styles from './branding.module.css'
@@ -24,7 +24,7 @@ export default async function BrandingPage({ params }: { params: Promise<{ orgId
   const branding = await getBranding(db, orgId)
   const current = branding.ok ? branding.value : null
 
-  const { t } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const { t } = createTranslator(await requestLocale(user.locale))
 
   return (
     <div className={styles.page}>

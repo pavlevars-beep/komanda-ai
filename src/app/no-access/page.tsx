@@ -1,6 +1,6 @@
-import { cookies, headers } from 'next/headers'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
+import { LocaleToggle } from '@/app/locale-toggle'
 import styles from './no-access.module.css'
 
 /**
@@ -10,11 +10,7 @@ import styles from './no-access.module.css'
  * Prazan ekran bi ostavio utisak kvara, pa se stanje imenuje.
  */
 export default async function NoAccessPage() {
-  const [cookieStore, headerList] = await Promise.all([cookies(), headers()])
-  const locale = resolveLocale({
-    userLocale: cookieStore.get('locale')?.value ?? null,
-    acceptLanguage: headerList.get('accept-language'),
-  })
+  const locale = await requestLocale()
   const { t } = createTranslator(locale)
 
   return (
@@ -22,6 +18,7 @@ export default async function NoAccessPage() {
       <div className={styles.panel}>
         <h1 className={styles.title}>{t('state.forbidden.title')}</h1>
         <p className={styles.body}>{t('state.forbidden.body')}</p>
+        <LocaleToggle current={locale} label={t('common.language')} />
       </div>
     </main>
   )

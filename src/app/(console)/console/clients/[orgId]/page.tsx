@@ -10,7 +10,7 @@ import {
   listOnboarding,
   listOrgMembers,
 } from '@/core/organizations/console-repository'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { listAssignableRoles } from '@/core/organizations/invitations'
 import { InviteForm } from './invite-form'
@@ -51,7 +51,7 @@ export default async function ClientDetailPage({
   // Nedostupna i nepostojeća organizacija se ne razlikuju.
   if (!client.ok) notFound()
 
-  const locale = resolveLocale({ userLocale: user.locale })
+  const locale = await requestLocale(user.locale)
   const { t, formatDate, formatRelative } = createTranslator(locale)
 
   const [onboarding, members, openSessions, roles] = await Promise.all([

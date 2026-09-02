@@ -8,7 +8,9 @@ import {
   listActiveAccessSessions,
   resolveOrgContext,
 } from '@/core/tenancy/workspace-repository'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
+import { LocaleToggle } from '@/app/locale-toggle'
 import { deriveBrandPalette } from '@/core/branding/contrast'
 import { getBranding } from '@/core/branding/repository'
 import { AccessBanner } from '@/ui/patterns/AccessBanner'
@@ -48,7 +50,10 @@ export default async function WorkspaceLayout({
   if (!resolved.ok) notFound()
 
   const org = resolved.value
-  const { t, formatDate } = createTranslator(user.locale ?? org.locale)
+  // Izbor korisnika ima prednost nad podešavanjem organizacije; prekidač
+  // mora da radi i ovde, a ne samo u konzoli.
+  const locale = await requestLocale(user.locale ?? org.locale)
+  const { t, formatDate } = createTranslator(locale)
 
   const [sessions, branding] = await Promise.all([
     listActiveAccessSessions(db, org.organizationId),
@@ -124,6 +129,7 @@ export default async function WorkspaceLayout({
 
           <div className={styles.footer}>
             <span className={styles.user}>{user.fullName ?? user.email}</span>
+            <LocaleToggle current={locale} label={t('common.language')} />
           </div>
         </aside>
 

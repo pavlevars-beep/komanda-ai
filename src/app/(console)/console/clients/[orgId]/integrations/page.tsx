@@ -5,7 +5,7 @@ import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { getConsoleClient } from '@/core/organizations/console-repository'
 import { listIntegrations } from '@/core/integrations/repository'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import styles from './integrations.module.css'
@@ -34,7 +34,7 @@ export default async function IntegrationsPage({
   const client = await getConsoleClient(db, orgId)
   if (!client.ok) notFound()
 
-  const { t, formatRelative } = createTranslator(resolveLocale({ userLocale: user.locale }))
+  const { t, formatRelative } = createTranslator(await requestLocale(user.locale))
   const integrations = await listIntegrations(db, orgId)
 
   return (
