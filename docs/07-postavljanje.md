@@ -22,6 +22,39 @@ onim što se stvarno isporuči, i CI pada ako nešto procuri.
 
 ---
 
+## 2a. Vercel — sa koje grane se gradi
+
+**Vercel ne gradi sa `main`.** Produkciona grana ovog projekta je
+`claude/komanda-ai-command-center-85w2bm`; piše i na Overview stranici:
+
+```
+To update your Production Deployment, push to the
+claude/komanda-ai-command-center-85w2bm branch.
+```
+
+Push na `main` **ne pokreće ništa**. To nas je jednom koštalo pola dana
+traženja greške koje nije bilo: osam commit-a je stajalo na `main`-u, produkcija
+je servirala build star jedan dan, a simptom je izgledao kao greška u kodu.
+
+Provera pre nego što se bilo šta drugo dijagnostikuje:
+
+```bash
+# Šta Vercel stvarno gradi?
+git log --oneline -1 origin/claude/komanda-ai-command-center-85w2bm
+```
+
+Ako se to ne poklapa sa `main`, prvo uskladite grane pa tek onda tražite uzrok:
+
+```bash
+git push origin main:claude/komanda-ai-command-center-85w2bm
+```
+
+> **`NEXT_PUBLIC_*` se ugrađuje U BUILD, ne čita pri izvršavanju.** Zato dodavanje
+> promenljive na Vercel-u ne popravlja ništa dok se ne napravi NOVI build.
+> Deployment napravljen pre nego što je promenljiva postojala nosi prazan string
+> zauvek. Simptom: `connect-src 'self' ;` u CSP zaglavlju, bez adrese Supabase-a,
+> i 500 na svakoj zaštićenoj ruti.
+
 ## 2. Vercel — promenljive okruženja
 
 Podešavanja projekta → *Environment Variables*. Za `Production` i `Preview`:
