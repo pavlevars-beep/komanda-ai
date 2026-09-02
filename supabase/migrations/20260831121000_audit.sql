@@ -66,6 +66,20 @@ begin
     -- sloj je upravo ono što ovaj projekat izbegava.
     execute format('alter table public.%I enable row level security', v_name);
     execute format('alter table public.%I force row level security', v_name);
+
+    -- `force` ukida izuzeće vlasnika, pa i upis kroz app.write_audit
+    -- (SECURITY DEFINER) mora da ima politiku. Bez nje upis prolazi samo ako
+    -- rola ima BYPASSRLS — oslonac na atribut role, ne na zapisano pravilo.
+    -- Politika ne otvara ništa aplikaciji: particije nemaju grantove.
+    if not exists (
+      select 1 from pg_policies
+      where schemaname = 'public' and tablename = v_name and policyname = 'audit_insert'
+    ) then
+      execute format(
+        'create policy audit_insert on public.%I for insert with check (true)',
+        v_name
+      );
+    end if;
     execute format('revoke all on public.%I from anon, authenticated', v_name);
   end loop;
 end;
