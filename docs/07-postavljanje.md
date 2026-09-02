@@ -203,8 +203,23 @@ Super Admina:
 
 ```sql
 insert into public.platform_staff (user_id, staff_role)
-select id, 'super_admin' from auth.users where email = 'vasa@adresa.rs';
+select id, 'super_admin'
+from auth.users
+order by created_at desc
+limit 1
+on conflict (user_id) do update
+  set staff_role = 'super_admin', is_active = true
+returning user_id, staff_role, is_active;
 ```
+
+> **`returning` nije ukras.** Prva verzija ovog upita glasila je
+> `... from auth.users where email = 'vasa@adresa.rs'`. Kada se e-adresa ne
+> poklopi tačno, `select` ne vrati nijedan red, `insert` upiše nula redova, a
+> Postgres to prijavi kao **uspeh**. Prijava posle toga vodi na „nemate
+> pristup", a ništa ne ukazuje na uzrok.
+>
+> Sa `returning`, jedan vraćen red znači da je dodela prošla; nula redova znači
+> da u `auth.users` nema naloga. Nema tihog promašaja.
 
 Posle toga prijava na `https://<domen>` vodi pravo u konzolu, i prvi klijent
 se pravi kroz *Klijenti → Novi klijent*.

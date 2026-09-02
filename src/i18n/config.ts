@@ -26,16 +26,22 @@ export function isLocale(value: unknown): value is Locale {
 }
 
 /**
- * Redosled izbora jezika: profil korisnika -> podešavanje organizacije ->
- * Accept-Language -> podrazumevani.
+ * Redosled izbora jezika: izričit izbor -> profil korisnika -> podešavanje
+ * organizacije -> Accept-Language -> podrazumevani.
+ *
+ * `chosenLocale` je prvi jer je to jedina stavka koju je korisnik upravo
+ * kliknuo. Da profil ima prednost, prekidač na ekranu ne bi radio za
+ * prijavljenog korisnika — dugme koje izgleda da radi a ne radi.
  */
 export function resolveLocale(input: {
   // `| undefined` je eksplicitno zbog exactOptionalPropertyTypes: polje sme
   // da nedostaje, ali sme i da bude prosleđeno kao undefined.
+  chosenLocale?: string | null | undefined
   userLocale?: string | null | undefined
   organizationLocale?: string | null | undefined
   acceptLanguage?: string | null | undefined
 }): Locale {
+  if (isLocale(input.chosenLocale)) return input.chosenLocale
   if (isLocale(input.userLocale)) return input.userLocale
   if (isLocale(input.organizationLocale)) return input.organizationLocale
 
