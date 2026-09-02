@@ -177,6 +177,13 @@ export function NewClientForm({ labels }: { labels: NewClientLabels }) {
           {translate(labels.messages, state.error)}
         </p>
       ) : null}
+
+      {/*
+        Tehnički detalj — samo u konzoli, koju vidi isključivo Delta Pro
+        osoblje. Bez njega se svaka greška baze svodi na „nešto je pošlo
+        naopako", a uzrok se traži po logovima hostinga.
+      */}
+      {state.detail ? <p className={styles.detail}>{state.detail}</p> : null}
     </form>
   )
 }

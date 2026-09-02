@@ -33,6 +33,16 @@ export interface ActionContext {
 export interface ActionResultBase {
   /** Ključ za prevod poruke o grešci; izostaje kada je akcija uspela. */
   readonly error?: string
+  /**
+   * Tehnički detalj greške, ISKLJUČIVO za konzolu.
+   *
+   * Konzolu vidi samo Delta Pro osoblje, i to je alat za dijagnostiku kod
+   * klijenta — poruka „nešto je pošlo naopako" tu ne pomaže nikome. Prolazi
+   * kroz `redact`, pa iz njega ne može da izađe ključ ni connection string.
+   *
+   * U klijentskom radnom prostoru se NE prikazuje.
+   */
+  readonly detail?: string
   readonly requestId?: string
   /**
    * Koji je od dozvoljenih događaja stvarno nastupio.

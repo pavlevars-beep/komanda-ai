@@ -5,6 +5,7 @@ import type { Route } from 'next'
 import { revalidatePath } from 'next/cache'
 import { consoleAction, type ActionResultBase } from '@/server/http/with-action'
 import { formString, formStringOrNull } from '@/server/http/form'
+import { redact } from '@/server/logger'
 import { createClientInput, createClientOrganization } from '@/core/organizations/create'
 
 export interface CreateClientState extends ActionResultBase {
@@ -38,9 +39,19 @@ export const createClientAction = consoleAction<CreateClientState>(
     const created = await createClientOrganization(db, parsed.data)
 
     if (!created.ok) {
-      return created.error.key === 'clients.error.slugTaken'
-        ? { error: created.error.key, fieldErrors: { slug: created.error.key } }
-        : { error: created.error.key }
+      if (created.error.key === 'clients.error.slugTaken') {
+        return { error: created.error.key, fieldErrors: { slug: created.error.key } }
+      }
+
+      // Detalj ide osoblju u konzoli, ne samo u log. Bez toga se svaka greška
+      // baze svodi na „nešto je pošlo naopako", a uzrok se traži po logovima
+      // hostinga — što u praksi znači da se ne traži.
+      return {
+        error: created.error.key,
+        ...(created.error.detail
+          ? { detail: String(redact(created.error.detail)) }
+          : {}),
+      }
     }
 
     revalidatePath('/console/clients')
