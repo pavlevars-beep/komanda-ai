@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeBaseUrl, parseEnv, resolveEnvSource } from '@/server/env-schema'
+import {
+  describeEnvNames,
+  normalizeBaseUrl,
+  parseEnv,
+  resolveEnvSource,
+} from '@/server/env-schema'
 
 /** Minimum bez kojeg šema ne prolazi — da svaki test menja samo ono što ispituje. */
 const BASE = {
@@ -98,5 +103,32 @@ describe('poruka o grešci', () => {
     expect(parsed.ok).toBe(false)
     if (parsed.ok) return
     expect(parsed.keys).toContain('OPENAI_API_KEY')
+  })
+})
+
+describe('dijagnostika naziva u build logu', () => {
+  it('razlikuje nepostavljenu, praznu i postavljenu promenljivu', () => {
+    const opis = describeEnvNames({
+      NEXT_PUBLIC_SUPABASE_URL: 'https://x.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: '   ',
+      LOG_LEVEL: undefined,
+    })
+
+    expect(opis).toContain('NEXT_PUBLIC_SUPABASE_URL — postavljena')
+    // Prazna vrednost u Vercel UI-ju izgleda isto kao popunjena; ovde ne.
+    expect(opis).toContain('NEXT_PUBLIC_SUPABASE_ANON_KEY — PRAZNA')
+  })
+
+  it('pogrešno otkucan naziv se vidi na prvi pogled', () => {
+    // Ovo je slučaj zbog kojeg dijagnostika postoji: u listi stoji nešto što
+    // liči na traženu promenljivu, ali build je ne dobija pod tim imenom.
+    const opis = describeEnvNames({ NEXT_PUBLIC_SUPBASE_URL: 'https://x.supabase.co' })
+    expect(opis).toContain('NEXT_PUBLIC_SUPBASE_URL')
+    expect(opis).not.toContain('NEXT_PUBLIC_SUPABASE_URL —')
+  })
+
+  it('NIKAD ne ispisuje vrednost — ide u build log', () => {
+    const tajna = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tajna'
+    expect(describeEnvNames({ NEXT_PUBLIC_SUPABASE_ANON_KEY: tajna })).not.toContain(tajna)
   })
 })

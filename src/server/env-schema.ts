@@ -111,6 +111,38 @@ export type ParsedEnv =
  * Zbog toga sme da se ispiše u build log Vercel-a i da se prekopira u poruku,
  * a da pritom ne procuri nijedan ključ.
  */
+/** Prefiksi promenljivih koje su za nas relevantne — za dijagnostiku u logu. */
+const RELEVANT = /^(NEXT_PUBLIC_|SUPABASE|APP_URL|LOG_LEVEL|AI_PROVIDER|OPENAI_|NODE_ENV|IMPERSONATION_|VERCEL_ENV$|VERCEL_URL$)/
+
+/**
+ * Spisak NAZIVA promenljivih koje okruženje stvarno nudi.
+ *
+ * Postoji zbog kvara koji se drugačije ne vidi: promenljiva stoji u Vercel
+ * listi, a do build-a ne stiže. Uzrok je obično greška u nazivu ili pogrešno
+ * izabrano okruženje — a oboje se prepozna na prvi pogled čim se vidi šta
+ * build STVARNO ima.
+ *
+ * Vraća isključivo nazive. Nijedna vrednost ne izlazi odavde, pa ovo sme da
+ * stoji u build logu, koji nije tajna.
+ */
+export function describeEnvNames(raw: Readonly<Record<string, string | undefined>>): string {
+  const names = Object.keys(raw).filter((k) => RELEVANT.test(k)).sort()
+
+  if (names.length === 0) {
+    return 'Okruženje ne sadrži nijednu očekivanu promenljivu.'
+  }
+
+  return [
+    'Promenljive koje build vidi (samo nazivi, bez vrednosti):',
+    ...names.map((n) => {
+      const value = raw[n]
+      // Prazna vrednost je čest uzrok, a u UI-ju izgleda isto kao popunjena.
+      const state = value === undefined ? 'nije postavljena' : value.trim() === '' ? 'PRAZNA' : 'postavljena'
+      return `  · ${n} — ${state}`
+    }),
+  ].join('\n')
+}
+
 export function parseEnv(raw: Readonly<Record<string, string | undefined>>): ParsedEnv {
   const parsed = serverSchema.safeParse(resolveEnvSource(raw))
   if (parsed.success) return { ok: true, env: parsed.data }

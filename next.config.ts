@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
-import { parseEnv } from './src/server/env-schema'
+import { describeEnvNames, parseEnv } from './src/server/env-schema'
 
 /**
  * Okruženje se proverava PRI BUILD-U, ne tek pri prvom zahtevu.
@@ -14,7 +14,10 @@ import { parseEnv } from './src/server/env-schema'
  */
 const environment = parseEnv(process.env)
 if (!environment.ok) {
-  throw new Error(environment.message)
+  // Uz razlog ide i spisak naziva koje build stvarno vidi. Bez toga se slučaj
+  // „promenljiva stoji u UI-ju ali ne stiže do build-a" ne razlikuje od
+  // „pogrešno je otkucana", a to su dve različite popravke.
+  throw new Error(`${environment.message}\n\n${describeEnvNames(process.env)}`)
 }
 
 /**
