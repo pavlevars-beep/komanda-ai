@@ -14,7 +14,14 @@ import type { Db } from './types'
  */
 export interface RpcResult {
   readonly data: unknown
-  readonly error: { readonly message: string } | null
+  /**
+   * `code` je SQLSTATE koji je funkcija podigla.
+   *
+   * Prenosi se uz poruku zato što je jedini pouzdan način da se odbijeno
+   * pravo (42501) razlikuje od stvarnog kvara. Poređenje po tekstu poruke
+   * radi dok neko ne prevede poruku ili ne promeni zarez u njoj.
+   */
+  readonly error: { readonly message: string; readonly code?: string } | null
 }
 
 export async function callRpc(
@@ -25,6 +32,11 @@ export async function callRpc(
   const result = await db.rpc(fn, args)
   return {
     data: result.data as unknown,
-    error: result.error ? { message: String(result.error.message) } : null,
+    error: result.error
+      ? {
+          message: String(result.error.message),
+          ...(result.error.code ? { code: String(result.error.code) } : {}),
+        }
+      : null,
   }
 }

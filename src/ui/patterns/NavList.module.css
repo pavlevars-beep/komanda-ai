@@ -33,3 +33,17 @@
   .nav { flex-direction: row; flex-wrap: wrap; gap: var(--space-1); }
   .pending { display: none; }
 }
+
+.linkBody { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+
+/* Broj nepročitanih. Tabularne cifre da se širina ne pomera kada broj poraste. */
+.badge {
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  text-align: center;
+  background: var(--brand, var(--accent));
+  color: var(--brand-contrast, #fff);
+}

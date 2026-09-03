@@ -1,0 +1,6 @@
+.icon {
+  flex: none;
+  /* Poravnanje sa osnovom teksta: ikonica na sredini reda izgleda podignuto
+     jer slova imaju donji deo koji ikonica nema. */
+  vertical-align: -0.15em;
+}

@@ -380,6 +380,50 @@ export const sr = {
   'branding.saved': 'Brendiranje je sačuvano.',
   'branding.contrastOk': 'Boja zadovoljava kontrast u obe teme.',
 
+  // --- Sistemske poruke ---
+  'messages.title': 'Poruke',
+  'messages.lede': 'Stiže svima u izabranim rolama koji su aktivni članovi ove organizacije.',
+  'messages.send': 'Pošalji poruku',
+  'messages.subject': 'Naslov',
+  'messages.body': 'Tekst poruke',
+  'messages.recipients': 'Kome',
+  'messages.recipientsHint': 'Izaberite bar jednu rolu.',
+  'messages.sent': 'Poslato: {count} primalaca.',
+  'messages.sentNobody':
+    'Poruka nije stigla nikome — u izabranim rolama trenutno nema aktivnih članova.',
+  'messages.inbox': 'Prijemno sanduče',
+  'messages.inbox.empty': 'Nema poruka.',
+  'messages.unread': 'Novo',
+  'messages.error.noRoles': 'Izaberite bar jednu rolu primaoca.',
+  'messages.error.noTitle': 'Poruka mora imati naslov.',
+  'messages.error.titleTooLong': 'Naslov je predugačak.',
+  'messages.error.bodyTooLong': 'Tekst poruke je predugačak.',
+  'messages.error.notAllowed': 'Nemate pravo da šaljete poruke u ovoj organizaciji.',
+
+  'role.client_owner': 'Vlasnik naloga',
+  'role.client_admin': 'Administrator',
+  'role.manager': 'Menadžer',
+  'role.finance': 'Finansije',
+  'role.sales': 'Prodaja',
+  'role.employee': 'Zaposleni',
+
+  // --- Logotip ---
+  'branding.logo': 'Logotip',
+  'branding.logoHint': 'PNG, SVG, JPG ili WebP, do 2 MB. Prikazuje se klijentu u radnom prostoru.',
+  'branding.logoUpload': 'Otpremi logotip',
+  'branding.logoReplace': 'Zameni logotip',
+  'branding.logoRemove': 'Ukloni',
+  'branding.logoNone': 'Logotip još nije postavljen.',
+  'branding.logoSaved': 'Logotip je sačuvan.',
+  'branding.logoRemoved': 'Logotip je uklonjen.',
+  'branding.error.logoEmpty': 'Fajl je prazan.',
+  'branding.error.logoTooBig': 'Fajl je veći od 2 MB.',
+  'branding.error.logoType': 'Dozvoljeni su PNG, JPG, SVG i WebP.',
+  'branding.error.logoUpload': 'Logotip nije sačuvan. Pokušajte ponovo.',
+
+  // --- Tema ---
+  'theme.label': 'Izgled',
+
   // --- Teme ---
   'theme.light': 'Svetla',
   'theme.dark': 'Tamna',

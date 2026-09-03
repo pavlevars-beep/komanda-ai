@@ -360,6 +360,50 @@ export const en: Messages = {
   'branding.saved': 'Branding saved.',
   'branding.contrastOk': 'The colour meets contrast in both themes.',
 
+  // --- System messages ---
+  'messages.title': 'Messages',
+  'messages.lede': 'Reaches everyone in the selected roles who is an active member of this organization.',
+  'messages.send': 'Send message',
+  'messages.subject': 'Subject',
+  'messages.body': 'Message',
+  'messages.recipients': 'To',
+  'messages.recipientsHint': 'Pick at least one role.',
+  'messages.sent': 'Sent to {count} recipients.',
+  'messages.sentNobody':
+    'The message reached nobody — the selected roles currently have no active members.',
+  'messages.inbox': 'Inbox',
+  'messages.inbox.empty': 'No messages.',
+  'messages.unread': 'New',
+  'messages.error.noRoles': 'Pick at least one recipient role.',
+  'messages.error.noTitle': 'The message needs a subject.',
+  'messages.error.titleTooLong': 'The subject is too long.',
+  'messages.error.bodyTooLong': 'The message is too long.',
+  'messages.error.notAllowed': 'You are not allowed to send messages in this organization.',
+
+  'role.client_owner': 'Account owner',
+  'role.client_admin': 'Administrator',
+  'role.manager': 'Manager',
+  'role.finance': 'Finance',
+  'role.sales': 'Sales',
+  'role.employee': 'Employee',
+
+  // --- Logo ---
+  'branding.logo': 'Logo',
+  'branding.logoHint': 'PNG, SVG, JPG or WebP, up to 2 MB. Shown to the client in their workspace.',
+  'branding.logoUpload': 'Upload logo',
+  'branding.logoReplace': 'Replace logo',
+  'branding.logoRemove': 'Remove',
+  'branding.logoNone': 'No logo set yet.',
+  'branding.logoSaved': 'Logo saved.',
+  'branding.logoRemoved': 'Logo removed.',
+  'branding.error.logoEmpty': 'The file is empty.',
+  'branding.error.logoTooBig': 'The file is larger than 2 MB.',
+  'branding.error.logoType': 'PNG, JPG, SVG and WebP are allowed.',
+  'branding.error.logoUpload': 'The logo was not saved. Please try again.',
+
+  // --- Theme ---
+  'theme.label': 'Appearance',
+
   'theme.light': 'Light',
   'theme.dark': 'Dark',
   'theme.system': 'System',

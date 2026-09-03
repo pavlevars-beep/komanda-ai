@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Route } from 'next'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
@@ -11,11 +11,14 @@ import {
 import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
 import { LocaleToggle } from '@/app/locale-toggle'
+import { ThemeToggle } from '@/app/theme-toggle'
+import { readThemeCookie } from '@/ui/theme/theme'
 import { deriveBrandPalette } from '@/core/branding/contrast'
 import { getBranding } from '@/core/branding/repository'
 import { AccessBanner } from '@/ui/patterns/AccessBanner'
 import { DemoBadge } from '@/ui/patterns/StatusBadge'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
+import { countUnread } from '@/core/messages/repository'
 import { EndAccessButton } from './end-access-button'
 import styles from '../../layout.module.css'
 
@@ -55,10 +58,14 @@ export default async function WorkspaceLayout({
   const locale = await requestLocale(user.locale ?? org.locale)
   const { t, formatDate } = createTranslator(locale)
 
-  const [sessions, branding] = await Promise.all([
+  const [sessions, branding, unread, cookieStore] = await Promise.all([
     listActiveAccessSessions(db, org.organizationId),
     getBranding(db, org.organizationId),
+    countUnread(db, org.organizationId, user.id),
+    cookies(),
   ])
+
+  const theme = readThemeCookie(cookieStore.get('theme')?.value)
 
   // Boja klijenta se ne primenjuje sirova — prolazi kroz istu korekciju
   // kontrasta koju konsultant vidi u pregledu pri podešavanju. Kada boja nije
@@ -77,13 +84,19 @@ export default async function WorkspaceLayout({
   // Prikazuje se samo ono što postoji. Ostalo je vidljivo, ali označeno kao
   // nedostupno — link koji vodi na 404 izgleda kao kvar, ne kao nedovršenost.
   const nav: NavItem[] = [
-    { href: `/w/${org.organizationSlug}` as Route, label: t('nav.home') },
-    { href: `/w/${org.organizationSlug}/pitanja` as Route, label: t('nav.ask') },
-    { href: `/w/${org.organizationSlug}/beleske` as Route, label: t('notes.title') },
-    { label: t('nav.reports') },
-    { label: t('nav.alerts') },
-    { label: t('nav.approvals') },
-    { label: t('nav.settings') },
+    { href: `/w/${org.organizationSlug}` as Route, label: t('nav.home'), icon: 'home' },
+    { href: `/w/${org.organizationSlug}/pitanja` as Route, label: t('nav.ask'), icon: 'ask' },
+    {
+      href: `/w/${org.organizationSlug}/poruke` as Route,
+      label: t('messages.title'),
+      icon: 'megaphone',
+      ...(unread > 0 ? { badge: unread } : {}),
+    },
+    { href: `/w/${org.organizationSlug}/beleske` as Route, label: t('notes.title'), icon: 'note' },
+    { label: t('nav.reports'), icon: 'chart' },
+    { label: t('nav.alerts'), icon: 'bell' },
+    { label: t('nav.approvals'), icon: 'check' },
+    { label: t('nav.settings'), icon: 'settings' },
   ]
 
   return (
@@ -119,6 +132,13 @@ export default async function WorkspaceLayout({
       <div className={styles.body}>
         <aside className={styles.sidebar}>
           <div className={styles.org}>
+            {branding.ok && branding.value?.logo_url ? (
+              <img
+                src={branding.value.logo_url}
+                alt={org.organizationName}
+                className={styles.logo}
+              />
+            ) : null}
             <span className={styles.orgName}>
               {(branding.ok && branding.value?.workspace_name) || org.organizationName}
             </span>
@@ -130,7 +150,18 @@ export default async function WorkspaceLayout({
 
           <div className={styles.footer}>
             <span className={styles.user}>{user.fullName ?? user.email}</span>
-            <LocaleToggle current={locale} label={t('common.language')} />
+            <div className={styles.switches}>
+              <LocaleToggle current={locale} label={t('common.language')} />
+              <ThemeToggle
+                current={theme}
+                label={t('theme.label')}
+                optionLabels={{
+                  light: t('theme.light'),
+                  dark: t('theme.dark'),
+                  system: t('theme.system'),
+                }}
+              />
+            </div>
           </div>
         </aside>
 

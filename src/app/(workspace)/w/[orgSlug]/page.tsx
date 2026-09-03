@@ -9,6 +9,7 @@ import { loadDashboard, primaryIntegration } from '@/core/dashboard/loader'
 import { loadPanels } from '@/core/dashboard/panels'
 import { DataTable } from './data-table'
 import { WorldClocks, type Clock } from './clocks'
+import { Icon } from '@/ui/primitives/Icon'
 import { formatCardValue, formatChange } from '@/core/dashboard/format'
 import { initialiseConnectors } from '@/core/connectors'
 import { MetricCard, MetricGrid } from '@/ui/patterns/MetricCard'
@@ -133,7 +134,10 @@ export default async function WorkspaceHome({
 
       <section className={styles.section}>
         <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>{t('nav.alerts')}</h2>
+          <h2 className={styles.sectionTitle}>
+            <Icon name="bell" size={17} />
+            {t('nav.alerts')}
+          </h2>
           {alerts.ok && alerts.value.length > 0 ? (
             <span className={styles.sectionMeta}>
               {alerts.value.length}
@@ -167,12 +171,18 @@ export default async function WorkspaceHome({
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>{t('home.clocks')}</h2>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="clock" size={17} />
+          {t('home.clocks')}
+        </h2>
         <WorldClocks clocks={clocks} locale={INTL_LOCALE[locale]} />
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>{t('home.metrics')}</h2>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="chart" size={17} />
+          {t('home.metrics')}
+        </h2>
 
         {cards.length === 0 ? (
           <div className={styles.pending}>
@@ -218,7 +228,10 @@ export default async function WorkspaceHome({
 
       <div className={styles.panelGrid}>
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t('panel.debtors')}</h2>
+          <h2 className={styles.sectionTitle}>
+            <Icon name="receipt" size={17} />
+            {t('panel.debtors')}
+          </h2>
           <DataTable
             rows={panels.debtors.rows}
             unavailable={unavailableText(panels.debtors.unavailable)}
@@ -246,7 +259,10 @@ export default async function WorkspaceHome({
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t('panel.inventory')}</h2>
+          <h2 className={styles.sectionTitle}>
+            <Icon name="box" size={17} />
+            {t('panel.inventory')}
+          </h2>
           <DataTable
             rows={panels.inventory.rows}
             unavailable={unavailableText(panels.inventory.unavailable)}
@@ -275,7 +291,10 @@ export default async function WorkspaceHome({
       </div>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>{t('panel.payables')}</h2>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="wallet" size={17} />
+          {t('panel.payables')}
+        </h2>
         <DataTable
           rows={panels.payables.rows}
           unavailable={unavailableText(panels.payables.unavailable)}

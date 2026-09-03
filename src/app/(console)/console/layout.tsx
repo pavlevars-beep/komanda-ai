@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
 import { LocaleToggle } from '@/app/locale-toggle'
+import { ThemeToggle } from '@/app/theme-toggle'
+import { readThemeCookie } from '@/ui/theme/theme'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
 import { listMyOpenAccessSessions } from '@/core/organizations/console-repository'
 import { ConsoleAccessBanner } from './access-banner'
@@ -27,17 +30,21 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   const locale = await requestLocale(user.locale)
   const { t, formatDate } = createTranslator(locale)
 
-  const openSessions = await listMyOpenAccessSessions(db)
+  const [openSessions, cookieStore] = await Promise.all([
+    listMyOpenAccessSessions(db),
+    cookies(),
+  ])
+  const theme = readThemeCookie(cookieStore.get('theme')?.value)
   const now = Date.now()
 
   // Ruta postoji samo za ono što je stvarno implementirano; ostalo se
   // prikazuje kao neaktivno i označeno. Ekrani dolaze u fazama 2 i 3.
   const nav: NavItem[] = [
-    { href: '/console', label: t('console.overview') },
-    { href: '/console/clients', label: t('console.clients') },
-    { label: t('console.integrations') },
-    { label: t('console.health') },
-    { label: t('console.audit') },
+    { href: '/console', label: t('console.overview'), icon: 'chart' },
+    { href: '/console/clients', label: t('console.clients'), icon: 'building' },
+    { label: t('console.integrations'), icon: 'box' },
+    { label: t('console.health'), icon: 'check' },
+    { label: t('console.audit'), icon: 'note' },
   ]
 
   return (
@@ -74,7 +81,18 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
           <div className={styles.footer}>
             <span className={styles.user}>{user.fullName ?? user.email}</span>
             <span className={styles.role}>{user.staffRole}</span>
-            <LocaleToggle current={locale} label={t('common.language')} />
+            <div className={styles.switches}>
+              <LocaleToggle current={locale} label={t('common.language')} />
+              <ThemeToggle
+                current={theme}
+                label={t('theme.label')}
+                optionLabels={{
+                  light: t('theme.light'),
+                  dark: t('theme.dark'),
+                  system: t('theme.system'),
+                }}
+              />
+            </div>
           </div>
         </aside>
 

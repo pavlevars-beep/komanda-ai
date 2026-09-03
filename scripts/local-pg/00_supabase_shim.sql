@@ -84,3 +84,42 @@ create or replace view vault.decrypted_secrets as
 
 -- Namerno bez ijednog granta: ni lokalno rola authenticated ne sme do tajni.
 revoke all on schema vault from anon, authenticated;
+
+-- Storage: lokalno samo tabele i pomoćna funkcija, da bi migracija koja pravi
+-- kofu i politike mogla da se primeni. Na Supabase-u ovim upravlja sam
+-- storage servis; ovde se proverava da je SQL ispravan, ne da fajl stigne.
+create schema if not exists storage;
+
+create table if not exists storage.buckets (
+  id                 text primary key,
+  name               text not null,
+  public             boolean not null default false,
+  file_size_limit    bigint,
+  allowed_mime_types text[],
+  created_at         timestamptz not null default now()
+);
+
+create table if not exists storage.objects (
+  id         uuid primary key default gen_random_uuid(),
+  bucket_id  text not null references storage.buckets(id) on delete cascade,
+  name       text not null,
+  owner      uuid,
+  created_at timestamptz not null default now()
+);
+
+alter table storage.objects enable row level security;
+
+-- Na Supabase-u vraća segmente putanje bez naziva fajla; ovde isto, jer se
+-- politika oslanja baš na prvi segment.
+create or replace function storage.foldername(name text)
+returns text[]
+language sql
+immutable
+as $$
+  select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1];
+$$;
+
+grant usage on schema storage to anon, authenticated, service_role;
+grant select on storage.buckets to anon, authenticated;
+grant select, insert, update, delete on storage.objects to authenticated;
+grant select on storage.objects to anon;

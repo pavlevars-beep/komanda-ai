@@ -49,6 +49,16 @@
     padding: var(--space-4);
   }
   .nav { flex-direction: row; flex-wrap: wrap; gap: var(--space-1); }
-  .footer { display: none; }
+  /* Prekidači ostaju i na uskom ekranu — ranije je ceo podnožni deo bio
+     sakriven, pa se na telefonu nije moglo prebaciti ni jezik ni tema.
+     Skriva se samo ime korisnika, koje tu ništa ne omogućava. */
+  .footer { margin-top: var(--space-4); flex-direction: row; justify-content: flex-end; }
+  .user { display: none; }
   .main { padding: var(--space-5) var(--space-4) var(--space-10); }
 }
+
+/* Logotip klijenta. Ograničen po visini, ne po širini — logotipi su najčešće
+   široki, pa bi ograničenje po širini nasumično sekao one uspravne. */
+.logo { display: block; max-height: 36px; max-width: 100%; margin-bottom: var(--space-2); }
+
+.switches { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

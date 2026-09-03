@@ -5,7 +5,9 @@ import { z } from 'zod'
 import { uuid } from '@/core/shared/uuid'
 import { consoleAction, type ActionResultBase } from '@/server/http/with-action'
 import { formString, formStringOrNull } from '@/server/http/form'
+import { redact } from '@/server/logger'
 import { saveBranding } from '@/core/branding/repository'
+import { clearLogo, uploadLogo } from '@/core/branding/logo'
 import { checkBrandColor } from '@/core/branding/contrast'
 
 export interface BrandingState extends ActionResultBase {
@@ -78,5 +80,53 @@ export const saveBrandingAction = consoleAction<BrandingState>(
     revalidatePath('/w', 'layout')
 
     return { saved: true, ...(adjustedFrom ? { adjustedFrom } : {}) }
+  },
+)
+
+export interface LogoState extends ActionResultBase {
+  readonly uploaded?: boolean
+  readonly removed?: boolean
+}
+
+/**
+ * Otpremanje logotipa.
+ *
+ * `File` iz `FormData` se prosleđuje direktno u skladište, bez međukoraka.
+ * Čitanje u memoriju pa upisivanje ne bi dodalo nijednu proveru, a udvostručilo
+ * bi zauzeće memorije servera na svakoj otpremi.
+ */
+export const uploadLogoAction = consoleAction<LogoState>(
+  { rateLimit: 'write', audit: 'branding.updated' },
+  async ({ db }, _prev, formData) => {
+    const organizationId = formString(formData, 'organizationId')
+    if (!organizationId) return { error: 'error.invalid_input' }
+
+    const file = formData.get('logo')
+    if (!(file instanceof File)) return { error: 'branding.error.logoEmpty' }
+
+    const uploaded = await uploadLogo(db, organizationId, file)
+    if (!uploaded.ok) {
+      return {
+        error: uploaded.error.key,
+        ...(uploaded.error.detail ? { detail: String(redact(uploaded.error.detail)) } : {}),
+      }
+    }
+
+    revalidatePath(`/console/clients/${organizationId}/branding`)
+    return { uploaded: true }
+  },
+)
+
+export const removeLogoAction = consoleAction<LogoState>(
+  { rateLimit: 'write', audit: 'branding.updated' },
+  async ({ db }, _prev, formData) => {
+    const organizationId = formString(formData, 'organizationId')
+    if (!organizationId) return { error: 'error.invalid_input' }
+
+    const cleared = await clearLogo(db, organizationId)
+    if (!cleared.ok) return { error: cleared.error.key }
+
+    revalidatePath(`/console/clients/${organizationId}/branding`)
+    return { removed: true }
   },
 )

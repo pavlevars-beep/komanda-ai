@@ -8,6 +8,7 @@ import { getBranding } from '@/core/branding/repository'
 import { requestLocale } from '@/server/http/locale'
 import { createTranslator, messagesFor } from '@/i18n/translator'
 import { BrandingForm } from './branding-form'
+import { LogoForm } from './logo-form'
 import styles from './branding.module.css'
 
 export default async function BrandingPage({ params }: { params: Promise<{ orgId: string }> }) {
@@ -39,6 +40,21 @@ export default async function BrandingPage({ params }: { params: Promise<{ orgId
         <h1 className={styles.title}>{t('branding.title')}</h1>
         <p className={styles.lede}>{t('branding.lede')}</p>
       </header>
+
+      <LogoForm
+        organizationId={orgId}
+        currentUrl={current?.logo_url ?? null}
+        labels={{
+          title: t('branding.logo'),
+          hint: t('branding.logoHint'),
+          upload: t('branding.logoUpload'),
+          replace: t('branding.logoReplace'),
+          remove: t('branding.logoRemove'),
+          none: t('branding.logoNone'),
+          saved: t('branding.logoSaved'),
+          messages,
+        }}
+      />
 
       <BrandingForm
         organizationId={orgId}
