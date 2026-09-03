@@ -68,3 +68,26 @@ describe('granica server → klijent', () => {
     expect(offenders, `Traže funkciju od servera:\n${offenders.join('\n')}`).toEqual([])
   })
 })
+
+/**
+ * Jezik se bira na JEDNOM mestu.
+ *
+ * Prekidač jezika je stajao u layout-u, a pojedine stranice su jezik i dalje
+ * čitale samo iz profila — pa bi se okvir prebacio a sadržaj ne. Korisnik to
+ * vidi kao pola prevedene stranice, što je gore nego nijedan prekidač.
+ */
+describe('izbor jezika je na jednom mestu', () => {
+  const pages = [...tsxFiles('src/app')].filter((f) => f.endsWith('page.tsx') || f.endsWith('layout.tsx'))
+
+  it('nijedna stranica ne zaobilazi requestLocale', () => {
+    const offenders: string[] = []
+
+    for (const file of pages) {
+      const code = withoutComments(readFileSync(file, 'utf8'))
+      if (!code.includes('createTranslator')) continue
+      if (!code.includes('requestLocale')) offenders.push(file)
+    }
+
+    expect(offenders, `Biraju jezik mimo requestLocale:\n${offenders.join('\n')}`).toEqual([])
+  })
+})

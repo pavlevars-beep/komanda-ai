@@ -14,6 +14,7 @@ import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { writeAudit } from '@/core/audit/writer'
 import styles from './page.module.css'
+import { requestLocale } from '@/server/http/locale'
 
 const SEVERITY_TONE: Record<'info' | 'warning' | 'critical', Tone> = {
   info: 'info',
@@ -62,7 +63,9 @@ export default async function WorkspaceHome({
   if (!resolved.ok) notFound()
 
   const org = resolved.value
-  const locale = user.locale ?? org.locale
+  // Izbor korisnika ima prednost nad podešavanjem organizacije. Bez ovoga bi
+  // prekidač jezika menjao okvir (koji je u layout-u) a ne i sadržaj stranice.
+  const locale = await requestLocale(user.locale ?? org.locale)
   const { t, formatRelative } = createTranslator(locale)
 
   initialiseConnectors()

@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { listConsoleClients } from '@/core/organizations/console-repository'
-import { resolveLocale } from '@/i18n/config'
+import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import styles from './clients.module.css'
@@ -22,7 +22,7 @@ const STATUS_TONE: Record<string, Tone> = {
 export default async function ClientsPage() {
   const db = await userDb()
   const user = await currentUser(db)
-  const { t, formatRelative } = createTranslator(resolveLocale({ userLocale: user?.locale }))
+  const { t, formatRelative } = createTranslator(await requestLocale(user?.locale))
 
   const clients = await listConsoleClients(db)
 
