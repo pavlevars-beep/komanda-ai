@@ -20,7 +20,14 @@ export function isPublicPath(path: string): boolean {
   return PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`))
 }
 
-function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): string {
+/**
+ * Izvezena zbog testa.
+ *
+ * CSP se ne vidi ni u jednom pregledu koda i ne obara ni build ni testove —
+ * greška u njoj se pojavi tek kao slika koja se ne učita, u pregledaču, kod
+ * klijenta. Zato je pravilo koje se lako izgubi zapisano kao tvrdnja.
+ */
+export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): string {
   return [
     `default-src 'self'`,
     // 'strict-dynamic' znači da skripte koje učita potpisana skripta nasleđuju
@@ -28,7 +35,15 @@ function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): string {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ''}`,
     // Next ubacuje stilove inline; rizik je neuporedivo manji nego kod skripti.
     `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' data: blob:`,
+    /*
+     * Supabase domen je OVDE neophodan, ne samo u `connect-src`.
+     *
+     * Logotip klijenta stoji u Supabase skladištu, na drugom domenu.
+     * `connect-src` pokriva pozive iz koda; `<img src>` ide kroz `img-src`, i
+     * bez ovoga pregledač odbije sliku bez ijedne poruke na stranici — vidi
+     * se samo prazan okvir, što izgleda kao da logotip nije ni otpremljen.
+     */
+    `img-src 'self' data: blob: ${supabaseUrl}`,
     `font-src 'self'`,
     `connect-src 'self' ${supabaseUrl} ${isDev ? 'ws: wss:' : ''}`,
     `frame-ancestors 'none'`,

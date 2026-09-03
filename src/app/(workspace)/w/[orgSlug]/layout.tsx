@@ -18,6 +18,7 @@ import { getBranding } from '@/core/branding/repository'
 import { AccessBanner } from '@/ui/patterns/AccessBanner'
 import { DemoBadge } from '@/ui/patterns/StatusBadge'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
+import { BrandLogo } from '@/ui/patterns/BrandLogo'
 import { countUnread } from '@/core/messages/repository'
 import { EndAccessButton } from './end-access-button'
 import styles from '../../layout.module.css'
@@ -133,11 +134,7 @@ export default async function WorkspaceLayout({
         <aside className={styles.sidebar}>
           <div className={styles.org}>
             {branding.ok && branding.value?.logo_url ? (
-              <img
-                src={branding.value.logo_url}
-                alt={org.organizationName}
-                className={styles.logo}
-              />
+              <BrandLogo src={branding.value.logo_url} className={styles.logo} />
             ) : null}
             <span className={styles.orgName}>
               {(branding.ok && branding.value?.workspace_name) || org.organizationName}
