@@ -27,7 +27,7 @@ begin
   limit 1;
 
   if v_staff is null then
-    raise exception 'Nema nijednog aktivnog naloga u platform_staff.';
+    raise exception 'Nema nijednog aktivnog naloga u platform_staff — napravite ga pre ovoga.';
   end if;
 
   select r.id into v_role

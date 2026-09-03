@@ -29,13 +29,22 @@ begin
   order by s.created_at
   limit 1;
 
-  if v_staff is null then
-    raise exception 'Nema nijednog aktivnog naloga u platform_staff.';
-  end if;
-
   select r.id into v_role
   from public.roles r
   where r.key = 'client_owner' and r.is_system and r.organization_id is null;
+
+  -- Na čistoj bazi (CI, novo okruženje) osoblja još nema. Seed se tada
+  -- PRESKAČE, ne obara isporuku: demo klijent je pogodnost, a migracija koja
+  -- ruši ceo `db push` zbog nedostatka pogodnosti blokira i sve ostalo.
+  if v_staff is null then
+    raise notice 'Preskačem demo klijenta: nema aktivnog naloga u platform_staff.';
+    return;
+  end if;
+
+  if v_role is null then
+    raise notice 'Preskačem demo klijenta: sistemska rola client_owner ne postoji.';
+    return;
+  end if;
 
   -- 1. Organizacija. is_demo ostaje FALSE — trigger environment_guard odbija
   --    demo organizacije u produkciji, a demo je ovde IZVOR podataka, ne firma.
