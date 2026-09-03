@@ -8,6 +8,7 @@ import { listOpenAlerts } from '@/core/alerts/repository'
 import { loadDashboard, primaryIntegration } from '@/core/dashboard/loader'
 import { loadPanels } from '@/core/dashboard/panels'
 import { DataTable } from './data-table'
+import { WorldClocks, type Clock } from './clocks'
 import { formatCardValue, formatChange } from '@/core/dashboard/format'
 import { initialiseConnectors } from '@/core/connectors'
 import { MetricCard, MetricGrid } from '@/ui/patterns/MetricCard'
@@ -98,6 +99,25 @@ export default async function WorkspaceHome({
     organizationId: org.organizationId,
   })
 
+  /*
+   * Zone se biraju po tome sa kim se posluje, ne po veličini gradova.
+   * Prva je zona same organizacije — iz baze, ne pretpostavljena.
+   *
+   * Zona organizacije se izostavlja iz ostatka spiska kada se poklopi, da isti
+   * sat ne bi stajao dvaput.
+   */
+  const partnerClocks: Clock[] = [
+    { label: t('clock.frankfurt'), timeZone: 'Europe/Berlin' },
+    { label: t('clock.dubai'), timeZone: 'Asia/Dubai' },
+    { label: t('clock.shanghai'), timeZone: 'Asia/Shanghai' },
+    { label: t('clock.newYork'), timeZone: 'America/New_York' },
+  ]
+
+  const clocks: Clock[] = [
+    { label: t('clock.local'), timeZone: org.timezone, primary: true },
+    ...partnerClocks.filter((c) => c.timeZone !== org.timezone),
+  ]
+
   const firstName = (user.fullName ?? '').split(' ')[0]
   const hello = t(greetingKey(new Date().getHours()))
 
@@ -144,6 +164,11 @@ export default async function WorkspaceHome({
             ))}
           </ul>
         )}
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t('home.clocks')}</h2>
+        <WorldClocks clocks={clocks} locale={INTL_LOCALE[locale]} />
       </section>
 
       <section className={styles.section}>

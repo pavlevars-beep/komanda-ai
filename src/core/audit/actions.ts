@@ -41,6 +41,10 @@ export const AUDIT_ACTIONS = [
   'action.executed',
   'action.execution_failed',
 
+  // Beleške
+  'note.created',
+  'note.deleted',
+
   // Administracija
   'organization.created',
   'organization.updated',

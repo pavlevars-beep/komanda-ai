@@ -78,7 +78,8 @@ export default async function WorkspaceLayout({
   // nedostupno — link koji vodi na 404 izgleda kao kvar, ne kao nedovršenost.
   const nav: NavItem[] = [
     { href: `/w/${org.organizationSlug}` as Route, label: t('nav.home') },
-    { label: t('nav.ask') },
+    { href: `/w/${org.organizationSlug}/pitanja` as Route, label: t('nav.ask') },
+    { href: `/w/${org.organizationSlug}/beleske` as Route, label: t('notes.title') },
     { label: t('nav.reports') },
     { label: t('nav.alerts') },
     { label: t('nav.approvals') },

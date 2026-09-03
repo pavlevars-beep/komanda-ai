@@ -16,6 +16,7 @@ import { listAssignableRoles } from '@/core/organizations/invitations'
 import { InviteForm } from './invite-form'
 import { StatusBadge, DemoBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { AccessPanel } from './access-panel'
+import { DemoPanel } from './demo-panel'
 import styles from './detail.module.css'
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -54,6 +55,8 @@ export default async function ClientDetailPage({
   const locale = await requestLocale(user.locale)
   const { t, formatDate, formatRelative } = createTranslator(locale)
   const messages = messagesFor(locale, ['error.', 'access.', 'members.'])
+  // Panel demo sadržaja prijavljuje sopstvene razloge neuspeha.
+  const demoMessages = messagesFor(locale, ['error.', 'demo.error.', 'preview.'])
 
   const [onboarding, members, openSessions, roles] = await Promise.all([
     listOnboarding(db, orgId),
@@ -124,6 +127,23 @@ export default async function ClientDetailPage({
           // Akcija vraća ključ poruke; prevod se radi ovde, na serveru,
           // da klijentska komponenta ne nosi ceo katalog.
           messages,
+        }}
+      />
+
+      <DemoPanel
+        orgSlug={org.slug}
+        isDemo={org.is_demo}
+        hasSession={Boolean(mine)}
+        labels={{
+          previewTitle: t('preview.title'),
+          previewOpen: t('preview.open'),
+          previewNeedSession: t('preview.needSession'),
+          demoTitle: t('demo.title'),
+          demoExplain: t('demo.explain'),
+          demoFill: t('demo.fill'),
+          // Šablon, ne gotova rečenica — brojeve umeće klijentska komponenta.
+          demoFilled: t('demo.filled', { alerts: '{alerts}', notes: '{notes}' }),
+          messages: demoMessages,
         }}
       />
 

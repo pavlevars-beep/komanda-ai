@@ -384,6 +384,128 @@ export const sr = {
   'theme.light': 'Svetla',
   'theme.dark': 'Tamna',
   'theme.system': 'Sistemska',
+  'home.clocks': 'Vreme',
+  'clock.local': 'Ovde',
+  'clock.shanghai': 'Šangaj',
+  'clock.dubai': 'Dubai',
+  'clock.frankfurt': 'Frankfurt',
+  'clock.newYork': 'Njujork',
+
+  // --- Pitanja nad podacima ---
+  'ask.title': 'Pitanja',
+  'ask.lede':
+    'Pitanje se preslikava na imenovanu sposobnost povezanog sistema. Odgovor nosi izvor, vreme na koje se odnosi i vrstu tvrdnje.',
+  'ask.placeholder': 'Npr. koliki je prihod ovog meseca?',
+  'ask.send': 'Pitaj',
+  'ask.you': 'Pitanje',
+  'ask.assistant': 'Odgovor',
+  'ask.history': 'Raniji razgovor',
+  'ask.empty': 'Još nema pitanja. Počnite od nekog od predloga ispod.',
+  'ask.suggestions': 'Na ova pitanja umem da odgovorim',
+  'ask.suggestions.none':
+    'Nijedna sposobnost još nije uključena za ovu organizaciju, pa nema šta da se pita.',
+  'ask.unanswered': 'Na ovo pitanje nemam odgovor.',
+  'ask.notAnswered': 'Bez odgovora',
+  'ask.asOf': 'Podatak na dan {when}',
+  'ask.error.empty': 'Napišite pitanje.',
+  'ask.error.tooLong': 'Pitanje je predugačko.',
+  'ask.error.notAllowed': 'Nemate pravo da postavljate pitanja u ovoj organizaciji.',
+
+  'ask.reason.unmatched':
+    'Nisam prepoznao pitanje. Odgovaram samo na ono što povezani sistem ume da vrati kao imenovanu sposobnost — spisak je ispod.',
+  'ask.reason.ambiguous':
+    'Pitanje može da se razume na više načina. Postavite ga preciznije — moguća tumačenja su ispod.',
+  'ask.reason.no_permission': 'Za ovaj podatak vam nedostaje pravo pristupa.',
+  'ask.reason.not_connected': 'Izvor za ovaj podatak još nije povezan za ovu organizaciju.',
+  'ask.reason.unavailable': 'Izvor podataka trenutno nije dostupan.',
+  'ask.reason.unreadable':
+    'Izvor je odgovorio u obliku koji ne umem da pročitam. Ne prikazujem delimičan odgovor.',
+
+  'ask.suggest.get_financial_summary': 'Koliki je prihod ovog meseca?',
+  'ask.suggest.get_daily_sales': 'Kolika je prodaja danas?',
+  'ask.suggest.get_sales_by_period': 'Kolika je prodaja ove nedelje?',
+  'ask.suggest.get_outstanding_invoices': 'Koje fakture nisu naplaćene?',
+  'ask.suggest.get_top_debtors': 'Ko nam najviše duguje?',
+  'ask.suggest.get_payables': 'Koliko dugujemo dobavljačima?',
+  'ask.suggest.get_headcount': 'Koliko imamo zaposlenih?',
+  'ask.suggest.get_inventory_alerts': 'Koje zalihe traže pažnju?',
+
+  'ask.answer.financial':
+    'Prihod je {revenue}, dobit {profit}, marža {margin}.',
+  'ask.answer.dailySales': 'Prodaja {date}: {total} kroz {orders} porudžbina.',
+  'ask.answer.periodSales':
+    'Od {from} do {to} prodaja je {total}, promena {change} u odnosu na prethodni period.',
+  'ask.answer.outstanding': 'Nenaplaćeno je {total} kroz {count} faktura.',
+  'ask.answer.debtors': 'Ukupno potraživanje je {total}. Najveći dužnik je {name} sa {amount}.',
+  'ask.answer.debtorsNone': 'Nema otvorenih potraživanja.',
+  'ask.answer.payables': 'Obaveze prema dobavljačima su {total}, od čega {soon} dospeva u sedam dana.',
+  'ask.answer.headcount': 'Zaposlenih je {total}, raspoređenih u {departments} odeljenja.',
+  'ask.answer.inventory': 'Pažnju traži {count} artikala.',
+  'ask.answer.inventoryNone': 'Nijedan artikal trenutno ne traži pažnju.',
+
+  'ask.fact.revenue': 'Prihod',
+  'ask.fact.expenses': 'Rashod',
+  'ask.fact.profit': 'Dobit',
+  'ask.fact.margin': 'Marža',
+  'ask.fact.vsPrevious': 'U odnosu na prethodni period',
+  'ask.fact.total': 'Ukupno',
+  'ask.fact.orders': 'Porudžbina',
+  'ask.fact.previousPeriod': 'Prethodni period',
+  'ask.fact.change': 'Promena',
+  'ask.fact.debtor': '{name} · kasni {days} dana',
+  'ask.fact.payable': '{name} · dospeva {date}',
+  'ask.fact.inventoryItem': '{name} · pokriva {days} dana',
+  'ask.fact.stockOf': '{onHand} (min. {minimum})',
+
+  // --- Demo sadržaj i pregled klijentskog prikaza ---
+  'demo.title': 'Demo sadržaj',
+  'demo.explain':
+    'Pravi upozorenja i beleške IZ odgovora povezanog izvora — poruka o dužniku nastaje samo ako izvor stvarno vrati tog dužnika. Radi isključivo nad organizacijom označenom kao demo.',
+  'demo.fill': 'Napuni demo sadržaj',
+  'demo.filled': 'Napravljeno: {alerts} upozorenja i {notes} beleški.',
+  'demo.error.notDemoOrganization':
+    'Organizacija nije označena kao demo. Demo sadržaj se ne upisuje kod stvarnog klijenta.',
+  'demo.error.noIntegration': 'Organizacija još nema povezan izvor podataka.',
+  'demo.error.noData': 'Izvor nije vratio nijedan podatak iz kojeg bi se napravio sadržaj.',
+  'demo.error.cannotWrite':
+    'Upis nije prošao. Za ovo je potrebna sesija pristupa punog opsega.',
+
+  'demo.alert.debtor.title': 'Dugovanje kasni {days} dana',
+  'demo.alert.debtor.body':
+    'Kontaktirajte {name} — dugovanje {amount} kasni {days} dana. Predlog: poziv danas, pa pisana opomena ako nema odgovora u tri dana.',
+  'demo.alert.payable.title': 'Obaveza dospeva',
+  'demo.alert.payable.body':
+    'Obaveza prema {name} u iznosu {amount} dospeva {date}. Proverite raspoloživa sredstva pre tog datuma.',
+  'demo.alert.inventory.title': 'Zaliha ispod minimuma',
+  'demo.alert.inventory.body':
+    '{name}: na stanju {onHand}, minimum {minimum}. Zaliha pokriva još {days} dana — poručite na vreme.',
+
+  'demo.note.collection':
+    'Naplata: {name} je najstariji otvoreni dug ({days} dana). Dogovoriti dinamiku plaćanja pre nego što predmet ode dalje.',
+  'demo.note.inventory':
+    'Nabavka: {count} artikala je ispod minimuma. Proveriti rokove isporuke sa dobavljačima.',
+  'demo.note.weekly':
+    'Sastanak ponedeljkom: proći kroz upozorenja sa početne strane pre nego što se otvori bilo koji izveštaj.',
+
+  'preview.title': 'Klijentski prikaz',
+  'preview.open': 'Otvori klijentski prikaz',
+  'preview.needSession':
+    'Za klijentski prikaz je potrebna otvorena sesija pristupa. Pokrenite je iznad — klijent je vidi i može da je prekine.',
+
+  // --- Beleške ---
+  'notes.title': 'Beleške',
+  'notes.lede': 'Vidljive svima u ovoj organizaciji. Autor može da obriše svoju belešku.',
+  'notes.placeholder': 'Šta treba zapamtiti?',
+  'notes.add': 'Sačuvaj belešku',
+  'notes.empty': 'Još nema beleški.',
+  'notes.delete': 'Obriši',
+  'notes.author': 'Zapisao {name}',
+  'notes.error.empty': 'Beleška ne može da bude prazna.',
+  'notes.error.tooLong': 'Beleška je predugačka.',
+  'notes.error.saveFailed': 'Beleška nije sačuvana.',
+  'notes.error.deleteFailed': 'Beleška nije obrisana.',
+  'notes.saved': 'Beleška je sačuvana.',
+  'notes.deleted': 'Beleška je obrisana.',
 } as const
 
 export type MessageKey = keyof typeof sr

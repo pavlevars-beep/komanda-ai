@@ -363,4 +363,124 @@ export const en: Messages = {
   'theme.light': 'Light',
   'theme.dark': 'Dark',
   'theme.system': 'System',
+  'home.clocks': 'Time',
+  'clock.local': 'Here',
+  'clock.shanghai': 'Shanghai',
+  'clock.dubai': 'Dubai',
+  'clock.frankfurt': 'Frankfurt',
+  'clock.newYork': 'New York',
+
+  // --- Questions over data ---
+  'ask.title': 'Questions',
+  'ask.lede':
+    'A question maps to a named capability of the connected system. Every answer carries its source, the time it refers to, and the kind of claim it is.',
+  'ask.placeholder': 'E.g. what is revenue this month?',
+  'ask.send': 'Ask',
+  'ask.you': 'Question',
+  'ask.assistant': 'Answer',
+  'ask.history': 'Earlier in this conversation',
+  'ask.empty': 'No questions yet. Start from one of the suggestions below.',
+  'ask.suggestions': 'Questions I can answer',
+  'ask.suggestions.none':
+    'No capability is enabled for this organization yet, so there is nothing to ask.',
+  'ask.unanswered': 'I have no answer to this question.',
+  'ask.notAnswered': 'No answer',
+  'ask.asOf': 'Data as of {when}',
+  'ask.error.empty': 'Write a question.',
+  'ask.error.tooLong': 'The question is too long.',
+  'ask.error.notAllowed': 'You are not allowed to ask questions in this organization.',
+
+  'ask.reason.unmatched':
+    'I did not recognise the question. I answer only what the connected system exposes as a named capability — the list is below.',
+  'ask.reason.ambiguous':
+    'The question can be read in more than one way. Please be more specific — the readings are below.',
+  'ask.reason.no_permission': 'You lack the permission needed for this data.',
+  'ask.reason.not_connected': 'The source for this data is not connected for this organization yet.',
+  'ask.reason.unavailable': 'The data source is currently unavailable.',
+  'ask.reason.unreadable':
+    'The source replied in a shape I cannot read. I will not show a partial answer.',
+
+  'ask.suggest.get_financial_summary': 'What is revenue this month?',
+  'ask.suggest.get_daily_sales': 'What are sales today?',
+  'ask.suggest.get_sales_by_period': 'What are sales this week?',
+  'ask.suggest.get_outstanding_invoices': 'Which invoices are unpaid?',
+  'ask.suggest.get_top_debtors': 'Who owes us the most?',
+  'ask.suggest.get_payables': 'How much do we owe suppliers?',
+  'ask.suggest.get_headcount': 'How many people do we employ?',
+  'ask.suggest.get_inventory_alerts': 'Which stock needs attention?',
+
+  'ask.answer.financial': 'Revenue is {revenue}, profit {profit}, margin {margin}.',
+  'ask.answer.dailySales': 'Sales on {date}: {total} across {orders} orders.',
+  'ask.answer.periodSales':
+    'From {from} to {to} sales are {total}, a change of {change} against the previous period.',
+  'ask.answer.outstanding': 'Unpaid amount is {total} across {count} invoices.',
+  'ask.answer.debtors': 'Total receivables are {total}. The largest debtor is {name} at {amount}.',
+  'ask.answer.debtorsNone': 'There are no open receivables.',
+  'ask.answer.payables': 'Payables are {total}, of which {soon} falls due within seven days.',
+  'ask.answer.headcount': 'There are {total} employees across {departments} departments.',
+  'ask.answer.inventory': '{count} items need attention.',
+  'ask.answer.inventoryNone': 'No item needs attention right now.',
+
+  'ask.fact.revenue': 'Revenue',
+  'ask.fact.expenses': 'Expenses',
+  'ask.fact.profit': 'Profit',
+  'ask.fact.margin': 'Margin',
+  'ask.fact.vsPrevious': 'Against previous period',
+  'ask.fact.total': 'Total',
+  'ask.fact.orders': 'Orders',
+  'ask.fact.previousPeriod': 'Previous period',
+  'ask.fact.change': 'Change',
+  'ask.fact.debtor': '{name} · {days} days overdue',
+  'ask.fact.payable': '{name} · due {date}',
+  'ask.fact.inventoryItem': '{name} · covers {days} days',
+  'ask.fact.stockOf': '{onHand} (min. {minimum})',
+
+  // --- Demo content and client preview ---
+  'demo.title': 'Demo content',
+  'demo.explain':
+    'Creates alerts and notes FROM the connected source’s own answers — a debtor message appears only if the source really returns that debtor. Runs only against an organization marked as demo.',
+  'demo.fill': 'Fill with demo content',
+  'demo.filled': 'Created: {alerts} alerts and {notes} notes.',
+  'demo.error.notDemoOrganization':
+    'This organization is not marked as demo. Demo content is never written to a real client.',
+  'demo.error.noIntegration': 'This organization has no connected data source yet.',
+  'demo.error.noData': 'The source returned no data to build content from.',
+  'demo.error.cannotWrite': 'The write did not go through. A full-scope access session is required.',
+
+  'demo.alert.debtor.title': 'Debt overdue by {days} days',
+  'demo.alert.debtor.body':
+    'Contact {name} — a debt of {amount} is {days} days overdue. Suggested: call today, written notice if there is no reply within three days.',
+  'demo.alert.payable.title': 'Payable falling due',
+  'demo.alert.payable.body':
+    'A payable to {name} of {amount} falls due on {date}. Check available funds before that date.',
+  'demo.alert.inventory.title': 'Stock below minimum',
+  'demo.alert.inventory.body':
+    '{name}: {onHand} on hand, minimum {minimum}. Stock covers {days} more days — order in time.',
+
+  'demo.note.collection':
+    'Collections: {name} is the oldest open debt ({days} days). Agree a payment schedule before this escalates.',
+  'demo.note.inventory':
+    'Procurement: {count} items are below minimum. Check lead times with suppliers.',
+  'demo.note.weekly':
+    'Monday meeting: walk through the alerts on the home page before opening any report.',
+
+  'preview.title': 'Client view',
+  'preview.open': 'Open client view',
+  'preview.needSession':
+    'The client view needs an open access session. Start one above — the client sees it and can end it.',
+
+  // --- Notes ---
+  'notes.title': 'Notes',
+  'notes.lede': 'Visible to everyone in this organization. The author can delete their own note.',
+  'notes.placeholder': 'What is worth remembering?',
+  'notes.add': 'Save note',
+  'notes.empty': 'No notes yet.',
+  'notes.delete': 'Delete',
+  'notes.author': 'Written by {name}',
+  'notes.error.empty': 'A note cannot be empty.',
+  'notes.error.tooLong': 'The note is too long.',
+  'notes.error.saveFailed': 'The note was not saved.',
+  'notes.error.deleteFailed': 'The note was not deleted.',
+  'notes.saved': 'Note saved.',
+  'notes.deleted': 'Note deleted.',
 }

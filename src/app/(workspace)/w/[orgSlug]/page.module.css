@@ -75,3 +75,26 @@
 
 .panelGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
 @media (max-width: 900px) { .panelGrid { grid-template-columns: 1fr; } }
+
+/* --- Satovi --- */
+.clocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.clock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.clockPrimary { border-color: var(--brand, var(--line-strong)); }
+.clockLabel { font-size: var(--text-sm); color: var(--muted); }
+.clockTime { font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.clockDay { font-size: var(--text-sm); color: var(--faint); }
