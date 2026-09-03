@@ -13,18 +13,33 @@
 -- politike. Politika je bez učinka za svakoga ko privilegiju nema — jedini
 -- kome menja stvar je vlasnik, kroz `app.write_audit`.
 
-create policy audit_insert on public.audit_logs
-  for insert
-  with check (true);
+-- `create policy` nema `if not exists`, a politika može već da postoji — ručno
+-- puštena pre ove migracije, u hitnom slučaju. Migracija koja tada pukne
+-- blokira i sve ostale u istom `db push`, pa se stanje prvo proverava.
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'audit_logs' and policyname = 'audit_insert'
+  ) then
+    create policy audit_insert on public.audit_logs
+      for insert with check (true);
+  end if;
+
+  -- Isto važi i za default particiju: upit koji cilja particiju direktno ne
+  -- prolazi kroz politike roditelja.
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'audit_logs_default' and policyname = 'audit_insert'
+  ) then
+    create policy audit_insert on public.audit_logs_default
+      for insert with check (true);
+  end if;
+end;
+$$;
 
 comment on policy audit_insert on public.audit_logs is
   'Bez učinka za authenticated (nema INSERT privilegiju). Postoji da upis kroz app.write_audit ne zavisi od BYPASSRLS atributa role.';
-
--- Isto važi i za default particiju: upit koji cilja particiju direktno ne
--- prolazi kroz politike roditelja.
-create policy audit_insert on public.audit_logs_default
-  for insert
-  with check (true);
 
 -- Postojeće mesečne particije su napravljene pre ove migracije, pa ih treba
 -- obuhvatiti; `ensure_audit_partitions` sve buduće pravi sa istom politikom.
