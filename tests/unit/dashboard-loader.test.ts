@@ -17,6 +17,7 @@ const ctx: OrgContext = {
   isDemo: true,
   userId: '00000000-0000-0000-0000-0000000000b1',
   userName: 'Jelena',
+  memberRole: 'client_owner',
   permissions: ['view_sales', 'view_financial_data', 'view_inventory'],
   requestId: 'test-dashboard',
 }

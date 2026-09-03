@@ -6,17 +6,21 @@ import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { requestLocale } from '@/server/http/locale'
 import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translator'
-import { listInbox, markRead, MESSAGE_ROLES } from '@/core/messages/repository'
+import { isMessageRole, listInbox, markRead, MESSAGE_ROLES } from '@/core/messages/repository'
+import { isMessageKey } from '@/i18n/translator'
 import { Icon } from '@/ui/primitives/Icon'
 import { MessageComposer } from './composer'
 import styles from './messages.module.css'
 
 export default async function MessagesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orgSlug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { orgSlug } = await params
+  const query = await searchParams
   const reqId = makeRequestId(await headers())
 
   const db = await userDb()
@@ -49,6 +53,27 @@ export default async function MessagesPage({
   // Slanje vidi samo ko njime upravlja; ostalima ostaje sanduče.
   const canSend = org.permissions.includes('manage_alerts')
 
+  /*
+   * Predlog radnje sa stranice pitanja stiže kao KLJUČEVI PREVODA, ne kao
+   * gotov tekst.
+   *
+   * Da putanja nosi sam tekst, svako bi mogao da podmetne proizvoljnu poruku
+   * kroz adresu i pošalje je celoj upravi pod izgledom predloga sistema.
+   * Ovako se prihvata samo ono što postoji u katalogu; sve ostalo se odbacuje
+   * i obrazac ostaje prazan.
+   */
+  const prefillKey = (name: string): string => {
+    const value = query[name]
+    const key = typeof value === 'string' ? value : undefined
+    if (!key || !key.startsWith('action.prefill.')) return ''
+    return isMessageKey(key) ? t(key) : ''
+  }
+
+  const prefillRoles = (() => {
+    const value = query.roles
+    return typeof value === 'string' && isMessageRole(value) ? [value] : []
+  })()
+
   const page = (
     <div className={styles.page}>
       <header className={styles.head}>
@@ -66,6 +91,11 @@ export default async function MessagesPage({
             key,
             label: t(`role.${key}` as MessageKey),
           }))}
+          prefill={{
+            title: prefillKey('title'),
+            body: prefillKey('body'),
+            roles: prefillRoles,
+          }}
           labels={{
             subject: t('messages.subject'),
             body: t('messages.body'),

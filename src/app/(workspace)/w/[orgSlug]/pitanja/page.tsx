@@ -11,6 +11,10 @@ import { primaryIntegration } from '@/core/dashboard/loader'
 import { askableIntents } from '@/core/ai/ask'
 import { suggestionKey } from '@/core/ai/answer'
 import { latestConversation, listMessages } from '@/core/ai/repository'
+import { actionFor } from '@/core/ai/actions'
+import type { IntentKey } from '@/core/ai/question-matcher'
+import Link from 'next/link'
+import type { Route } from 'next'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { AskForm } from './ask-form'
 import styles from './ask.module.css'
@@ -29,6 +33,7 @@ interface StoredProvenance {
   freshness?: { asOf?: string }
   facts?: { label: string; value: string; warn?: boolean }[]
   unanswered?: string
+  capabilityKey?: string
 }
 
 export default async function AskPage({ params }: { params: Promise<{ orgSlug: string }> }) {
@@ -131,6 +136,30 @@ export default async function AskPage({ params }: { params: Promise<{ orgSlug: s
                       ))}
                     </dl>
                   ) : null}
+
+                  {/*
+                    Predlog radnje stoji SAMO uz odgovor koji ga zaslužuje, i
+                    samo kada korisnik sme da ga izvrši. Ponuđena pa odbijena
+                    radnja je gora od neponuđene.
+                  */}
+                  {(() => {
+                    if (unanswered || !p.capabilityKey) return null
+                    const action = actionFor(p.capabilityKey as IntentKey, org.permissions)
+                    if (!action) return null
+
+                    const query = new URLSearchParams(action.prefill ?? {}).toString()
+                    return (
+                      <div className={styles.nextAction}>
+                        <span className={styles.nextActionLabel}>{t('ask.nextAction')}</span>
+                        <Link
+                          href={`/w/${org.organizationSlug}${action.href}?${query}` as Route}
+                          className={styles.nextActionLink}
+                        >
+                          {t(action.labelKey as MessageKey)} →
+                        </Link>
+                      </div>
+                    )
+                  })()}
 
                   <div className={styles.meta}>
                     {unanswered ? (

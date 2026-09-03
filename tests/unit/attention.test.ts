@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { whatNeedsAttention, type AttentionInput } from '@/core/brief/attention'
 import { DEFAULT_BUSINESS_RULES, resolveBusinessRules } from '@/core/rules/business-rules'
+import { briefSections } from '@/core/brief/focus'
+import type { Permission } from '@/core/auth/permissions'
 
 const rules = DEFAULT_BUSINESS_RULES
 
@@ -239,5 +241,47 @@ describe('poslovna pravila', () => {
   it('neispravna vrednost ne prolazi delimično', () => {
     expect(resolveBusinessRules({ stockWarningDays: -5 })).toEqual(DEFAULT_BUSINESS_RULES)
     expect(resolveBusinessRules({ salesDropPercent: 15 })).toEqual(DEFAULT_BUSINESS_RULES)
+  })
+})
+
+describe('redosled brifa po ulozi', () => {
+  const all: Permission[] = [
+    'view_sales',
+    'view_financial_data',
+    'view_inventory',
+  ]
+
+  it('nabavci su zalihe prve, prodaji prodaja', () => {
+    expect(briefSections('procurement', all)[0]).toBe('stock')
+    expect(briefSections('sales', all)[0]).toBe('sales')
+    expect(briefSections('finance', all)[0]).toBe('receivables')
+  })
+
+  it('svaka rola vidi SVE odeljke, samo drugim redom', () => {
+    const roles = ['client_owner', 'manager', 'sales', 'finance', 'procurement']
+    for (const role of roles) {
+      expect([...briefSections(role, all)].sort()).toEqual(
+        ['debtors', 'payables', 'receivables', 'sales', 'stock'],
+      )
+    }
+  })
+
+  /*
+   * Redosled ne sme da bude zaštita. Odeljak nestaje zato što korisnik nema
+   * PRAVO, ne zato što ga rola ne stavlja visoko — inače bi se zaštita mogla
+   * zaobići preuređivanjem spiska.
+   */
+  it('bez prava odeljak nestaje, bez obzira na rolu', () => {
+    expect(briefSections('client_owner', ['view_sales'])).toEqual(['sales'])
+    expect(briefSections('finance', ['view_inventory'])).toEqual(['stock'])
+    expect(briefSections('procurement', [])).toEqual([])
+  })
+
+  it('nepoznata rola dobija širi, ne uži redosled', () => {
+    expect(briefSections('nova_rola_klijenta', all)).toEqual(
+      briefSections('client_owner', all),
+    )
+    // Osoblje u sesiji pristupa nema rolu u organizaciji klijenta.
+    expect(briefSections(null, all)).toEqual(briefSections('client_owner', all))
   })
 })

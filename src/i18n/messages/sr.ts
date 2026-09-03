@@ -600,6 +600,32 @@ export const sr = {
   'preview.needSession':
     'Za klijentski prikaz je potrebna otvorena sesija pristupa. Pokrenite je iznad — klijent je vidi i može da je prekine.',
 
+  'ask.suggest.get_stock_status': 'Koliko dana nam traje zaliha?',
+  'ask.answer.stockStatus':
+    'Najkraće traje {name} — još {days} dana pri potrošnji od {perDay} dnevno.',
+  'ask.answer.stockStatusNone':
+    'Nijedan artikal nema zabeleženu potrošnju, pa pokrivenost ne mogu da izračunam.',
+  'ask.fact.coverageOf': '{days} dana (isporuka {leadTime})',
+
+  // --- Predložene radnje ---
+  'ask.nextAction': 'Predložena sledeća radnja',
+  'action.requestCollection': 'Zatraži status naplate',
+  'action.requestInvoiceStatus': 'Zatraži status faktura',
+  'action.planPayments': 'Isplaniraj plaćanja',
+  'action.requestPurchase': 'Pokreni nabavku',
+  'action.prefill.collection.title': 'Status naplate — dužnici u kašnjenju',
+  'action.prefill.collection.body':
+    'Molimo vas da kontaktirate dužnike u kašnjenju i javite status naplate do kraja nedelje.',
+  'action.prefill.invoices.title': 'Status nenaplaćenih faktura',
+  'action.prefill.invoices.body':
+    'Molimo pregled otvorenih faktura i povratnu informaciju o očekivanoj dinamici naplate.',
+  'action.prefill.payables.title': 'Plan plaćanja za narednu nedelju',
+  'action.prefill.payables.body':
+    'Molimo proveru raspoloživih sredstava i predlog redosleda plaćanja za obaveze koje dospevaju.',
+  'action.prefill.stock.title': 'Zalihe koje traže nabavku',
+  'action.prefill.stock.body':
+    'Molimo proveru rokova isporuke i pokretanje nabavke za artikle sa niskom pokrivenošću.',
+
   // --- Beleške ---
   'notes.title': 'Beleške',
   'notes.lede': 'Vidljive svima u ovoj organizaciji. Autor može da obriše svoju belešku.',

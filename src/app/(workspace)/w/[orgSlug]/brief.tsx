@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import type { AttentionItem, AttentionSeverity } from '@/core/brief/attention'
 import type { Block, MorningBrief } from '@/core/brief/loader'
+import type { BriefSection } from '@/core/brief/focus'
 import type { Translator, MessageKey } from '@/i18n/translator'
 import { Icon, type IconName } from '@/ui/primitives/Icon'
 import styles from './brief.module.css'
@@ -167,45 +168,26 @@ export function Brief({
   brief,
   orgSlug,
   greeting,
+  sections,
   f,
 }: {
   brief: MorningBrief
   orgSlug: string
   greeting: string
+  /**
+   * Odeljci, redom, za ovog korisnika.
+   *
+   * Redosled nije zaštita — odeljak koji korisnik ne sme da vidi je uklonjen
+   * uzvodno, pravima. Ovde se odlučuje samo šta ide prvo.
+   */
+  sections: readonly BriefSection[]
   f: BriefFormat
 }) {
   const { sales, receivables, debtors, payables, stock } = brief
 
-  return (
-    <div className={styles.page}>
-      <header className={styles.greeting}>
-        <h1 className={styles.hello}>{greeting}</h1>
-        {brief.oldestAsOf ? (
-          <span className={styles.asOf}>
-            {f.t('brief.asOf', { when: f.date(brief.oldestAsOf) })}
-          </span>
-        ) : null}
-      </header>
-
-      {brief.staleBlocks > 0 ? (
-        <p className={styles.stale}>
-          <Icon name="warning" size={16} />
-          {f.t('brief.stale')}
-        </p>
-      ) : null}
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <Icon name="bell" size={17} />
-          {f.t('brief.attention')}
-          {brief.attention.length > 0 ? (
-            <span className={styles.sectionMeta}>{f.number(brief.attention.length)}</span>
-          ) : null}
-        </h2>
-        <AttentionList items={brief.attention} orgSlug={orgSlug} f={f} />
-      </section>
-
-      <section className={styles.section}>
+  const blocks: Record<BriefSection, React.ReactNode> = {
+    sales: (
+      <section key="sales" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <Icon name="chart" size={17} />
           {f.t('brief.sales')}
@@ -237,102 +219,106 @@ export function Brief({
           <Unavailable block={sales} f={f} />
         )}
       </section>
+    ),
 
-      <div className={styles.grid}>
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <Icon name="receipt" size={17} />
-            {f.t('brief.receivables')}
-          </h2>
-          {receivables.data ? (
-            <div className={styles.card}>
-              <dl className={styles.rows}>
-                <div className={styles.row}>
-                  <dt className={styles.rowLabel}>{f.t('brief.receivables.total')}</dt>
-                  <dd className={styles.rowValue}>
-                    {f.money(receivables.data.total, receivables.data.currency)}
-                  </dd>
-                </div>
-                <div className={styles.row}>
-                  <dt className={styles.rowLabel}>{f.t('brief.receivables.overdue')}</dt>
-                  <dd className={styles.rowValue}>
-                    {f.money(receivables.data.overdue, receivables.data.currency)}
-                  </dd>
-                </div>
-              </dl>
-
-              <div className={styles.bars}>
-                {receivables.data.buckets.map((bucket) => {
-                  const total = Number(receivables.data!.total)
-                  const share = total > 0 ? (Number(bucket.amount) / total) * 100 : 0
-                  const fill =
-                    bucket.fromDays >= brief.rules.receivableCriticalDays
-                      ? styles.barFillCritical
-                      : bucket.fromDays >= brief.rules.receivableWarningDays
-                        ? styles.barFillWarn
-                        : ''
-
-                  return (
-                    <div key={bucket.fromDays} className={styles.bar}>
-                      <span className={styles.barLabel}>
-                        {bucket.toDays === null
-                          ? f.t('brief.receivables.bucketOpen', { from: bucket.fromDays })
-                          : f.t('brief.receivables.bucket', {
-                              from: bucket.fromDays,
-                              to: bucket.toDays,
-                            })}
-                      </span>
-                      <span className={styles.barValue}>
-                        {f.money(bucket.amount, receivables.data!.currency)}
-                      </span>
-                      <div className={styles.barTrack}>
-                        <div
-                          className={`${styles.barFill} ${fill}`.trim()}
-                          style={{ width: `${Math.min(100, share)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
+    receivables: (
+      <section key="receivables" className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="receipt" size={17} />
+          {f.t('brief.receivables')}
+        </h2>
+        {receivables.data ? (
+          <div className={styles.card}>
+            <dl className={styles.rows}>
+              <div className={styles.row}>
+                <dt className={styles.rowLabel}>{f.t('brief.receivables.total')}</dt>
+                <dd className={styles.rowValue}>
+                  {f.money(receivables.data.total, receivables.data.currency)}
+                </dd>
               </div>
+              <div className={styles.row}>
+                <dt className={styles.rowLabel}>{f.t('brief.receivables.overdue')}</dt>
+                <dd className={styles.rowValue}>
+                  {f.money(receivables.data.overdue, receivables.data.currency)}
+                </dd>
+              </div>
+            </dl>
 
-              <Source block={receivables} f={f} />
+            <div className={styles.bars}>
+              {receivables.data.buckets.map((bucket) => {
+                const total = Number(receivables.data!.total)
+                const share = total > 0 ? (Number(bucket.amount) / total) * 100 : 0
+                const fill =
+                  bucket.fromDays >= brief.rules.receivableCriticalDays
+                    ? styles.barFillCritical
+                    : bucket.fromDays >= brief.rules.receivableWarningDays
+                      ? styles.barFillWarn
+                      : ''
+
+                return (
+                  <div key={bucket.fromDays} className={styles.bar}>
+                    <span className={styles.barLabel}>
+                      {bucket.toDays === null
+                        ? f.t('brief.receivables.bucketOpen', { from: bucket.fromDays })
+                        : f.t('brief.receivables.bucket', {
+                            from: bucket.fromDays,
+                            to: bucket.toDays,
+                          })}
+                    </span>
+                    <span className={styles.barValue}>
+                      {f.money(bucket.amount, receivables.data!.currency)}
+                    </span>
+                    <div className={styles.barTrack}>
+                      <div
+                        className={`${styles.barFill} ${fill}`.trim()}
+                        style={{ width: `${Math.min(100, share)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          ) : (
-            <Unavailable block={receivables} f={f} />
-          )}
-        </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <Icon name="wallet" size={17} />
-            {f.t('brief.payables')}
-          </h2>
-          {payables.data ? (
-            <div className={styles.card}>
-              <dl className={styles.rows}>
-                <div className={styles.row}>
-                  <dt className={styles.rowLabel}>{f.t('brief.payables.total')}</dt>
-                  <dd className={styles.rowValue}>
-                    {f.money(payables.data.total, payables.data.currency)}
-                  </dd>
-                </div>
-                <div className={styles.row}>
-                  <dt className={styles.rowLabel}>{f.t('brief.payables.soon')}</dt>
-                  <dd className={styles.rowValue}>
-                    {f.money(payables.data.dueWithin7Days, payables.data.currency)}
-                  </dd>
-                </div>
-              </dl>
-              <Source block={payables} f={f} />
-            </div>
-          ) : (
-            <Unavailable block={payables} f={f} />
-          )}
-        </section>
-      </div>
+            <Source block={receivables} f={f} />
+          </div>
+        ) : (
+          <Unavailable block={receivables} f={f} />
+        )}
+      </section>
+    ),
 
-      <section className={styles.section}>
+    payables: (
+      <section key="payables" className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="wallet" size={17} />
+          {f.t('brief.payables')}
+        </h2>
+        {payables.data ? (
+          <div className={styles.card}>
+            <dl className={styles.rows}>
+              <div className={styles.row}>
+                <dt className={styles.rowLabel}>{f.t('brief.payables.total')}</dt>
+                <dd className={styles.rowValue}>
+                  {f.money(payables.data.total, payables.data.currency)}
+                </dd>
+              </div>
+              <div className={styles.row}>
+                <dt className={styles.rowLabel}>{f.t('brief.payables.soon')}</dt>
+                <dd className={styles.rowValue}>
+                  {f.money(payables.data.dueWithin7Days, payables.data.currency)}
+                </dd>
+              </div>
+            </dl>
+            <Source block={payables} f={f} />
+          </div>
+        ) : (
+          <Unavailable block={payables} f={f} />
+        )}
+      </section>
+    ),
+
+    debtors: (
+      <section key="debtors" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <Icon name="receipt" size={17} />
           {f.t('brief.receivables.topDebtors')}
@@ -355,8 +341,10 @@ export function Brief({
           <Unavailable block={debtors} f={f} />
         )}
       </section>
+    ),
 
-      <section className={styles.section}>
+    stock: (
+      <section key="stock" className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <Icon name="box" size={17} />
           {f.t('brief.stock')}
@@ -367,7 +355,8 @@ export function Brief({
               {stock.data.items.map((item) => (
                 <div key={item.item} className={styles.row}>
                   <dt className={styles.rowLabel}>
-                    {item.item} · {f.t('brief.stock.perDay', { value: f.number(item.averageDailySales) })}
+                    {item.item} ·{' '}
+                    {f.t('brief.stock.perDay', { value: f.number(item.averageDailySales) })}
                   </dt>
                   <dd className={styles.rowValue}>
                     {f.t('panel.days', { days: item.daysOfCover })}
@@ -381,6 +370,39 @@ export function Brief({
           <Unavailable block={stock} f={f} />
         )}
       </section>
+    ),
+  }
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.greeting}>
+        <h1 className={styles.hello}>{greeting}</h1>
+        {brief.oldestAsOf ? (
+          <span className={styles.asOf}>
+            {f.t('brief.asOf', { when: f.date(brief.oldestAsOf) })}
+          </span>
+        ) : null}
+      </header>
+
+      {brief.staleBlocks > 0 ? (
+        <p className={styles.stale}>
+          <Icon name="warning" size={16} />
+          {f.t('brief.stale')}
+        </p>
+      ) : null}
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <Icon name="bell" size={17} />
+          {f.t('brief.attention')}
+          {brief.attention.length > 0 ? (
+            <span className={styles.sectionMeta}>{f.number(brief.attention.length)}</span>
+          ) : null}
+        </h2>
+        <AttentionList items={brief.attention} orgSlug={orgSlug} f={f} />
+      </section>
+
+      {sections.map((section) => blocks[section])}
     </div>
   )
 }

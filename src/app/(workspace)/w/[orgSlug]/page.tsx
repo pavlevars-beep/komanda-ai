@@ -7,6 +7,7 @@ import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadMorningBrief } from '@/core/brief/loader'
 import { businessRulesFor } from '@/core/rules/repository'
+import { briefSections } from '@/core/brief/focus'
 import { initialiseConnectors } from '@/core/connectors'
 import { INTL_LOCALE } from '@/i18n/config'
 import { createTranslator } from '@/i18n/translator'
@@ -102,6 +103,7 @@ export default async function WorkspaceHome({
         brief={brief}
         orgSlug={org.organizationSlug}
         greeting={greeting}
+        sections={briefSections(org.memberRole, org.permissions)}
         f={{
           t,
           money: (amount, currency) =>

@@ -24,6 +24,15 @@ export interface OrgContext {
   readonly userName: string | null
   readonly permissions: readonly Permission[]
 
+  /**
+   * Rola člana u ovoj organizaciji, ili `null` za osoblje u sesiji pristupa.
+   *
+   * Koristi se ISKLJUČIVO za redosled i naglasak na ekranu. Autorizaciju
+   * sprovode prava i RLS — da rola odlučuje o pristupu, postojala bi dva
+   * izvora istine o istoj stvari.
+   */
+  readonly memberRole: string | null
+
   /** Popunjeno samo kada je pozivalac Delta Pro osoblje. */
   readonly staff?: {
     readonly role: StaffRole

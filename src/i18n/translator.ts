@@ -103,3 +103,17 @@ export function messagesFor(
 }
 
 export type { MessageKey }
+
+/**
+ * Da li je vrednost ključ iz kataloga.
+ *
+ * Postoji zbog jednog konkretnog rizika: predlog radnje prosleđuje ključ kroz
+ * adresu, a adresu piše ko god hoće. Bez ove provere bi se kroz upitni
+ * parametar mogao podmetnuti proizvoljan tekst i poslati celoj upravi pod
+ * izgledom poruke koju je sistem predložio.
+ *
+ * Prihvata se SAMO ono što stvarno postoji u katalogu; sve ostalo pada.
+ */
+export function isMessageKey(value: unknown): value is MessageKey {
+  return typeof value === 'string' && Object.hasOwn(sr, value)
+}

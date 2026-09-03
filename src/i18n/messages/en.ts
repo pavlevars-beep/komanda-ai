@@ -572,6 +572,32 @@ export const en: Messages = {
   'preview.needSession':
     'The client view needs an open access session. Start one above — the client sees it and can end it.',
 
+  'ask.suggest.get_stock_status': 'How many days of stock do we have?',
+  'ask.answer.stockStatus':
+    'The shortest is {name} — {days} more days at {perDay} per day.',
+  'ask.answer.stockStatusNone':
+    'No item has recorded demand, so coverage cannot be calculated.',
+  'ask.fact.coverageOf': '{days} days (lead time {leadTime})',
+
+  // --- Suggested actions ---
+  'ask.nextAction': 'Suggested next action',
+  'action.requestCollection': 'Request collection status',
+  'action.requestInvoiceStatus': 'Request invoice status',
+  'action.planPayments': 'Plan payments',
+  'action.requestPurchase': 'Start procurement',
+  'action.prefill.collection.title': 'Collection status — overdue debtors',
+  'action.prefill.collection.body':
+    'Please contact the overdue debtors and report collection status by the end of the week.',
+  'action.prefill.invoices.title': 'Status of unpaid invoices',
+  'action.prefill.invoices.body':
+    'Please review the open invoices and report the expected collection schedule.',
+  'action.prefill.payables.title': 'Payment plan for next week',
+  'action.prefill.payables.body':
+    'Please check available funds and propose a payment order for the payables falling due.',
+  'action.prefill.stock.title': 'Stock requiring procurement',
+  'action.prefill.stock.body':
+    'Please check lead times and start procurement for items with low coverage.',
+
   // --- Notes ---
   'notes.title': 'Notes',
   'notes.lede': 'Visible to everyone in this organization. The author can delete their own note.',

@@ -96,3 +96,26 @@
   color: var(--muted);
   text-align: center;
 }
+
+/* --- Predložena radnja --- */
+.nextAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+.nextActionLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.nextActionLink {
+  font-size: var(--text-base);
+  color: var(--brand-ink, var(--accent));
+  text-decoration: none;
+}
+.nextActionLink:hover { text-decoration: underline; }

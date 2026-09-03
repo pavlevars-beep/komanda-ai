@@ -28,6 +28,7 @@ export type IntentKey =
   | 'get_payables'
   | 'get_headcount'
   | 'get_inventory_alerts'
+  | 'get_stock_status'
 
 /** Vremenski opseg koji je pitanje pomenulo. Period popunjava server, ne pitanje. */
 export type PeriodHint = 'today' | 'yesterday' | 'week' | 'month' | 'previousMonth'
@@ -126,6 +127,24 @@ const INTENTS: readonly Intent[] = [
       'inventory', 'stock', 'warehouse', 'item',
     ],
     support: ['nedostaje', 'minimum', 'kriticno', 'low', 'below', 'alert'],
+    // Pitanje o TRAJANJU zalihe traži pokrivenost, ne spisak ispod minimuma.
+    veto: ['koliko dana', 'pokrivenost', 'izdrzimo', 'traje', 'how many days', 'coverage', 'last us'],
+  },
+  {
+    key: 'get_stock_status',
+    permission: 'view_inventory',
+    /*
+     * Sidra su ovde IZRAZI, ne pojedinačne reči.
+     *
+     * „Koliko dana možemo da izdržimo sa zalihom" i „koliko imamo zaposlenih"
+     * dele reč „koliko"; sama po sebi ona ne znači ništa. Tek spoj sa danima
+     * ili pokrivenošću izdvaja ovo pitanje.
+     */
+    anchors: [
+      'koliko dana', 'pokrivenost', 'izdrzimo', 'koliko traje',
+      'how many days', 'coverage', 'how long will',
+    ],
+    support: ['zalih', 'magacin', 'artikal', 'stock', 'inventory'],
   },
 ]
 

@@ -112,6 +112,19 @@ const headcount = z.object({
   departments: z.array(z.object({ name: z.string(), count: z.number().int() })),
 })
 
+const stockStatus = z.object({
+  items: z.array(
+    z.object({
+      item: z.string(),
+      onHand: z.number(),
+      minimum: z.number(),
+      averageDailySales: z.number(),
+      daysOfCover: z.number(),
+      leadTimeDays: z.number().int(),
+    }),
+  ),
+})
+
 const inventory = z.object({
   items: z.array(
     z.object({
@@ -278,6 +291,43 @@ export function buildAnswer(intent: IntentKey, data: unknown, f: AnswerFormat): 
         facts: d.departments.map((dep) => ({
           label: dep.name,
           value: f.number(dep.count),
+        })),
+      }
+    }
+
+    case 'get_stock_status': {
+      const parsed = stockStatus.safeParse(data)
+      if (!parsed.success) return null
+
+      /*
+       * Odgovor se vodi NAJKRAĆOM pokrivenošću, ne prvim artiklom u nizu.
+       * Pitanje „koliko dana možemo da izdržimo" traži najslabiju kariku;
+       * prosek bi je sakrio, a redosled iz izvora nije obećanje.
+       *
+       * Artikli bez potrošnje se izostavljaju — pokrivenost izračunata
+       * deljenjem nulom nije uvid nego artefakt računa.
+       */
+      const withDemand = parsed.data.items.filter((i) => i.averageDailySales > 0)
+      const sorted = [...withDemand].sort((a, b) => a.daysOfCover - b.daysOfCover)
+      const worst = sorted[0]
+
+      return {
+        text: worst
+          ? f.t('ask.answer.stockStatus', {
+              name: worst.item,
+              days: f.number(worst.daysOfCover),
+              perDay: f.number(worst.averageDailySales),
+            })
+          : f.t('ask.answer.stockStatusNone'),
+        facts: sorted.slice(0, MAX_FACTS).map((i) => ({
+          label: f.t('ask.fact.inventoryItem', { name: i.item, days: i.daysOfCover }),
+          value: f.t('ask.fact.coverageOf', {
+            days: f.number(i.daysOfCover),
+            leadTime: f.number(i.leadTimeDays),
+          }),
+          // Zaliha koja se istroši pre isporuke je jedini problem sa zalihom
+          // koji se ne može popraviti kasnije.
+          warn: i.daysOfCover < i.leadTimeDays,
         })),
       }
     }

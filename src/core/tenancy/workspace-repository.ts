@@ -30,6 +30,7 @@ const workspaceContextRow = z.object({
   timezone: z.string(),
   is_demo: z.boolean(),
   permissions: permissionArray,
+  member_role: z.string().nullable(),
   staff_role: z.enum(STAFF_ROLES).nullable(),
   impersonation_session_id: uuid().nullable(),
   impersonation_expires_at: z.string().nullable(),
@@ -104,6 +105,7 @@ export async function resolveOrgContext(
     userId: input.userId,
     userName: input.userName,
     permissions: row.permissions,
+    memberRole: row.member_role,
     requestId: input.requestId,
     ...(row.staff_role
       ? {

@@ -23,10 +23,19 @@ export interface RoleOption {
 export function MessageComposer({
   orgSlug,
   roles,
+  prefill,
   labels,
 }: {
   orgSlug: string
   roles: readonly RoleOption[]
+  /**
+   * Unapred popunjen obrazac, kada se dolazi iz predloga radnje.
+   *
+   * Popunjava se, ali se NE šalje. Granica između preporuke i radnje se ne
+   * prelazi bez čoveka — poruka koja krene sama, i kada je tačna, ukida
+   * poslednju priliku da se zaustavi.
+   */
+  prefill?: { title: string; body: string; roles: readonly string[] }
   labels: {
     subject: string
     body: string
@@ -50,7 +59,12 @@ export function MessageComposer({
         <div className={styles.roles}>
           {roles.map((role) => (
             <label key={role.key} className={styles.role}>
-              <input type="checkbox" name="roles" value={role.key} />
+              <input
+                type="checkbox"
+                name="roles"
+                value={role.key}
+                defaultChecked={prefill?.roles.includes(role.key) ?? false}
+              />
               {role.label}
             </label>
           ))}
@@ -67,6 +81,7 @@ export function MessageComposer({
           name="title"
           className={styles.input}
           maxLength={MESSAGE_TITLE_MAX}
+          defaultValue={prefill?.title ?? ''}
           required
         />
       </div>
@@ -80,6 +95,7 @@ export function MessageComposer({
           name="body"
           className={styles.textarea}
           maxLength={MESSAGE_BODY_MAX}
+          defaultValue={prefill?.body ?? ''}
         />
       </div>
 
