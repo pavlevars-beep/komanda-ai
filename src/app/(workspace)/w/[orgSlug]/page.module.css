@@ -51,3 +51,27 @@
   text-transform: uppercase;
   color: var(--warn);
 }
+
+/* --- Tabele --- */
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+.tableCaption { caption-side: bottom; padding-top: var(--space-2); font-size: var(--text-sm); color: var(--faint); text-align: left; }
+.table th {
+  text-align: left; font-weight: 500; color: var(--muted); font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
+.table tr:last-child td { border-bottom: none; }
+/* Kolone brojeva nose tabularne cifre da se iznosi poravnaju po zarezu. */
+.numeric { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.warnCell { color: var(--warn); font-weight: 500; }
+
+.unavailable {
+  display: flex; flex-direction: column; gap: var(--space-1);
+  padding: var(--space-4); border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md); color: var(--muted); font-size: var(--text-base);
+}
+.unavailableLabel { font-size: var(--text-sm); color: var(--faint); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.panelGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+@media (max-width: 900px) { .panelGrid { grid-template-columns: 1fr; } }

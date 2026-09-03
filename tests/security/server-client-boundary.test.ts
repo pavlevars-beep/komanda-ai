@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -36,7 +36,20 @@ describe('granica server → klijent', () => {
     expect(files.length).toBeGreaterThan(10)
   })
 
-  it('nijedna serverska komponenta ne gradi funkciju od prevodioca', () => {
+  it('nijedna serverska komponenta ne gradi funkciju za KLIJENTSKU komponentu', () => {
+    // Prva verzija ove provere prijavljivala je svaku `(x) => t(...)` u
+    // serverskoj komponenti. To je bilo pregrubo: funkcija između dve
+    // SERVERSKE komponente je sasvim ispravna, i provera je oborila build na
+    // tabeli koja ne prelazi nijednu granicu.
+    //
+    // Sada se gleda i odredište: prijavljuje se samo fajl koji gradi funkciju
+    // od prevodioca I uvozi komponentu označenu sa 'use client'.
+    const clientComponents = new Set(
+      files
+        .filter((f) => readFileSync(f, 'utf8').includes("'use client'"))
+        .map((f) => basename(f, '.tsx')),
+    )
+
     const offenders: string[] = []
 
     for (const file of files) {
@@ -44,9 +57,12 @@ describe('granica server → klijent', () => {
       if (source.includes("'use client'")) continue
 
       const code = withoutComments(source)
-      // `(x) => t('kljuc', ...)` u serverskoj komponenti završi kao prop
-      // klijentske komponente i obori render.
-      if (/=>\s*t\(/.test(code)) offenders.push(file)
+      if (!/=>\s*t\(/.test(code)) continue
+
+      const importsClient = [...clientComponents].some((name) =>
+        new RegExp(`from '[^']*${name}'`).test(code),
+      )
+      if (importsClient) offenders.push(file)
     }
 
     expect(offenders, `Prosleđuju funkciju klijentu:\n${offenders.join('\n')}`).toEqual([])

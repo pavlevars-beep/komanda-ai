@@ -216,3 +216,26 @@ export async function loadDashboard(
 
   return Promise.all(cards.value.map((card) => loadCard(db, ctx, card, now)))
 }
+
+/**
+ * Integracija koju konsultant koristi za početnu stranu.
+ *
+ * Uzima se iz prve kartice, ne bira se „bilo koja povezana" — tabele ispod
+ * kartica moraju da čitaju iz istog izvora kao i brojevi iznad njih. Inače bi
+ * ukupan iznos potraživanja na kartici mogao da ne odgovara zbiru u tabeli
+ * dužnika, što je prvo što knjigovođa primeti.
+ */
+export async function primaryIntegration(
+  db: Db,
+  organizationId: string,
+): Promise<{ integrationId: string | null; connectorType: string | null }> {
+  const cards = await listDashboardCards(db, organizationId)
+  if (!cards.ok) return { integrationId: null, connectorType: null }
+
+  const withIntegration = cards.value.find((c) => c.integration_id && c.connector_type)
+
+  return {
+    integrationId: withIntegration?.integration_id ?? null,
+    connectorType: withIntegration?.connector_type ?? null,
+  }
+}

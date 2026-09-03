@@ -5,7 +5,9 @@ import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { listOpenAlerts } from '@/core/alerts/repository'
-import { loadDashboard } from '@/core/dashboard/loader'
+import { loadDashboard, primaryIntegration } from '@/core/dashboard/loader'
+import { loadPanels } from '@/core/dashboard/panels'
+import { DataTable } from './data-table'
 import { formatCardValue, formatChange } from '@/core/dashboard/format'
 import { initialiseConnectors } from '@/core/connectors'
 import { MetricCard, MetricGrid } from '@/ui/patterns/MetricCard'
@@ -70,10 +72,23 @@ export default async function WorkspaceHome({
 
   initialiseConnectors()
 
-  const [alerts, cards] = await Promise.all([
+  const source = await primaryIntegration(db, org.organizationId)
+
+  const [alerts, cards, panels] = await Promise.all([
     listOpenAlerts(db, org),
     loadDashboard(db, org),
+    loadPanels(db, org, source.integrationId, source.connectorType),
   ])
+
+  const money = (amount: string, currency: string) =>
+    new Intl.NumberFormat(INTL_LOCALE[locale], {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Number(amount))
+
+  const unavailableText = (reason: string | undefined) =>
+    reason ? t(`metric.unavailable.${reason}` as MessageKey) : undefined
 
   await writeAudit(db, {
     action: 'workspace.opened',
@@ -174,6 +189,96 @@ export default async function WorkspaceHome({
             })}
           </MetricGrid>
         )}
+      </section>
+
+      <div className={styles.panelGrid}>
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('panel.debtors')}</h2>
+          <DataTable
+            rows={panels.debtors.rows}
+            unavailable={unavailableText(panels.debtors.unavailable)}
+            unavailableLabel={t('metric.unavailable')}
+            emptyLabel={t('panel.debtors.empty')}
+            caption={t('panel.source.demo')}
+            columns={[
+              { key: 'customer', header: t('panel.col.customer'), render: (r) => r.customer },
+              {
+                key: 'amount',
+                header: t('panel.col.amount'),
+                numeric: true,
+                render: (r) => money(r.amount, r.currency),
+              },
+              {
+                key: 'days',
+                header: t('panel.col.overdue'),
+                numeric: true,
+                // Preko 60 dana je granica posle koje naplata postaje ozbiljna.
+                warn: (r) => r.oldestOverdueDays > 60,
+                render: (r) => t('panel.days', { days: r.oldestOverdueDays }),
+              },
+            ]}
+          />
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('panel.inventory')}</h2>
+          <DataTable
+            rows={panels.inventory.rows}
+            unavailable={unavailableText(panels.inventory.unavailable)}
+            unavailableLabel={t('metric.unavailable')}
+            emptyLabel={t('panel.inventory.empty')}
+            caption={t('panel.source.demo')}
+            columns={[
+              { key: 'item', header: t('panel.col.item'), render: (r) => r.item },
+              {
+                key: 'onHand',
+                header: t('panel.col.onHand'),
+                numeric: true,
+                warn: (r) => r.onHand < r.minimum,
+                render: (r) => String(r.onHand),
+              },
+              {
+                key: 'cover',
+                header: t('panel.col.cover'),
+                numeric: true,
+                warn: (r) => r.daysOfCover <= 3,
+                render: (r) => t('panel.days', { days: r.daysOfCover }),
+              },
+            ]}
+          />
+        </section>
+      </div>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t('panel.payables')}</h2>
+        <DataTable
+          rows={panels.payables.rows}
+          unavailable={unavailableText(panels.payables.unavailable)}
+          unavailableLabel={t('metric.unavailable')}
+          emptyLabel={t('panel.payables.empty')}
+          caption={t('panel.source.demo')}
+          columns={[
+            { key: 'supplier', header: t('panel.col.supplier'), render: (r) => r.supplier },
+            {
+              key: 'amount',
+              header: t('panel.col.amount'),
+              numeric: true,
+              render: (r) => money(r.amount, r.currency),
+            },
+            { key: 'due', header: t('panel.col.due'), render: (r) => r.dueDate },
+            {
+              key: 'left',
+              header: t('panel.col.daysLeft'),
+              numeric: true,
+              // Negativan broj znači da je obaveza već dospela.
+              warn: (r) => r.daysUntilDue <= 7,
+              render: (r) =>
+                r.daysUntilDue < 0
+                  ? t('panel.overdueBy', { days: Math.abs(r.daysUntilDue) })
+                  : t('panel.days', { days: r.daysUntilDue }),
+            },
+          ]}
+        />
       </section>
     </div>
   )
