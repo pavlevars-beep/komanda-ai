@@ -93,6 +93,11 @@ export default async function WorkspaceLayout({
       icon: 'megaphone',
       ...(unread > 0 ? { badge: unread } : {}),
     },
+    {
+      href: `/w/${org.organizationSlug}/kontekst` as Route,
+      label: t('context.nav'),
+      icon: 'building',
+    },
     { href: `/w/${org.organizationSlug}/beleske` as Route, label: t('notes.title'), icon: 'note' },
     { label: t('nav.reports'), icon: 'chart' },
     { label: t('nav.alerts'), icon: 'bell' },

@@ -636,3 +636,60 @@ export function salesSummary(dataset: DemoDataset, orgId: string, today: Date): 
     asOf: yesterday.toISOString().slice(0, 10),
   }
 }
+
+// ---------------------------------------------------------------------------
+// Istorija prodaje po mesecima
+// ---------------------------------------------------------------------------
+
+export interface MonthlySales {
+  readonly month: string
+  readonly total: string
+}
+
+export interface SalesHistory {
+  readonly currency: string
+  readonly months: readonly MonthlySales[]
+}
+
+/**
+ * Mesečna prodaja unazad, za poređenje i trend.
+ *
+ * Zbir meseca se SABIRA iz istih dnevnih vrednosti koje daje `dailySales`.
+ * Nezavisno generisanje bi značilo da mesečna istorija ne odgovara zbiru
+ * dnevnih kartica — a to je nesaglasnost koju korisnik otkrije prvi put kada
+ * nešto sabere rukom.
+ *
+ * Tekući mesec se IZOSTAVLJA. Nepotpun mesec u nizu izgleda kao nagli pad na
+ * kraju grafikona, i to je najčešće pogrešno pročitana slika u celom prikazu.
+ */
+export function salesHistory(
+  dataset: DemoDataset,
+  orgId: string,
+  today: Date,
+  years: number,
+): SalesHistory {
+  const profile = PROFILES[dataset]
+  const months: MonthlySales[] = []
+
+  const count = Math.max(1, Math.min(10, years)) * 12
+
+  for (let back = count; back >= 1; back--) {
+    const anchor = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - back, 1))
+    const year = anchor.getUTCFullYear()
+    const month = anchor.getUTCMonth()
+    const days = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+
+    let total = 0
+    for (let d = 1; d <= days; d++) {
+      const iso = new Date(Date.UTC(year, month, d)).toISOString().slice(0, 10)
+      total += Number(dailySales(dataset, orgId, iso).total)
+    }
+
+    months.push({
+      month: `${year}-${String(month + 1).padStart(2, '0')}`,
+      total: total.toFixed(2),
+    })
+  }
+
+  return { currency: profile.currency, months }
+}

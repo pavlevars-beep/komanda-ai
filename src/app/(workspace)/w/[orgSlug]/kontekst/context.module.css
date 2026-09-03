@@ -1,0 +1,100 @@
+.page { display: flex; flex-direction: column; gap: var(--space-6); max-width: 860px; }
+.head { display: flex; flex-direction: column; gap: var(--space-2); }
+.title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xl); }
+.lede { font-size: var(--text-base); color: var(--muted); max-width: 68ch; }
+
+.form {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); }
+.group { display: flex; flex-direction: column; gap: var(--space-2); }
+.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.hint { font-size: var(--text-sm); color: var(--muted); }
+.fieldError { font-size: var(--text-sm); color: var(--critical); }
+.input, .select, .textarea {
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--text-base);
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+.textarea { min-height: 64px; resize: vertical; }
+.select { height: 36px; }
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible {
+  outline: 2px solid var(--brand, var(--accent)); outline-offset: 1px;
+}
+.checks { display: flex; flex-direction: column; gap: var(--space-2); }
+.check { display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--text-base); cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--brand, var(--accent)); }
+.actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.error { font-size: var(--text-base); color: var(--critical); }
+.ok { font-size: var(--text-base); color: var(--ok); }
+
+.list { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.event {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.eventHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.eventTitle { font-size: var(--text-md); font-weight: 500; }
+.eventPeriod { font-size: var(--text-sm); color: var(--faint); }
+.eventNote { font-size: var(--text-base); color: var(--ink-2); }
+.eventMeta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-sm); color: var(--muted); }
+.tag {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: var(--text-2xs);
+}
+.impact { font-variant-numeric: tabular-nums; }
+.empty {
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* --- Istorija --- */
+.compare {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.compareRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.compareLabel { font-size: var(--text-base); color: var(--muted); }
+.compareValue { font-size: var(--text-md); font-variant-numeric: tabular-nums; }
+.up { color: var(--ok); }
+.down { color: var(--critical); }
+.note {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-md);
+}
+.months { display: flex; align-items: flex-end; gap: 3px; height: 96px; }
+.month { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; min-width: 0; }
+.monthBar { background: var(--accent); border-radius: 2px 2px 0 0; }
+.monthBarEvent { background: var(--warn); }
+.monthLabel {
+  font-size: 9px;
+  color: var(--faint);
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}

@@ -17,6 +17,7 @@ import {
   outstandingInvoices,
   payables,
   receivablesAging,
+  salesHistory,
   salesSummary,
   stockItems,
   topDebtors,
@@ -193,6 +194,18 @@ const CAPABILITIES = [
     }),
   },
   {
+    key: 'get_sales_history',
+    mode: 'read',
+    requiredPermission: 'view_sales',
+    classification: 'calculation',
+    freshnessSlaSeconds: 86_400,
+    inputSchema: z.object({ years: z.number().int().min(1).max(10) }),
+    outputSchema: z.object({
+      currency: z.string(),
+      months: z.array(z.object({ month: z.string(), total: z.string() })),
+    }),
+  },
+  {
     key: 'get_receivables_aging',
     mode: 'read',
     requiredPermission: 'view_financial_data',
@@ -362,6 +375,18 @@ export const demoConnector: Connector = {
         const data = salesSummary(dataset, ctx.organizationId, now)
         return Promise.resolve(
           ok({ data, provenance: provenanceFor(capabilityKey, now, 900), rowCount: 3 }),
+        )
+      }
+
+      case 'get_sales_history': {
+        const args = input as { years: number }
+        const data = salesHistory(dataset, ctx.organizationId, now, args.years)
+        return Promise.resolve(
+          ok({
+            data,
+            provenance: provenanceFor(capabilityKey, now, 86_400),
+            rowCount: data.months.length,
+          }),
         )
       }
 
