@@ -414,6 +414,61 @@ export const en: Messages = {
   'clock.frankfurt': 'Frankfurt',
   'clock.newYork': 'New York',
 
+  // --- Thresholds and rules ---
+  'rules.title': 'Rules and thresholds',
+  'rules.lede':
+    'This is where your company defines what "overdue", "critical stock" and "sales drop" mean. These values decide what appears under "requires attention" at all.',
+  'rules.save': 'Save rules',
+  'rules.saved': 'Rules saved. The brief is calculated from them from now on.',
+  'rules.reset': 'Restore defaults',
+  'rules.readOnly':
+    'Thresholds are changed by whoever manages alerts in this organization. You can see them so you know where each alert comes from.',
+
+  'rules.group.receivables': 'Receivables',
+  'rules.group.stock': 'Inventory',
+  'rules.group.payables': 'Payables',
+  'rules.group.sales': 'Sales',
+  'rules.group.comparison': 'Comparisons',
+
+  'rules.receivableWarningDays': 'Overdue days that open a warning',
+  'rules.receivableWarningDays.hint': 'In days. Below this a debt is not mentioned in the brief.',
+  'rules.receivableCriticalDays': 'Overdue days that make it critical',
+  'rules.receivableCriticalDays.hint': 'In days. Must be greater than the warning threshold.',
+  'rules.largeReceivableAmount': 'Amount above which a single debt is large',
+  'rules.largeReceivableAmount.hint':
+    'A debtor above this amount is called out separately, even when the total overdue is not alarming.',
+
+  'rules.stockWarningDays': 'Coverage below which stock needs attention',
+  'rules.stockWarningDays.hint': 'In days of demand, not in units.',
+  'rules.stockCriticalDays': 'Coverage below which it is critical',
+  'rules.stockCriticalDays.hint': 'In days. Must be lower than the warning threshold.',
+  'rules.stockOverstockDays': 'Coverage above which stock is excessive',
+  'rules.stockOverstockDays.hint': 'In days. Cash tied up in the warehouse.',
+
+  'rules.payableHorizonDays': 'Horizon within which payables enter the brief',
+  'rules.payableHorizonDays.hint': 'In days ahead.',
+  'rules.largePayableAmount': 'Amount above which a payable is called out',
+  'rules.largePayableAmount.hint': 'Below this it is shown as information, above as a warning.',
+
+  'rules.salesDropPercent': 'Sales drop that opens a warning',
+  'rules.salesDropPercent.hint': 'A negative number, e.g. -15. Twice that is reported as critical.',
+
+  'rules.defaultComparison': 'Comparison period',
+  'rules.defaultComparison.previous_period': 'Previous period of equal length',
+  'rules.defaultComparison.previous_year_same_period': 'Same period last year',
+  'rules.forecastHistoryYears': 'Years of history in comparisons',
+  'rules.forecastHistoryYears.hint': 'How far back is read for trend and season.',
+
+  'rules.error.outOfRange': 'The value is outside the allowed range.',
+  'rules.error.criticalBeforeWarning':
+    'Critical overdue must be longer than the warning threshold. Otherwise the middle category would never exist.',
+  'rules.error.stockCriticalAboveWarning':
+    'Critical coverage must be shorter than the warning threshold.',
+  'rules.error.overstockBelowWarning':
+    'The overstock threshold must be greater than the warning threshold.',
+  'rules.error.saveFailed': 'The rules were not saved.',
+  'rules.error.notAllowed': 'You are not allowed to change this organization’s rules.',
+
   // --- Business context and history ---
   'context.title': 'Business context',
   'context.lede':

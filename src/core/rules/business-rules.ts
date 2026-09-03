@@ -72,31 +72,81 @@ export const DEFAULT_BUSINESS_RULES: BusinessRules = {
   forecastHistoryYears: 3,
 }
 
+/** Greška vezana za konkretno polje obrasca. */
+export interface RuleIssue {
+  readonly field: keyof BusinessRules
+  /** Ključ prevoda; poruka se sastavlja uzvodno. */
+  readonly key: string
+}
+
+/**
+ * Međusobna doslednost pragova.
+ *
+ * Odvojeno od pojedinačnih opsega jer je druga vrsta greške: svaka vrednost
+ * može da bude u dozvoljenom opsegu, a par da bude besmislen. Kritično
+ * kašnjenje kraće od upozorenja znači da ništa nikad ne bi bilo samo
+ * „upozorenje" — cela srednja kategorija tiho nestaje, a na ekranu se to vidi
+ * samo kao „upozorenja su prestala da stižu".
+ */
+function consistencyIssues(r: BusinessRules): RuleIssue[] {
+  const issues: RuleIssue[] = []
+
+  if (r.receivableCriticalDays <= r.receivableWarningDays) {
+    issues.push({ field: 'receivableCriticalDays', key: 'rules.error.criticalBeforeWarning' })
+  }
+  if (r.stockCriticalDays >= r.stockWarningDays) {
+    issues.push({ field: 'stockCriticalDays', key: 'rules.error.stockCriticalAboveWarning' })
+  }
+  if (r.stockOverstockDays <= r.stockWarningDays) {
+    issues.push({ field: 'stockOverstockDays', key: 'rules.error.overstockBelowWarning' })
+  }
+
+  return issues
+}
+
+/**
+ * Provera unosa iz obrasca.
+ *
+ * Vraća IMENOVANE greške po polju, umesto tihog vraćanja na podrazumevano.
+ * Tiho vraćanje je ispravno pri ČITANJU iz baze — tamo nema kome da se javi —
+ * ali je pogrešno pri upisu: korisnik bi sačuvao vrednost, video podrazumevanu
+ * i ne bi znao zašto se njegova nije primila.
+ */
+export function validateBusinessRules(
+  input: unknown,
+): { ok: true; value: BusinessRules } | { ok: false; issues: readonly RuleIssue[] } {
+  const parsed = businessRules.safeParse(input)
+
+  if (!parsed.success) {
+    const issues: RuleIssue[] = []
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]
+      if (typeof field === 'string' && !issues.some((i) => i.field === field)) {
+        issues.push({ field: field as keyof BusinessRules, key: 'rules.error.outOfRange' })
+      }
+    }
+    return { ok: false, issues }
+  }
+
+  const issues = consistencyIssues(parsed.data)
+  return issues.length > 0 ? { ok: false, issues } : { ok: true, value: parsed.data }
+}
+
 /**
  * Spaja sačuvane izmene sa podrazumevanim vrednostima.
  *
- * Nepoznat ključ se odbacuje, a neispravna vrednost se NE prihvata parcijalno:
- * pravilo koje je delimično ispravno gore je od podrazumevanog, jer izgleda
- * kao da je neko svesno podesio baš tako.
+ * Ovo je put za ČITANJE. Nepoznat ključ se odbacuje, a neispravan skup se ne
+ * prihvata parcijalno: pravilo koje je delimično ispravno gore je od
+ * podrazumevanog, jer izgleda kao da je neko svesno podesio baš tako.
+ *
+ * Upis ide kroz `validateBusinessRules`, pa ovde ništa neispravno ne bi ni
+ * trebalo da stigne. Provera ostaje jer red u bazi može da promeni i nešto
+ * mimo aplikacije.
  */
 export function resolveBusinessRules(stored: unknown): BusinessRules {
   if (stored === null || typeof stored !== 'object') return DEFAULT_BUSINESS_RULES
 
   const merged = { ...DEFAULT_BUSINESS_RULES, ...(stored as Record<string, unknown>) }
-  const parsed = businessRules.safeParse(merged)
-  if (!parsed.success) return DEFAULT_BUSINESS_RULES
-
-  /*
-   * Međusobna doslednost se proverava odvojeno od pojedinačnih opsega.
-   *
-   * Svaka vrednost može da bude u dozvoljenom opsegu, a par da bude besmislen:
-   * kritično kašnjenje kraće od upozorenja znači da ništa nikad ne bi bilo
-   * samo „upozorenje", pa bi cela srednja kategorija tiho nestala.
-   */
-  const r = parsed.data
-  if (r.receivableCriticalDays <= r.receivableWarningDays) return DEFAULT_BUSINESS_RULES
-  if (r.stockCriticalDays >= r.stockWarningDays) return DEFAULT_BUSINESS_RULES
-  if (r.stockOverstockDays <= r.stockWarningDays) return DEFAULT_BUSINESS_RULES
-
-  return r
+  const validated = validateBusinessRules(merged)
+  return validated.ok ? validated.value : DEFAULT_BUSINESS_RULES
 }

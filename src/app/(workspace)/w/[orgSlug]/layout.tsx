@@ -102,7 +102,11 @@ export default async function WorkspaceLayout({
     { label: t('nav.reports'), icon: 'chart' },
     { label: t('nav.alerts'), icon: 'bell' },
     { label: t('nav.approvals'), icon: 'check' },
-    { label: t('nav.settings'), icon: 'settings' },
+    {
+      href: `/w/${org.organizationSlug}/pravila` as Route,
+      label: t('nav.settings'),
+      icon: 'settings',
+    },
   ]
 
   return (

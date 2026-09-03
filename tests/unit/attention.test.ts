@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { whatNeedsAttention, type AttentionInput } from '@/core/brief/attention'
-import { DEFAULT_BUSINESS_RULES, resolveBusinessRules } from '@/core/rules/business-rules'
+import {
+  DEFAULT_BUSINESS_RULES,
+  resolveBusinessRules,
+  validateBusinessRules,
+} from '@/core/rules/business-rules'
 import { briefSections } from '@/core/brief/focus'
 import type { Permission } from '@/core/auth/permissions'
 
@@ -283,5 +287,87 @@ describe('redosled brifa po ulozi', () => {
     )
     // Osoblje u sesiji pristupa nema rolu u organizaciji klijenta.
     expect(briefSections(null, all)).toEqual(briefSections('client_owner', all))
+  })
+})
+
+describe('provera pragova pri upisu', () => {
+  const valid = { ...DEFAULT_BUSINESS_RULES }
+
+  it('ispravan skup prolazi', () => {
+    const result = validateBusinessRules(valid)
+    expect(result.ok).toBe(true)
+  })
+
+  /*
+   * Ovo je razlika između čitanja i upisa. Pri čitanju je tiho vraćanje na
+   * podrazumevano ispravno — nema kome da se javi. Pri upisu bi značilo da
+   * korisnik sačuva vrednost, vidi podrazumevanu i ne sazna zašto.
+   */
+  it('nedosledan par vraća grešku NA POLJU, ne tiho podrazumevano', () => {
+    const result = validateBusinessRules({
+      ...valid,
+      receivableWarningDays: 90,
+      receivableCriticalDays: 60,
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.issues).toEqual([
+      { field: 'receivableCriticalDays', key: 'rules.error.criticalBeforeWarning' },
+    ])
+  })
+
+  it('prijavljuje sve nedosledne parove odjednom', () => {
+    // Sve vrednosti su u dozvoljenom opsegu; nedosledni su PAROVI.
+    const result = validateBusinessRules({
+      ...valid,
+      receivableWarningDays: 90,
+      receivableCriticalDays: 60,
+      stockWarningDays: 60,
+      stockCriticalDays: 90,
+      stockOverstockDays: 40,
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.issues.map((i) => i.field)).toEqual([
+      'receivableCriticalDays',
+      'stockCriticalDays',
+      'stockOverstockDays',
+    ])
+  })
+
+  /*
+   * Vrednost izvan opsega zaustavlja proveru pre poređenja parova, i to je
+   * ispravno: par se ne može oceniti dok su same vrednosti besmislene. Prva
+   * verzija ovog testa je pala baš na tome — pretpostavljala je da se obe
+   * vrste grešaka prijavljuju zajedno.
+   */
+  it('vrednost izvan opsega se prijavljuje kao takva, bez provere parova', () => {
+    const result = validateBusinessRules({ ...valid, stockOverstockDays: 5 })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.issues).toEqual([
+      { field: 'stockOverstockDays', key: 'rules.error.outOfRange' },
+    ])
+  })
+
+  it('prazno polje ne prolazi kao nula', () => {
+    // Prag od nula dana otvara upozorenje za svaki dug, i onaj tek izdat.
+    const result = validateBusinessRules({ ...valid, receivableWarningDays: Number.NaN })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.issues[0]?.field).toBe('receivableWarningDays')
+  })
+
+  it('pozitivan pad prodaje se odbija', () => {
+    const result = validateBusinessRules({ ...valid, salesDropPercent: 15 })
+    expect(result.ok).toBe(false)
+  })
+
+  it('nepoznat uporedni period se odbija', () => {
+    const result = validateBusinessRules({ ...valid, defaultComparison: 'prosli_utorak' })
+    expect(result.ok).toBe(false)
   })
 })

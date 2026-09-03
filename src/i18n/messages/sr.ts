@@ -435,6 +435,61 @@ export const sr = {
   'clock.frankfurt': 'Frankfurt',
   'clock.newYork': 'Njujork',
 
+  // --- Pragovi i pravila ---
+  'rules.title': 'Pravila i pragovi',
+  'rules.lede':
+    'Ovde se definiše šta za vašu firmu znači „dospelo", „kritična zaliha" i „pad prodaje". Od ovih vrednosti zavisi šta se uopšte pojavi u odeljku „zahteva pažnju".',
+  'rules.save': 'Sačuvaj pravila',
+  'rules.saved': 'Pravila su sačuvana. Brif se od sada računa po njima.',
+  'rules.reset': 'Vrati podrazumevano',
+  'rules.readOnly':
+    'Pragove menja onaj ko u organizaciji upravlja upozorenjima. Vidite ih da biste znali odakle dolazi svako upozorenje.',
+
+  'rules.group.receivables': 'Potraživanja',
+  'rules.group.stock': 'Zalihe',
+  'rules.group.payables': 'Obaveze',
+  'rules.group.sales': 'Prodaja',
+  'rules.group.comparison': 'Poređenja',
+
+  'rules.receivableWarningDays': 'Kašnjenje od kojeg se otvara upozorenje',
+  'rules.receivableWarningDays.hint': 'U danima. Ispod ovoga se dug ne pominje u brifu.',
+  'rules.receivableCriticalDays': 'Kašnjenje od kojeg je stanje kritično',
+  'rules.receivableCriticalDays.hint': 'U danima. Mora da bude veće od praga upozorenja.',
+  'rules.largeReceivableAmount': 'Iznos od kojeg je pojedinačni dug veliki',
+  'rules.largeReceivableAmount.hint':
+    'Dužnik iznad ovog iznosa se izdvaja posebno, čak i kada ukupno kašnjenje nije alarmantno.',
+
+  'rules.stockWarningDays': 'Pokrivenost ispod koje zaliha traži pažnju',
+  'rules.stockWarningDays.hint': 'U danima potrošnje, ne u komadima.',
+  'rules.stockCriticalDays': 'Pokrivenost ispod koje je stanje kritično',
+  'rules.stockCriticalDays.hint': 'U danima. Mora da bude manje od praga upozorenja.',
+  'rules.stockOverstockDays': 'Pokrivenost iznad koje je zaliha prekomerna',
+  'rules.stockOverstockDays.hint': 'U danima. Novac zarobljen u magacinu.',
+
+  'rules.payableHorizonDays': 'Rok u kojem obaveze ulaze u brif',
+  'rules.payableHorizonDays.hint': 'U danima unapred.',
+  'rules.largePayableAmount': 'Iznos od kojeg obaveza traži pomen',
+  'rules.largePayableAmount.hint': 'Ispod ovoga se prikazuje kao obaveštenje, iznad kao upozorenje.',
+
+  'rules.salesDropPercent': 'Pad prodaje od kojeg se otvara upozorenje',
+  'rules.salesDropPercent.hint': 'Negativan broj, npr. -15. Dvostruki pad se prijavljuje kao kritičan.',
+
+  'rules.defaultComparison': 'Uporedni period',
+  'rules.defaultComparison.previous_period': 'Prethodni period iste dužine',
+  'rules.defaultComparison.previous_year_same_period': 'Isti period prethodne godine',
+  'rules.forecastHistoryYears': 'Godina istorije u poređenjima',
+  'rules.forecastHistoryYears.hint': 'Koliko unazad se čita za trend i sezonu.',
+
+  'rules.error.outOfRange': 'Vrednost je izvan dozvoljenog opsega.',
+  'rules.error.criticalBeforeWarning':
+    'Kritično kašnjenje mora da bude duže od praga upozorenja. Inače srednja kategorija nikad ne bi postojala.',
+  'rules.error.stockCriticalAboveWarning':
+    'Kritična pokrivenost mora da bude kraća od praga upozorenja.',
+  'rules.error.overstockBelowWarning':
+    'Prag prekomerne zalihe mora da bude veći od praga upozorenja.',
+  'rules.error.saveFailed': 'Pravila nisu sačuvana.',
+  'rules.error.notAllowed': 'Nemate pravo da menjate pravila ove organizacije.',
+
   // --- Kontekstni događaji i istorija ---
   'context.title': 'Poslovni kontekst',
   'context.lede':
