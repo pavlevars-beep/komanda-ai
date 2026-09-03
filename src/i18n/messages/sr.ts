@@ -435,6 +435,70 @@ export const sr = {
   'clock.frankfurt': 'Frankfurt',
   'clock.newYork': 'Njujork',
 
+  // --- Jutarnji brif ---
+  'brief.attention': 'Zahteva pažnju',
+  'brief.attention.none': 'Ništa ne traži pažnju. Sve je u okviru zadatih granica.',
+  'brief.attention.why': 'Zašto ovo vidim?',
+  'brief.sales': 'Prodaja',
+  'brief.sales.yesterday': 'Juče',
+  'brief.sales.last7': 'Poslednjih 7 dana',
+  'brief.sales.month': 'Ovog meseca',
+  'brief.receivables': 'Potraživanja',
+  'brief.receivables.total': 'Ukupno otvoreno',
+  'brief.receivables.overdue': 'Dospelo',
+  'brief.receivables.bucket': '{from}–{to} dana',
+  'brief.receivables.bucketOpen': 'preko {from} dana',
+  'brief.receivables.topDebtors': 'Najveći dužnici',
+  'brief.payables': 'Obaveze',
+  'brief.payables.total': 'Ukupno',
+  'brief.payables.soon': 'Dospeva u 7 dana',
+  'brief.stock': 'Zalihe',
+  'brief.stock.coverage': 'Pokrivenost',
+  'brief.stock.perDay': '{value}/dan',
+  'brief.stock.status.healthy': 'Uredno',
+  'brief.stock.status.monitor': 'Pratiti',
+  'brief.stock.status.low': 'Nisko',
+  'brief.stock.status.critical': 'Kritično',
+  'brief.stock.status.overstock': 'Prekomerno',
+  'brief.asOf': 'Podaci na dan {when}',
+  'brief.stale':
+    'Deo podataka nije osvežen skoro. Upozorenja mogu da budu zastarela.',
+  'brief.unavailable': 'Nedostupno',
+  'brief.unavailable.no_integration': 'Izvor još nije povezan.',
+  'brief.unavailable.connector_missing': 'Konektor nije dostupan.',
+  'brief.unavailable.no_permission': 'Nemate pravo pristupa ovom podatku.',
+  'brief.unavailable.capability_disabled': 'Ova sposobnost nije uključena.',
+  'brief.unavailable.integration_down': 'Izvor trenutno ne odgovara.',
+  'brief.unavailable.unreadable': 'Izvor je odgovorio u obliku koji ne umem da pročitam.',
+
+  'attention.receivables_overdue':
+    '{count} faktura u iznosu {amount} kasni preko {days} dana.',
+  'attention.receivables_large':
+    '{name} duguje {amount}, najstarije kašnjenje {days} dana.',
+  'attention.stock_critical':
+    '{name}: zaliha traje još {days} dana, isporuka stiže za {leadTime}.',
+  'attention.stock_low': '{name}: zaliha pokriva još {days} dana.',
+  'attention.stock_overstock':
+    '{name}: zaliha pokriva {days} dana — novac zarobljen u magacinu.',
+  'attention.payables_due':
+    '{count} obaveza u iznosu {amount} dospeva u narednih {days} dana.',
+  'attention.payables_due.overdue': '{count} obaveza u iznosu {amount} je već dospelo.',
+  'attention.sales_drop.week': 'Prodaja u sedam dana je {percent} u odnosu na uporedni period.',
+  'attention.sales_drop.month': 'Prodaja ovog meseca je {percent} u odnosu na uporedni period.',
+
+  'evidence.overdueAmount': 'Iznos u kašnjenju',
+  'evidence.invoiceCount': 'Broj faktura',
+  'evidence.threshold': 'Zadata granica',
+  'evidence.amount': 'Iznos',
+  'evidence.overdueDays': 'Dana kašnjenja',
+  'evidence.onHand': 'Na stanju',
+  'evidence.dailyDemand': 'Prosečna dnevna potrošnja',
+  'evidence.coverage': 'Pokrivenost u danima',
+  'evidence.leadTime': 'Rok isporuke',
+  'evidence.count': 'Broj stavki',
+  'evidence.horizon': 'Posmatrani rok',
+  'evidence.change': 'Promena',
+
   // --- Pitanja nad podacima ---
   'ask.title': 'Pitanja',
   'ask.lede':

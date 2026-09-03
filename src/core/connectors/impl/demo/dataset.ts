@@ -421,3 +421,218 @@ export function headcount(dataset: DemoDataset, orgId: string): Headcount {
 
   return { total: adjusted.reduce((sum, d) => sum + d.count, 0), departments: adjusted }
 }
+
+// ---------------------------------------------------------------------------
+// Zalihe kao POKRIVENOST, ne kao stanje
+// ---------------------------------------------------------------------------
+
+export interface StockItem {
+  readonly item: string
+  readonly onHand: number
+  readonly minimum: number
+  /** Prosečna dnevna potrošnja u poslednjih 30 dana. */
+  readonly averageDailySales: number
+  /** Za koliko dana zaliha traje pri toj potrošnji. */
+  readonly daysOfCover: number
+  /** Uobičajeni rok isporuke dobavljača, u danima. */
+  readonly leadTimeDays: number
+}
+
+/**
+ * Stanje zaliha sa brzinom potrošnje.
+ *
+ * Golo stanje ne znači ništa. Pet komada artikla koji se prodaje dvaput
+ * godišnje je zaliha za deset godina; pet stotina komada artikla koji ide
+ * osamnaest dnevno je zaliha za dvadeset sedam dana. Prvi ne traži nikakvu
+ * radnju, drugi možda traži hitnu — a po samom broju izgleda obrnuto.
+ *
+ * Zato se OVDE vraća i potrošnja i rok isporuke, a ocena rizika se izvodi
+ * uzvodno, iz poslovnih pravila klijenta. Konektor ne odlučuje šta je
+ * kritično: to je odluka firme, ne izvora podataka.
+ *
+ * Vraćaju se SVI artikli, ne samo problematični. Filtriranje ovde bi značilo
+ * da se prekomerna zaliha nikad ne može ni primetiti, jer nikad ne stigne do
+ * sloja koji je traži.
+ */
+export function stockItems(dataset: DemoDataset, orgId: string): StockItem[] {
+  const profile = PROFILES[dataset]
+  const rand = prng(hash(`${orgId}:${dataset}:stock`))
+
+  return profile.items.map((item) => {
+    const minimum = 40 + Math.floor(rand() * 120)
+    const onHand = Math.floor(minimum * (0.15 + rand() * 2.4))
+
+    /*
+     * Potrošnja se namerno NE izvodi iz minimuma. Da jeste, pokrivenost bi
+     * bila puka preformulacija odnosa stanja i minimuma, pa bi ceo pojam
+     * brzine bio prazan — a razlika između ta dva je upravo ono što ovaj
+     * proizvod treba da pokaže.
+     */
+    const averageDailySales = Math.round((0.4 + rand() * 14) * 10) / 10
+    const leadTimeDays = 5 + Math.floor(rand() * 21)
+
+    return {
+      item,
+      onHand,
+      minimum,
+      averageDailySales,
+      daysOfCover: Math.round(onHand / Math.max(0.1, averageDailySales)),
+      leadTimeDays,
+    }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Starosna struktura potraživanja
+// ---------------------------------------------------------------------------
+
+export interface AgingBucket {
+  /** Donja granica kašnjenja u danima; gornja je sledeći opseg. */
+  readonly fromDays: number
+  readonly toDays: number | null
+  readonly amount: string
+  readonly invoiceCount: number
+}
+
+export interface ReceivablesAging {
+  readonly total: string
+  readonly overdue: string
+  readonly currency: string
+  readonly buckets: readonly AgingBucket[]
+  readonly asOf: string
+}
+
+/**
+ * Potraživanja razvrstana po starosti.
+ *
+ * Opsezi su fiksni (0, 30, 60, 90) jer su to granice koje knjigovodstvo i
+ * revizija koriste. Prag NA KOJEM se otvara upozorenje je zasebna stvar i
+ * dolazi iz poslovnih pravila klijenta — jedno je kako se podatak grupiše,
+ * drugo je od kada je to problem.
+ *
+ * Zbir opsega je jednak ukupnom iznosu jer se svi izvode iz ISTE liste
+ * otvorenih faktura. Da se računaju odvojeno, knjigovođa bi prvi primetio da
+ * se ne slažu — i s pravom prestao da veruje ostatku ekrana.
+ */
+export function receivablesAging(
+  dataset: DemoDataset,
+  orgId: string,
+  today: Date,
+): ReceivablesAging {
+  const profile = PROFILES[dataset]
+  const invoices = outstandingInvoices(dataset, orgId, 0, today)
+
+  const edges: readonly [number, number | null][] = [
+    [0, 30],
+    [30, 60],
+    [60, 90],
+    [90, null],
+  ]
+
+  const buckets = edges.map(([fromDays, toDays]) => {
+    const inBucket = invoices.filter(
+      (i) => i.overdueDays >= fromDays && (toDays === null || i.overdueDays < toDays),
+    )
+    return {
+      fromDays,
+      toDays,
+      amount: inBucket.reduce((sum, i) => sum + Number(i.amount), 0).toFixed(2),
+      invoiceCount: inBucket.length,
+    }
+  })
+
+  const total = invoices.reduce((sum, i) => sum + Number(i.amount), 0)
+  const overdue = invoices
+    .filter((i) => i.overdueDays > 0)
+    .reduce((sum, i) => sum + Number(i.amount), 0)
+
+  return {
+    total: total.toFixed(2),
+    overdue: overdue.toFixed(2),
+    currency: profile.currency,
+    buckets,
+    asOf: today.toISOString().slice(0, 10),
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Pregled prodaje za jutarnji brif
+// ---------------------------------------------------------------------------
+
+export interface SalesPeriod {
+  readonly total: string
+  readonly previousTotal: string
+  readonly changePercent: number
+}
+
+export interface SalesSummary {
+  readonly currency: string
+  readonly yesterday: SalesPeriod
+  readonly last7Days: SalesPeriod
+  readonly monthToDate: SalesPeriod
+  readonly asOf: string
+}
+
+function sumDays(dataset: DemoDataset, orgId: string, end: Date, days: number): number {
+  let total = 0
+  for (let i = 0; i < days; i++) {
+    const day = new Date(end.getTime() - i * 86_400_000).toISOString().slice(0, 10)
+    total += Number(dailySales(dataset, orgId, day).total)
+  }
+  return total
+}
+
+/**
+ * Prodaja juče, u sedam dana i od početka meseca, svaka sa poređenjem.
+ *
+ * Svaki zbir se SABIRA iz istih dnevnih vrednosti koje daje `dailySales`.
+ * Nezavisno generisanje bilo kog od njih značilo bi da zbir sedam dana ne
+ * odgovara zbiru sedam kartica — nesaglasnost koju korisnik otkrije prvi put
+ * kada nešto sabere rukom, i posle koje prestane da veruje svakom broju na
+ * ekranu.
+ *
+ * „Juče", ne „danas": dan koji je u toku nije uporediv ni sa čim, a prikazan
+ * kao pad izgleda kao loša vest umesto kao nepotpun podatak.
+ */
+export function salesSummary(dataset: DemoDataset, orgId: string, today: Date): SalesSummary {
+  const profile = PROFILES[dataset]
+  const yesterday = new Date(today.getTime() - 86_400_000)
+  const dayBefore = new Date(today.getTime() - 2 * 86_400_000)
+
+  const change = (current: number, previous: number) =>
+    previous === 0 ? 0 : Math.round(((current - previous) / previous) * 1000) / 10
+
+  const period = (current: number, previous: number): SalesPeriod => ({
+    total: current.toFixed(2),
+    previousTotal: previous.toFixed(2),
+    changePercent: change(current, previous),
+  })
+
+  const yesterdayTotal = Number(
+    dailySales(dataset, orgId, yesterday.toISOString().slice(0, 10)).total,
+  )
+  const dayBeforeTotal = Number(
+    dailySales(dataset, orgId, dayBefore.toISOString().slice(0, 10)).total,
+  )
+
+  const last7 = sumDays(dataset, orgId, yesterday, 7)
+  const previous7 = sumDays(dataset, orgId, new Date(yesterday.getTime() - 7 * 86_400_000), 7)
+
+  // Od prvog u mesecu do juče. Poređenje ide sa ISTIM brojem dana prethodnog
+  // meseca — pun prethodni mesec bi uvek izgledao veći, pa bi svaki početak
+  // meseca lažno prijavljivao pad.
+  const daysThisMonth = yesterday.getUTCDate()
+  const monthToDate = sumDays(dataset, orgId, yesterday, daysThisMonth)
+  const previousMonthEnd = new Date(
+    Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth() - 1, daysThisMonth),
+  )
+  const previousMonth = sumDays(dataset, orgId, previousMonthEnd, daysThisMonth)
+
+  return {
+    currency: profile.currency,
+    yesterday: period(yesterdayTotal, dayBeforeTotal),
+    last7Days: period(last7, previous7),
+    monthToDate: period(monthToDate, previousMonth),
+    asOf: yesterday.toISOString().slice(0, 10),
+  }
+}

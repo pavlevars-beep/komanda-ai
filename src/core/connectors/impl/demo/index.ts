@@ -16,6 +16,9 @@ import {
   isDemoDataset,
   outstandingInvoices,
   payables,
+  receivablesAging,
+  salesSummary,
+  stockItems,
   topDebtors,
   type DemoDataset,
 } from './dataset'
@@ -34,6 +37,12 @@ const dateOnly = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'connector.error.invalidDate')
   .refine((v) => !Number.isNaN(Date.parse(`${v}T00:00:00Z`)), 'connector.error.invalidDate')
+
+const salesPeriodSchema = z.object({
+  total: z.string(),
+  previousTotal: z.string(),
+  changePercent: z.number(),
+})
 
 const CAPABILITIES = [
   {
@@ -168,6 +177,66 @@ const CAPABILITIES = [
     }),
   },
   {
+    key: 'get_sales_summary',
+    mode: 'read',
+    requiredPermission: 'view_sales',
+    // Zbirovi i poređenja su izvedeni iz dnevnih vrednosti, ne prepisani.
+    classification: 'calculation',
+    freshnessSlaSeconds: 900,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      currency: z.string(),
+      asOf: z.string(),
+      yesterday: salesPeriodSchema,
+      last7Days: salesPeriodSchema,
+      monthToDate: salesPeriodSchema,
+    }),
+  },
+  {
+    key: 'get_receivables_aging',
+    mode: 'read',
+    requiredPermission: 'view_financial_data',
+    classification: 'calculation',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      total: z.string(),
+      overdue: z.string(),
+      currency: z.string(),
+      asOf: z.string(),
+      buckets: z.array(
+        z.object({
+          fromDays: z.number().int(),
+          toDays: z.number().int().nullable(),
+          amount: z.string(),
+          invoiceCount: z.number().int(),
+        }),
+      ),
+    }),
+  },
+  {
+    key: 'get_stock_status',
+    mode: 'read',
+    requiredPermission: 'view_inventory',
+    // Stanje i potrošnja su prepisani; pokrivenost je količnik, pa je ceo
+    // odgovor izračunat a ne zapis iz sistema.
+    classification: 'calculation',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      items: z.array(
+        z.object({
+          item: z.string(),
+          onHand: z.number(),
+          minimum: z.number(),
+          averageDailySales: z.number(),
+          daysOfCover: z.number(),
+          leadTimeDays: z.number().int(),
+        }),
+      ),
+    }),
+  },
+  {
     key: 'get_inventory_alerts',
     mode: 'read',
     requiredPermission: 'view_inventory',
@@ -285,6 +354,35 @@ export const demoConnector: Connector = {
             },
             provenance: provenanceFor(capabilityKey, now, 900),
             rowCount: Math.round(days),
+          }),
+        )
+      }
+
+      case 'get_sales_summary': {
+        const data = salesSummary(dataset, ctx.organizationId, now)
+        return Promise.resolve(
+          ok({ data, provenance: provenanceFor(capabilityKey, now, 900), rowCount: 3 }),
+        )
+      }
+
+      case 'get_receivables_aging': {
+        const data = receivablesAging(dataset, ctx.organizationId, now)
+        return Promise.resolve(
+          ok({
+            data,
+            provenance: provenanceFor(capabilityKey, now, 3600),
+            rowCount: data.buckets.length,
+          }),
+        )
+      }
+
+      case 'get_stock_status': {
+        const items = stockItems(dataset, ctx.organizationId)
+        return Promise.resolve(
+          ok({
+            data: { items },
+            provenance: provenanceFor(capabilityKey, now, 3600),
+            rowCount: items.length,
           }),
         )
       }

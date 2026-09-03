@@ -1,0 +1,122 @@
+.page { display: flex; flex-direction: column; gap: var(--space-7); max-width: 900px; }
+
+.greeting { display: flex; flex-direction: column; gap: var(--space-1); }
+.hello { font-size: var(--text-xl); letter-spacing: -0.01em; }
+.asOf { font-size: var(--text-sm); color: var(--faint); }
+.stale {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-md);
+}
+
+.section { display: flex; flex-direction: column; gap: var(--space-3); }
+.sectionTitle {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-md);
+}
+.sectionTitle svg { color: var(--muted); }
+.sectionMeta { font-size: var(--text-sm); color: var(--faint); font-weight: 400; margin-left: auto; }
+
+/* --- Zahteva pažnju --- */
+.attention { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.item {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+}
+.critical { border-left-color: var(--critical); }
+.warning { border-left-color: var(--warn); }
+.info { border-left-color: var(--accent); }
+
+.itemHead { display: flex; align-items: flex-start; gap: var(--space-3); }
+.itemText { font-size: var(--text-md); flex: 1; min-width: 0; }
+.itemLink {
+  font-size: var(--text-sm);
+  color: var(--brand-ink, var(--accent));
+  text-decoration: none;
+  white-space: nowrap;
+}
+.itemLink:hover { text-decoration: underline; }
+
+.why { font-size: var(--text-sm); }
+.whySummary { color: var(--muted); cursor: pointer; list-style: none; }
+.whySummary::-webkit-details-marker { display: none; }
+.whySummary::before { content: '▸ '; }
+details[open] > .whySummary::before { content: '▾ '; }
+.evidence {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--space-4);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+}
+.evidenceLabel { color: var(--muted); }
+.evidenceValue { font-variant-numeric: tabular-nums; }
+
+.calm {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+}
+.calm svg { color: var(--ok); }
+
+/* --- Blokovi --- */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
+.card {
+  display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.rows { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.rowLabel { font-size: var(--text-base); color: var(--muted); }
+.rowValue { font-size: var(--text-md); font-variant-numeric: tabular-nums; }
+.rowChange { font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.up { color: var(--ok); }
+.down { color: var(--critical); }
+
+.footnote {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--faint);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.pending {
+  padding: var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+  font-size: var(--text-base);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.pendingLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+
+.bars { display: flex; flex-direction: column; gap: var(--space-2); }
+.bar { display: grid; grid-template-columns: 1fr auto; gap: var(--space-2) var(--space-3); align-items: center; }
+.barLabel { font-size: var(--text-sm); color: var(--muted); }
+.barValue { font-size: var(--text-base); font-variant-numeric: tabular-nums; }
+.barTrack { grid-column: 1 / -1; height: 4px; background: var(--surface-sunk); border-radius: 2px; overflow: hidden; }
+.barFill { height: 100%; border-radius: 2px; background: var(--accent); }
+.barFillWarn { background: var(--warn); }
+.barFillCritical { background: var(--critical); }
