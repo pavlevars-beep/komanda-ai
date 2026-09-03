@@ -63,6 +63,13 @@ function resolveInput(card: DashboardCardConfig, now: Date): Record<string, unkn
     return { date: today }
   }
 
+  if (card.ai_tool_key === 'get_financial_summary') {
+    // Poslednjih 30 dana, zaključno sa danas. Period popunjava server iz istog
+    // razloga kao i datum: konfiguracija ne sme da fiksira „danas".
+    const from = new Date(now.getTime() - 29 * 86_400_000).toISOString().slice(0, 10)
+    return { from, to: today }
+  }
+
   if (card.ai_tool_key === 'get_sales_by_period') {
     const period = base.period === 'month' ? 29 : 6
     const from = new Date(now.getTime() - period * 86_400_000).toISOString().slice(0, 10)

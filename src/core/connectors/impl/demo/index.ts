@@ -10,9 +10,13 @@ import { ok, err, domainError, type Result } from '../../../shared/result'
 import type { Provenance } from '../../../shared/provenance'
 import {
   dailySales,
+  financialSummary,
+  headcount,
   inventoryAlerts,
   isDemoDataset,
   outstandingInvoices,
+  payables,
+  topDebtors,
   type DemoDataset,
 } from './dataset'
 
@@ -86,6 +90,81 @@ const CAPABILITIES = [
       ),
       total: z.string(),
       currency: z.string(),
+    }),
+  },
+  {
+    key: 'get_financial_summary',
+    mode: 'read',
+    requiredPermission: 'view_financial_data',
+    // Prihod je zbir dnevnih vrednosti, a marža je izračunata — nije zapis iz
+    // sistema, pa klasifikacija to i kaže.
+    classification: 'calculation',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({ from: dateOnly, to: dateOnly }),
+    outputSchema: z.object({
+      from: z.string(),
+      to: z.string(),
+      revenue: z.string(),
+      expenses: z.string(),
+      profit: z.string(),
+      marginPercent: z.number(),
+      previousRevenue: z.string(),
+      currency: z.string(),
+    }),
+  },
+  {
+    key: 'get_payables',
+    mode: 'read',
+    requiredPermission: 'view_financial_data',
+    classification: 'fact',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      total: z.string(),
+      dueWithin7Days: z.string(),
+      currency: z.string(),
+      items: z.array(
+        z.object({
+          supplier: z.string(),
+          amount: z.string(),
+          currency: z.string(),
+          dueDate: z.string(),
+          daysUntilDue: z.number().int(),
+        }),
+      ),
+    }),
+  },
+  {
+    key: 'get_top_debtors',
+    mode: 'read',
+    requiredPermission: 'view_financial_data',
+    classification: 'calculation',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      total: z.string(),
+      currency: z.string(),
+      items: z.array(
+        z.object({
+          customer: z.string(),
+          amount: z.string(),
+          currency: z.string(),
+          invoiceCount: z.number().int(),
+          oldestOverdueDays: z.number().int(),
+        }),
+      ),
+    }),
+  },
+  {
+    key: 'get_headcount',
+    mode: 'read',
+    requiredPermission: 'view_customers',
+    classification: 'fact',
+    freshnessSlaSeconds: 86_400,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      total: z.number().int(),
+      departments: z.array(z.object({ name: z.string(), count: z.number().int() })),
     }),
   },
   {
@@ -224,6 +303,61 @@ export const demoConnector: Connector = {
             },
             provenance: provenanceFor(capabilityKey, now, 3600),
             rowCount: items.length,
+          }),
+        )
+      }
+
+      case 'get_financial_summary': {
+        const parsedInput = z.object({ from: dateOnly, to: dateOnly }).safeParse(input)
+        if (!parsedInput.success) {
+          return Promise.resolve(err(domainError('invalid_input', 'connector.error.invalidInput')))
+        }
+
+        return Promise.resolve(
+          ok({
+            data: financialSummary(
+              dataset,
+              ctx.organizationId,
+              parsedInput.data.from,
+              parsedInput.data.to,
+            ),
+            provenance: provenanceFor(capabilityKey, now, 3600),
+          }),
+        )
+      }
+
+      case 'get_payables': {
+        const result = payables(dataset, ctx.organizationId, now)
+        return Promise.resolve(
+          ok({
+            data: result,
+            provenance: provenanceFor(capabilityKey, now, 3600),
+            rowCount: result.items.length,
+          }),
+        )
+      }
+
+      case 'get_top_debtors': {
+        const items = topDebtors(dataset, ctx.organizationId, now)
+        const total = items.reduce((sum, d) => sum + Number(d.amount), 0)
+        return Promise.resolve(
+          ok({
+            data: {
+              total: total.toFixed(2),
+              currency: items[0]?.currency ?? 'RSD',
+              items,
+            },
+            provenance: provenanceFor(capabilityKey, now, 3600),
+            rowCount: items.length,
+          }),
+        )
+      }
+
+      case 'get_headcount': {
+        return Promise.resolve(
+          ok({
+            data: headcount(dataset, ctx.organizationId),
+            provenance: provenanceFor(capabilityKey, now, 86_400),
           }),
         )
       }
