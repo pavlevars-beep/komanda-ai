@@ -42,9 +42,9 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   const nav: NavItem[] = [
     { href: '/console', label: t('console.overview'), icon: 'chart' },
     { href: '/console/clients', label: t('console.clients'), icon: 'building' },
-    { label: t('console.integrations'), icon: 'box' },
-    { label: t('console.health'), icon: 'check' },
-    { label: t('console.audit'), icon: 'note' },
+    { href: '/console/integracije', label: t('console.integrations'), icon: 'box' },
+    { href: '/console/zdravlje', label: t('console.health'), icon: 'check' },
+    { href: '/console/revizija', label: t('console.audit'), icon: 'note' },
   ]
 
   return (

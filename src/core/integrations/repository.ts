@@ -466,3 +466,92 @@ export async function listHealthChecks(
     ? ok(rows.data)
     : err(domainError('internal', 'error.internal', { detail: rows.error.message }))
 }
+
+/**
+ * Sve integracije svih klijenata koje pozivalac administrira, sa poslednjom
+ * proverom.
+ *
+ * Poslednja provera se dovlači ZASEBNIM upitom pa spaja u kodu. PostgREST ume
+ * da ugnezdi provere, ali ne i da vrati samo najnoviju po integraciji — vratio
+ * bi ceo niz, pa bi se kroz mrežu prenosila cela istorija da bi se prikazao
+ * jedan red.
+ */
+
+const consoleIntegrationRow = z.object({
+  id: uuid(),
+  organization_id: uuid(),
+  name: z.string(),
+  connector_type_key: z.string(),
+  environment: z.string(),
+  status: z.string(),
+  organization: z.object({ display_name: z.string(), slug: z.string() }).nullable(),
+})
+
+export interface ConsoleIntegration {
+  readonly id: string
+  readonly organizationId: string
+  readonly organizationName: string
+  readonly organizationSlug: string
+  readonly name: string
+  readonly connectorType: string
+  readonly environment: string
+  readonly status: string
+  /** `null` kada integracija još nijednom nije proveravana. */
+  readonly lastCheck: { readonly ok: boolean; readonly checkedAt: string } | null
+}
+
+export async function listAllIntegrations(db: Db): Promise<Result<ConsoleIntegration[]>> {
+  const { data, error } = await db
+    .from('integrations')
+    .select(
+      'id, organization_id, name, connector_type_key, environment, status, organization:organizations(display_name, slug)',
+    )
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  if (error) return err(domainError('internal', 'error.internal', { detail: error.message }))
+
+  const rows = z.array(consoleIntegrationRow).safeParse(data)
+  if (!rows.success) {
+    return err(domainError('internal', 'error.internal', { detail: rows.error.message }))
+  }
+  if (rows.data.length === 0) return ok([])
+
+  const { data: checkData } = await db
+    .from('integration_health_checks')
+    .select('integration_id, ok, checked_at')
+    .in(
+      'integration_id',
+      rows.data.map((r) => r.id),
+    )
+    .order('checked_at', { ascending: false })
+    .limit(1000)
+
+  const checks = z
+    .array(z.object({ integration_id: uuid(), ok: z.boolean(), checked_at: z.string() }))
+    .safeParse(checkData)
+
+  // Redovi stižu od najnovijeg, pa prvi viđeni po integraciji i jeste poslednji.
+  const latest = new Map<string, { ok: boolean; checkedAt: string }>()
+  if (checks.success) {
+    for (const c of checks.data) {
+      if (!latest.has(c.integration_id)) {
+        latest.set(c.integration_id, { ok: c.ok, checkedAt: c.checked_at })
+      }
+    }
+  }
+
+  return ok(
+    rows.data.map((r) => ({
+      id: r.id,
+      organizationId: r.organization_id,
+      organizationName: r.organization?.display_name ?? '—',
+      organizationSlug: r.organization?.slug ?? '',
+      name: r.name,
+      connectorType: r.connector_type_key,
+      environment: r.environment,
+      status: r.status,
+      lastCheck: latest.get(r.id) ?? null,
+    })),
+  )
+}

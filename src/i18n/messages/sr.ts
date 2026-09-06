@@ -435,6 +435,111 @@ export const sr = {
   'clock.frankfurt': 'Frankfurt',
   'clock.newYork': 'Njujork',
 
+  // --- Izveštaji ---
+  'reports.title': 'Izveštaj',
+  'reports.lede':
+    'Presek stanja na dati trenutak, za štampu ili prilog uz sastanak. Svaki broj nosi izvor i vreme na koje se odnosi.',
+  'reports.print': 'Odštampaj',
+  'reports.generatedAt': 'Napravljeno {when}',
+  'reports.for': 'Za: {name}',
+  'reports.by': 'Napravio: {name}',
+  'reports.section.attention': 'Zahteva pažnju',
+  'reports.section.sales': 'Prodaja',
+  'reports.section.receivables': 'Potraživanja',
+  'reports.section.payables': 'Obaveze',
+  'reports.section.stock': 'Zalihe',
+  'reports.thresholdNote':
+    'Granice: dospelo preko {warning} dana, kritično preko {critical} dana, zaliha ispod {stock} dana pokrivenosti.',
+  'reports.scheduledSoon':
+    'Zakazano slanje izveštaja na e-poštu dolazi kada bude povezan stvarni izvor podataka. Do tada se izveštaj pravi na zahtev.',
+
+  // --- Stranice u dubinu ---
+  'detail.back': 'Nazad na brif',
+  'detail.thresholds':
+    'Boje i upozorenja prate granice koje je postavila vaša firma.',
+  'detail.thresholds.link': 'Pogledaj pragove',
+
+  'receivables.title': 'Potraživanja',
+  'receivables.lede':
+    'Otvorena potraživanja po dužnicima i po starosti duga. Zbir po dužnicima jednak je ukupnom iznosu jer se oboje izvodi iz istih otvorenih faktura.',
+  'receivables.empty': 'Nema otvorenih potraživanja.',
+  'receivables.col.customer': 'Kupac',
+  'receivables.col.amount': 'Iznos',
+  'receivables.col.invoices': 'Faktura',
+  'receivables.col.oldest': 'Najstarije kašnjenje',
+
+  'payables.title': 'Obaveze',
+  'payables.lede': 'Neizmirene obaveze prema dobavljačima, po roku dospeća.',
+  'payables.empty': 'Nema neizmirenih obaveza.',
+  'payables.col.supplier': 'Dobavljač',
+  'payables.col.amount': 'Iznos',
+  'payables.col.due': 'Dospeva',
+  'payables.col.left': 'Preostalo',
+  'payables.overdue': 'Već dospelo',
+
+  'stock.title': 'Zalihe',
+  'stock.lede':
+    'Zaliha se meri pokrivenošću, ne stanjem. Isti broj komada znači različitu stvar za artikal koji ide osamnaest dnevno i za onaj koji ide dvaput godišnje.',
+  'stock.empty': 'Nema podataka o zalihama.',
+  'stock.col.item': 'Artikal',
+  'stock.col.onHand': 'Na stanju',
+  'stock.col.perDay': 'Dnevno',
+  'stock.col.cover': 'Pokrivenost',
+  'stock.col.lead': 'Rok isporuke',
+  'stock.col.status': 'Stanje',
+  'stock.needsAttention': 'Traži pažnju',
+  'stock.healthy': 'Uredno',
+
+  // --- Upozorenja ---
+  'alerts.title': 'Upozorenja',
+  'alerts.lede':
+    'Otvorena upozorenja za ovu organizaciju. Potvrđivanjem se sklanjaju sa spiska, ali ostaju u tragu.',
+  'alerts.empty': 'Nema otvorenih upozorenja.',
+  'alerts.acknowledge': 'Potvrdi',
+  'alerts.acknowledged': 'Upozorenje je potvrđeno.',
+  'alerts.error.failed': 'Upozorenje nije potvrđeno.',
+  'alerts.source.rule': 'Pravilo',
+  'alerts.source.integration': 'Integracija',
+  'alerts.source.system': 'Sistem',
+  'alerts.source.ai': 'Analiza',
+
+  // --- Revizija ---
+  'audit.title': 'Revizioni trag',
+  'audit.lede':
+    'Ko je šta uradio i kada. Zapis se ne menja i ne briše — to je jedina osobina zbog koje trag ima vrednost.',
+  'audit.empty': 'Nema zapisa za izabrani period.',
+  'audit.col.when': 'Vreme',
+  'audit.col.actor': 'Ko',
+  'audit.col.action': 'Šta',
+  'audit.col.org': 'Organizacija',
+  'audit.col.status': 'Ishod',
+  'audit.actor.staff': 'Osoblje',
+  'audit.actor.user': 'Korisnik',
+  'audit.actor.system': 'Sistem',
+  'audit.status.success': 'Uspeh',
+  'audit.status.denied': 'Odbijeno',
+  'audit.status.failure': 'Greška',
+  'audit.limited': 'Prikazano je poslednjih {count} zapisa.',
+
+  // --- Zdravlje integracija ---
+  'health.title': 'Zdravlje integracija',
+  'health.lede':
+    'Poslednja provera po integraciji. Integracija koja ne odgovara ne obara ekran klijenta — blok se prikaže sa razlogom.',
+  'health.empty': 'Nema nijedne integracije.',
+  'health.col.client': 'Klijent',
+  'health.col.integration': 'Integracija',
+  'health.col.type': 'Tip',
+  'health.col.state': 'Stanje',
+  'health.col.checked': 'Poslednja provera',
+  'health.state.ok': 'Ispravno',
+  'health.state.failing': 'Ne odgovara',
+  'health.state.unknown': 'Nije proveravano',
+
+  // --- Integracije kroz konzolu ---
+  'consoleIntegrations.lede':
+    'Sve integracije svih klijenata na jednom mestu. Podešava se u okviru klijenta.',
+  'consoleIntegrations.empty': 'Nijedan klijent još nema integraciju.',
+
   // --- Pragovi i pravila ---
   'rules.title': 'Pravila i pragovi',
   'rules.lede':

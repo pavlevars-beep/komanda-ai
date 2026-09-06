@@ -48,3 +48,44 @@ export async function listOpenAlerts(
 
   return ok(rows.data)
 }
+
+/**
+ * Potvrđivanje upozorenja.
+ *
+ * Upozorenje se NE briše. Prelazi u stanje `acknowledged`, uz vreme i ime
+ * onoga ko ga je potvrdio — brisanjem bi nestao i podatak o tome da je neko
+ * problem uopšte video, a to je često jedino što se kasnije traži.
+ *
+ * Politika propušta samo organizacije kojima pozivalac ima pristup, pa pokušaj
+ * nad tuđim ne obara grešku nego ne pogodi nijedan red. Zato se broj izmenjenih
+ * redova proverava: bez toga bi UI javio uspeh a ništa se ne bi promenilo.
+ */
+export async function acknowledgeAlert(
+  db: Db,
+  organizationId: string,
+  alertId: string,
+  userId: string,
+): Promise<Result<void>> {
+  const { data, error } = await db
+    .from('alerts')
+    .update({
+      status: 'acknowledged',
+      acknowledged_at: new Date().toISOString(),
+      acknowledged_by: userId,
+    })
+    .eq('organization_id', organizationId)
+    .eq('id', alertId)
+    .eq('status', 'new')
+    .select('id')
+
+  if (error) {
+    return err(domainError('forbidden', 'alerts.error.failed', { detail: error.message }))
+  }
+
+  const rows = z.array(z.object({ id: z.string() })).safeParse(data)
+  if (!rows.success || rows.data.length === 0) {
+    return err(domainError('forbidden', 'alerts.error.failed'))
+  }
+
+  return ok(undefined)
+}

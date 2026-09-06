@@ -1,0 +1,46 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); max-width: 860px; }
+.toolbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.lede { font-size: var(--text-base); color: var(--muted); max-width: 68ch; }
+
+.document {
+  display: flex; flex-direction: column; gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.docHead { display: flex; flex-direction: column; gap: var(--space-1); border-bottom: 1px solid var(--line); padding-bottom: var(--space-4); }
+.docTitle { font-size: var(--text-lg); }
+.docMeta { font-size: var(--text-sm); color: var(--muted); }
+
+.section { display: flex; flex-direction: column; gap: var(--space-2); }
+.sectionTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.rows { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.rowLabel { color: var(--ink-2); }
+.rowValue { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.warn { color: var(--warn); }
+.critical { color: var(--critical); }
+.items { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: 2px; }
+.source { font-size: var(--text-sm); color: var(--faint); }
+.footer { border-top: 1px solid var(--line); padding-top: var(--space-3); font-size: var(--text-sm); color: var(--faint); }
+.calm { color: var(--muted); }
+
+/*
+ * Za štampu ostaje samo dokument.
+ *
+ * Bočna traka, dugmad i traka sesije na papiru ne znače ništa, a zauzimaju
+ * prvu stranicu — što je najčešći razlog zbog kojeg odštampan izveštaj
+ * izgleda neuredno.
+ */
+@media print {
+  .toolbar, .lede { display: none; }
+  .document { border: 0; padding: 0; background: transparent; }
+  .page { max-width: none; gap: 0; }
+}

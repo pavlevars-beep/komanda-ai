@@ -121,6 +121,21 @@ radnje smemo da izvršavamo.
 
 Do odgovora proizvod radi nad demo podacima, vidljivo označenim kao demo.
 
+## Zašto odobrenja još ne postoje kao ekran
+
+Odobrenja postoje da bi radnja u tuđem poslovnom sistemu prošla kroz čoveka.
+Nijedna uključena sposobnost trenutno ne menja podatke — sve su samo za
+čitanje — pa nema šta da se odobrava.
+
+Ekran koji bi zauvek prikazivao prazan spisak bio bi upravo ono što ovaj
+proizvod ne sme da radi: nešto što izgleda kao funkcija a nije. Stavka u
+navigaciji zato ostaje vidljivo označena kao nedostupna, i otvara se kada prva
+EXECUTE sposobnost bude uključena za nekog klijenta.
+
+Isto važi i za zakazano slanje izveštaja na e-poštu. Raspored bez stvarnog
+izvora podataka je mehanizam koji uredno šalje prazne dokumente. Izveštaj se
+za sada pravi na zahtev, kao presek stanja za štampu.
+
 ## O prognozi
 
 Ne gradi se složena predikcija pre nego što osnovni računi budu tačni.

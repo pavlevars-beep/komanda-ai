@@ -99,8 +99,16 @@ export default async function WorkspaceLayout({
       icon: 'building',
     },
     { href: `/w/${org.organizationSlug}/beleske` as Route, label: t('notes.title'), icon: 'note' },
-    { label: t('nav.reports'), icon: 'chart' },
-    { label: t('nav.alerts'), icon: 'bell' },
+    {
+      href: `/w/${org.organizationSlug}/izvestaji` as Route,
+      label: t('nav.reports'),
+      icon: 'chart',
+    },
+    {
+      href: `/w/${org.organizationSlug}/upozorenja` as Route,
+      label: t('nav.alerts'),
+      icon: 'bell',
+    },
     { label: t('nav.approvals'), icon: 'check' },
     {
       href: `/w/${org.organizationSlug}/pravila` as Route,

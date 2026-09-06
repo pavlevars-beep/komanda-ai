@@ -414,6 +414,110 @@ export const en: Messages = {
   'clock.frankfurt': 'Frankfurt',
   'clock.newYork': 'New York',
 
+  // --- Reports ---
+  'reports.title': 'Report',
+  'reports.lede':
+    'A snapshot at a given moment, for printing or attaching to a meeting. Every number carries its source and the time it refers to.',
+  'reports.print': 'Print',
+  'reports.generatedAt': 'Generated {when}',
+  'reports.for': 'For: {name}',
+  'reports.by': 'By: {name}',
+  'reports.section.attention': 'Requires attention',
+  'reports.section.sales': 'Sales',
+  'reports.section.receivables': 'Receivables',
+  'reports.section.payables': 'Payables',
+  'reports.section.stock': 'Inventory',
+  'reports.thresholdNote':
+    'Limits: overdue past {warning} days, critical past {critical} days, stock below {stock} days of coverage.',
+  'reports.scheduledSoon':
+    'Scheduled email delivery arrives once a real data source is connected. Until then reports are generated on demand.',
+
+  // --- Drill-down pages ---
+  'detail.back': 'Back to brief',
+  'detail.thresholds': 'Colours and alerts follow the limits your company set.',
+  'detail.thresholds.link': 'View thresholds',
+
+  'receivables.title': 'Receivables',
+  'receivables.lede':
+    'Outstanding receivables by debtor and by age. The debtor totals equal the overall amount because both derive from the same open invoices.',
+  'receivables.empty': 'No outstanding receivables.',
+  'receivables.col.customer': 'Customer',
+  'receivables.col.amount': 'Amount',
+  'receivables.col.invoices': 'Invoices',
+  'receivables.col.oldest': 'Oldest overdue',
+
+  'payables.title': 'Payables',
+  'payables.lede': 'Outstanding supplier payables, by due date.',
+  'payables.empty': 'No outstanding payables.',
+  'payables.col.supplier': 'Supplier',
+  'payables.col.amount': 'Amount',
+  'payables.col.due': 'Due',
+  'payables.col.left': 'Remaining',
+  'payables.overdue': 'Already due',
+
+  'stock.title': 'Inventory',
+  'stock.lede':
+    'Stock is measured by coverage, not by count. The same number of units means a different thing for an item selling eighteen a day and one selling twice a year.',
+  'stock.empty': 'No inventory data.',
+  'stock.col.item': 'Item',
+  'stock.col.onHand': 'On hand',
+  'stock.col.perDay': 'Per day',
+  'stock.col.cover': 'Coverage',
+  'stock.col.lead': 'Lead time',
+  'stock.col.status': 'State',
+  'stock.needsAttention': 'Needs attention',
+  'stock.healthy': 'Healthy',
+
+  // --- Alerts ---
+  'alerts.title': 'Alerts',
+  'alerts.lede':
+    'Open alerts for this organization. Acknowledging removes them from the list but keeps them in the trail.',
+  'alerts.empty': 'No open alerts.',
+  'alerts.acknowledge': 'Acknowledge',
+  'alerts.acknowledged': 'Alert acknowledged.',
+  'alerts.error.failed': 'The alert was not acknowledged.',
+  'alerts.source.rule': 'Rule',
+  'alerts.source.integration': 'Integration',
+  'alerts.source.system': 'System',
+  'alerts.source.ai': 'Analysis',
+
+  // --- Audit ---
+  'audit.title': 'Audit trail',
+  'audit.lede':
+    'Who did what, and when. The record is never edited or deleted — that is the only property that gives a trail its value.',
+  'audit.empty': 'No records for the selected period.',
+  'audit.col.when': 'Time',
+  'audit.col.actor': 'Who',
+  'audit.col.action': 'What',
+  'audit.col.org': 'Organization',
+  'audit.col.status': 'Outcome',
+  'audit.actor.staff': 'Staff',
+  'audit.actor.user': 'User',
+  'audit.actor.system': 'System',
+  'audit.status.success': 'Success',
+  'audit.status.denied': 'Denied',
+  'audit.status.failure': 'Error',
+  'audit.limited': 'Showing the last {count} records.',
+
+  // --- Integration health ---
+  'health.title': 'Integration health',
+  'health.lede':
+    'The latest check per integration. An integration that stops responding does not break the client screen — the block is shown with a reason.',
+  'health.empty': 'No integrations yet.',
+  'health.col.client': 'Client',
+  'health.col.integration': 'Integration',
+  'health.col.type': 'Type',
+  'health.col.state': 'State',
+  'health.col.checked': 'Last check',
+  'health.state.ok': 'Healthy',
+  'health.state.failing': 'Not responding',
+  'health.state.unknown': 'Never checked',
+
+  // --- Integrations across the console ---
+  'consoleIntegrations.lede':
+    'Every client integration in one place. Configuration happens inside each client.',
+  'consoleIntegrations.empty': 'No client has an integration yet.',
+
   // --- Thresholds and rules ---
   'rules.title': 'Rules and thresholds',
   'rules.lede':
