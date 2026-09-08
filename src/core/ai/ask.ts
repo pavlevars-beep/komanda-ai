@@ -1,7 +1,7 @@
 import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
 import type { Locale } from '@/i18n/config'
-import { getConnector, runCapability } from '../connectors'
+import { connectorContext, getConnector, runCapability } from '../connectors'
 import { listEnabledCapabilities } from '../integrations/repository'
 import { freshnessState } from '../shared/freshness'
 import { err, ok, type Result } from '../shared/result'
@@ -155,17 +155,7 @@ export async function ask(
       requiredPermission: c.requiredPermission as never,
     })),
     timeoutMs: ASK_TIMEOUT_MS,
-    ctx: {
-      organizationId: ctx.organizationId,
-      integrationId: input.integrationId,
-      userId: ctx.userId,
-      permissions: ctx.permissions,
-      requestId: ctx.requestId,
-      environment: 'sandbox',
-      isDemo: true,
-      config: {},
-      secret: () => Promise.resolve(null),
-    },
+    ctx: connectorContext({ db: db, ctx: ctx, integrationId: input.integrationId }),
   })
 
   const latency = Date.now() - started

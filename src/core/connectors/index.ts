@@ -1,5 +1,6 @@
 import { registerConnector, registeredConnectorTypes } from './registry'
 import { demoConnector } from './impl/demo'
+import { fileConnector } from './impl/file'
 import { restConnector } from './impl/rest'
 import { webhookConnector } from './impl/webhook'
 
@@ -18,6 +19,7 @@ export function initialiseConnectors(): void {
   initialised = true
 
   registerConnector(demoConnector)
+  registerConnector(fileConnector)
   registerConnector(restConnector)
   registerConnector(webhookConnector)
 }
@@ -30,3 +32,4 @@ export function availableConnectorTypes(): string[] {
 export { getConnector } from './registry'
 export * from './types'
 export { runCapability, runHealthCheck } from './runner'
+export { connectorContext } from './context'

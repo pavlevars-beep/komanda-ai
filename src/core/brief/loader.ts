@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
-import { getConnector, runCapability } from '../connectors'
+import { connectorContext, getConnector, runCapability } from '../connectors'
 import { listEnabledCapabilities } from '../integrations/repository'
 import { freshnessState, type FreshnessState } from '../shared/freshness'
 import type { Provenance } from '../shared/provenance'
@@ -162,17 +162,7 @@ async function loadBlock<T>(
       requiredPermission: c.requiredPermission as never,
     })),
     timeoutMs: BLOCK_TIMEOUT_MS,
-    ctx: {
-      organizationId: load.ctx.organizationId,
-      integrationId: load.integrationId,
-      userId: load.ctx.userId,
-      permissions: load.ctx.permissions,
-      requestId: load.ctx.requestId,
-      environment: 'sandbox',
-      isDemo: true,
-      config: {},
-      secret: () => Promise.resolve(null),
-    },
+    ctx: connectorContext({ db: load.db, ctx: load.ctx, integrationId: load.integrationId }),
   })
 
   if (!result.ok) {

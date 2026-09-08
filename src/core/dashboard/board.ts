@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
-import { getConnector, runCapability } from '../connectors'
+import { connectorContext, getConnector, runCapability } from '../connectors'
 import { listEnabledCapabilities } from '../integrations/repository'
 import { freshnessState, type FreshnessState } from '../shared/freshness'
 import type { Provenance } from '../shared/provenance'
@@ -67,6 +67,7 @@ export interface Board {
 }
 
 async function loadBlock<T>(
+  db: Db,
   ctx: OrgContext,
   integrationId: string,
   connectorType: string,
@@ -89,17 +90,7 @@ async function loadBlock<T>(
       requiredPermission: c.requiredPermission as never,
     })),
     timeoutMs: BOARD_TIMEOUT_MS,
-    ctx: {
-      organizationId: ctx.organizationId,
-      integrationId,
-      userId: ctx.userId,
-      permissions: ctx.permissions,
-      requestId: ctx.requestId,
-      environment: 'sandbox',
-      isDemo: true,
-      config: {},
-      secret: () => Promise.resolve(null),
-    },
+    ctx: connectorContext({ db, ctx, integrationId }),
   })
 
   if (!result.ok) return { unavailable: true }
@@ -141,10 +132,10 @@ export async function loadBoard(
   const yesterday = new Date(now.getTime() - 86_400_000).toISOString().slice(0, 10)
 
   const [daily, historyBlock, financialBlock, headcountBlock] = await Promise.all([
-    loadBlock(ctx, integrationId, connectorType, enabled.value, 'get_sales_daily', { days: 30 }, dailySeries, now),
-    loadBlock(ctx, integrationId, connectorType, enabled.value, 'get_sales_history', { years: historyYears }, history, now),
-    loadBlock(ctx, integrationId, connectorType, enabled.value, 'get_financial_summary', { from: monthAgo, to: yesterday }, financial, now),
-    loadBlock(ctx, integrationId, connectorType, enabled.value, 'get_headcount', {}, headcount, now),
+    loadBlock(db, ctx, integrationId, connectorType, enabled.value, 'get_sales_daily', { days: 30 }, dailySeries, now),
+    loadBlock(db, ctx, integrationId, connectorType, enabled.value, 'get_sales_history', { years: historyYears }, history, now),
+    loadBlock(db, ctx, integrationId, connectorType, enabled.value, 'get_financial_summary', { from: monthAgo, to: yesterday }, financial, now),
+    loadBlock(db, ctx, integrationId, connectorType, enabled.value, 'get_headcount', {}, headcount, now),
   ])
 
   return {

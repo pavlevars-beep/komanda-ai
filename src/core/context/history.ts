@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
-import { getConnector, runCapability } from '../connectors'
+import { connectorContext, getConnector, runCapability } from '../connectors'
 import { listEnabledCapabilities } from '../integrations/repository'
 import type { Provenance } from '../shared/provenance'
 import { annotateMonths, compareYearOverYear, type AnnotatedMonth, type Comparison } from './events'
@@ -69,17 +69,7 @@ export async function loadSalesHistory(
       requiredPermission: c.requiredPermission as never,
     })),
     timeoutMs: HISTORY_TIMEOUT_MS,
-    ctx: {
-      organizationId: ctx.organizationId,
-      integrationId,
-      userId: ctx.userId,
-      permissions: ctx.permissions,
-      requestId: ctx.requestId,
-      environment: 'sandbox',
-      isDemo: true,
-      config: {},
-      secret: () => Promise.resolve(null),
-    },
+    ctx: connectorContext({ db: db, ctx: ctx, integrationId: integrationId }),
   })
 
   if (!result.ok) {

@@ -88,6 +88,20 @@ export default async function IntegrationDetailPage({
         </Link>
         <div className={styles.headRow}>
           <h1 className={styles.title}>{value.name}</h1>
+          {/*
+            Uvoz stoji samo uz konektor koji iz njega čita. Uz REST ili webhook
+            bi bio dugme koje vodi na ekran bez ijedne posledice.
+          */}
+          {value.connector_type_key === 'file' ? (
+            <Link
+              href={
+                `/console/clients/${orgId}/integrations/${integrationId}/uvoz` as Route
+              }
+              className={styles.crumb}
+            >
+              {t('import.title')} →
+            </Link>
+          ) : null}
         </div>
         <div className={styles.cardTitle}>
           <StatusBadge

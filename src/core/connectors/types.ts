@@ -21,6 +21,7 @@ export type ConnectorTypeKey =
   | 'demo'
   | 'rest'
   | 'webhook'
+  | 'file'
   | 'mssql'
   | 'postgres'
   | 'tim_erp'
@@ -70,8 +71,26 @@ export interface ConnectorContext {
    */
   readonly secret: () => Promise<Secret | null>
 
+  /**
+   * Čitanje uvezenih tabela.
+   *
+   * Isti obrazac kao `secret`: uzak port koji popunjava pozivalac, umesto
+   * klijenta baze u kontekstu. Da ovde stoji `db`, svaki konektor bi mogao da
+   * čita bilo šta iz baze — a ceo smisao ovog sloja je da konektor vidi samo
+   * ono što mu treba.
+   *
+   * Izostaje za konektore koji ne čitaju iz uvoza.
+   */
+  readonly readImported?: (kind: string) => Promise<ImportedRows | null>
+
   /** Prekid po isteku vremena; svaka implementacija ga MORA proslediti dalje. */
   readonly signal: AbortSignal
+}
+
+export interface ImportedRows {
+  /** Vreme na koje se podaci odnose; `null` kada izvoz to ne kaže. */
+  readonly asOf: string | null
+  readonly rows: readonly Readonly<Record<string, unknown>>[]
 }
 
 export interface CapabilityResult<T = unknown> {

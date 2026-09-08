@@ -2,6 +2,7 @@ import type { Db } from '@/server/db/types'
 import type { OrgContext } from '../tenancy/org-context'
 import type { Classification, Provenance } from '../shared/provenance'
 import { freshnessState, type FreshnessState } from '../shared/freshness'
+import { connectorContext } from '../connectors/context'
 import { getConnector } from '../connectors/registry'
 import { runCapability } from '../connectors/runner'
 import { listEnabledCapabilities } from '../integrations/repository'
@@ -153,17 +154,7 @@ async function loadCard(
       requiredPermission: c.requiredPermission as never,
     })),
     timeoutMs: CARD_TIMEOUT_MS,
-    ctx: {
-      organizationId: ctx.organizationId,
-      integrationId: card.integration_id,
-      userId: ctx.userId,
-      permissions: ctx.permissions,
-      requestId: ctx.requestId,
-      environment: 'sandbox',
-      isDemo: true,
-      config: {},
-      secret: () => Promise.resolve(null),
-    },
+    ctx: connectorContext({ db: db, ctx: ctx, integrationId: card.integration_id }),
   })
 
   if (!result.ok) {
