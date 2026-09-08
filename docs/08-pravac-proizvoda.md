@@ -142,3 +142,56 @@ Ne gradi se složena predikcija pre nego što osnovni računi budu tačni.
 Redosled je: determinističko računanje i istorijska poređenja → sezonalnost i
 otkrivanje anomalija → ozbiljnija prognoza tamo gde je poslovno opravdana.
 Tačan podatak je vredniji od pametnog modela.
+
+## Tišina je kvar, i mora da bude glasna
+
+Najopasniji kvar u ovom proizvodu nije pogrešan broj nego IZOSTANAK podatka.
+Kada tabela ne stigne, ništa ne pukne: sistem nastavlja da radi i prikazuje
+jučerašnje brojeve kao današnje. Nema poruke o grešci jer greške nema —
+postoji samo tišina, a tišina se ne primeti dok neko ne donese odluku na
+osnovu podatka od pre nedelju dana.
+
+Zato se očekivanje zapisuje UNAPRED, po vrsti podatka: koji dani, do kog
+lokalnog vremena, uz koliku toleranciju. Bez zapisanog dogovora sistem nema
+prema čemu da izmeri tišinu i mora da je prećuti.
+
+Mera se razlikuje na tri načina, jer traže tri različita razgovora:
+
+- **kasni** — jedan propušten rok; izvoz verovatno nije pokrenut,
+- **ne stiže** — dva ili više uzastopnih; brojevima se više ne veruje,
+- **nikad nije stiglo** — dotok nije ni uspostavljen, pa se proverava
+  podešavanje, ne kvar.
+
+Provera radi na DVA mesta, namerno. Zakazani prolaz podiže upozorenje i kada
+niko ne gleda, da konsultant zna pre klijenta. Nezavisno od njega, klijentov
+početni ekran ocenjuje isto pri svakom otvaranju, pa onaj ko GLEDA nikad ne
+vidi zastareo broj bez oznake — čak ni kada je zakazani posao stao.
+
+Uredni tokovi se ne prikazuju. Traka koja svakog dana javlja da je sve u redu
+nauči korisnika da je preskače, pa je ne pročita ni onog dana kada piše
+suprotno.
+
+## Kako podatak stiže sa računara u firmi
+
+Fajl na računaru u firmi nema adresu sa interneta. To nije ograničenje ovog
+proizvoda nego definicija privatne mreže: ili nešto sa njihove strane gura
+fajl ka nama, ili fajl stoji na mestu koje obe strane vide.
+
+Redosled po tome koliko dugo izdrži bez ljudske pažnje:
+
+1. **Pošta na namensku adresu** — skoro svaki ERP ume da zakaže izveštaj i
+   pošalje ga mejlom. Podesi se jednom, ništa se ne instalira, ništa ne mora
+   da bude ulogovano. Jedini put koji potpuno izbacuje čoveka iz svakodnevnog
+   kruga.
+2. **Deljeni folder u oblaku** — dobro kada izveštaj pravi čovek, jer mu se
+   menja samo odredište, ne navika. Zavisi od toga da sinhronizacija radi i da
+   nalog ostane ulogovan.
+3. **Mali agent na računaru** — zakazani zadatak koji šalje HTTPS-om, samo
+   odlazni saobraćaj. Za slučaj kada fajl ne sme da napusti mrežu; cena je da
+   ga mi održavamo i da umire pri reinstalaciji računara.
+4. **SFTP, mrežni deo, VPN** — traži posao njihovog IT-a i rupu u firewall-u.
+
+Nijedan od njih nije stabilan kao pravi ERP konektor, jer svi zavise od toga
+da neko drugi svaki dan uradi svoj deo. Uvoz tabele je MOST, ne odredište —
+zato `readImported` i postoji kao port: kada ERP stigne, tabla, brif i pitanja
+se ne diraju.

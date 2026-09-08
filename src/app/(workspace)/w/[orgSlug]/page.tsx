@@ -8,15 +8,18 @@ import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadMorningBrief } from '@/core/brief/loader'
 import { loadBoard } from '@/core/dashboard/board'
 import { businessRulesFor } from '@/core/rules/repository'
+import { organizationStaleness } from '@/core/import/expectations'
+import { formatLocal } from '@/core/import/silence-message'
 import { briefSections } from '@/core/brief/focus'
 import { initialiseConnectors } from '@/core/connectors'
 import { INTL_LOCALE } from '@/i18n/config'
-import { createTranslator } from '@/i18n/translator'
+import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { writeAudit } from '@/core/audit/writer'
 import { requestLocale } from '@/server/http/locale'
 import { Brief } from './brief'
 import { MetricsBoard } from './board'
 import { WorldClocks, type Clock } from './clocks'
+import { StalenessBanner } from './staleness'
 import styles from './brief.module.css'
 
 /**
@@ -67,9 +70,16 @@ export default async function WorkspaceHome({
 
   initialiseConnectors()
 
-  const [source, rules] = await Promise.all([
+  const [source, rules, staleness] = await Promise.all([
     primaryIntegration(db, org.organizationId),
     businessRulesFor(db, org.organizationId),
+    /*
+     * Provera tišine ide UPOREDO sa učitavanjem podataka i nezavisno od
+     * zakazanog prolaza. Prolaz javlja konsultantu i kada niko ne gleda; ovo
+     * garantuje da onaj ko GLEDA nikad ne vidi zastareo broj bez oznake, čak i
+     * kada je zakazani posao stao.
+     */
+    organizationStaleness(db, org.organizationId),
   ])
 
   /*
@@ -125,8 +135,38 @@ export default async function WorkspaceHome({
   const percent = (value: number) =>
     new Intl.NumberFormat(intl, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
 
+  /*
+   * Redosled je namerno ovakav: prvo se kaže da podatak NEDOSTAJE, pa se tek
+   * onda prikazuju brojevi. Obrnuto bi značilo da rukovodilac pročita iznos pre
+   * nego što sazna na koji se dan odnosi.
+   */
+  const stalenessLines = staleness.map((item) => {
+    const kind = t(`import.kind.${item.kind}` as MessageKey)
+    const when = item.verdict.silentSince
+      ? formatLocal(item.verdict.silentSince, item.timeZone)
+      : ''
+
+    if (item.verdict.state === 'never') return t('staleness.never', { kind })
+    if (item.verdict.state === 'late') return t('staleness.late', { kind, when })
+    return t('staleness.missing', {
+      kind,
+      when,
+      count: item.verdict.missedPeriods,
+    })
+  })
+
+  const stalenessTone = staleness.some((item) => item.verdict.state !== 'late')
+    ? ('critical' as const)
+    : ('warn' as const)
+
   return (
     <>
+      <StalenessBanner
+        tone={stalenessTone}
+        title={t('staleness.title')}
+        lines={stalenessLines}
+      />
+
       {/*
         Tabla stoji IZNAD brifa, ne umesto njega. Tabla odgovara na „koliko" i
         „kako se kreće", brif na „šta danas traži pažnju".

@@ -1,0 +1,57 @@
+# Zakazana provera ritma uvoza.
+#
+# Tišina mora da bude primećena i kada niko ne gleda. Da se izostanak podatka
+# računao tek pri otvaranju table, konsultant bi za prekid saznao od klijenta —
+# a cela vrednost je u tome da zna pre njega.
+#
+# Raspored je u GitHub-u, a ne u Vercel-u, zato što Vercel Cron na osnovnom
+# planu dozvoljava samo jedno pokretanje dnevno. Ruta prihvata isti `Bearer`
+# zaglavlje koje Vercel Cron sam šalje, pa se prelazak svodi na brisanje ovog
+# fajla i dodavanje rasporeda u `vercel.json`.
+
+name: Nadzor ritma
+
+on:
+  schedule:
+    # Na svakih pola sata. Rok od 08:00 sa pola sata tolerancije se oglasi
+    # najkasnije u 09:00 — zakazani poslovi na GitHub-u redovno kasne nekoliko
+    # minuta, pa gušći raspored ne bi doneo tačnost, samo pozive.
+    - cron: '0,30 * * * *'
+  workflow_dispatch:
+
+# Dva prolaza koja se preklope ne bi napravila duplikat (indeks nad otvorenim
+# upozorenjima to čuva), ali bi radila isti posao dvaput.
+concurrency:
+  group: nadzor-ritma
+  cancel-in-progress: false
+
+jobs:
+  ritam:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Provera ritma uvoza
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${APP_URL:-}" ] || [ -z "${CRON_SECRET:-}" ]; then
+            echo "APP_URL ili CRON_SECRET nisu podešeni — nadzor se preskače."
+            exit 0
+          fi
+
+          # Telo se ispisuje, status se proverava zasebno: `curl -f` bi sakrio
+          # odgovor, a odgovor je jedino mesto gde piše šta je prolaz zatekao.
+          status=$(curl -sS -o /tmp/odgovor.json -w '%{http_code}' \
+            -X POST "${APP_URL%/}/api/nadzor/ritam" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            --max-time 120 --retry 2 --retry-delay 5)
+
+          cat /tmp/odgovor.json
+          echo
+
+          if [ "$status" != "200" ]; then
+            echo "Nadzor nije prošao: HTTP $status"
+            exit 1
+          fi

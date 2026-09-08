@@ -1,0 +1,66 @@
+/*
+ * Traka o zastarelom podatku.
+ *
+ * Težina se ne nosi SAMO bojom: uz boju idu ikonica, deblji levi rub i tekst
+ * koji sam kaže šta se desilo. Na crno-beloj štampi i pri slepilu za boje
+ * poruka ostaje ista.
+ */
+
+.banner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  max-width: 900px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  border-left-width: 4px;
+}
+
+.warn {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+  color: var(--ink);
+}
+
+.critical {
+  background: var(--critical-soft);
+  border-color: var(--critical);
+  color: var(--ink);
+}
+
+.icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.warn .icon {
+  color: var(--warn);
+}
+
+.critical .icon {
+  color: var(--critical);
+}
+
+.text {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.list {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.list li + li {
+  margin-top: var(--space-1);
+}

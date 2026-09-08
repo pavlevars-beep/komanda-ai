@@ -7,9 +7,12 @@ import { requestLocale } from '@/server/http/locale'
 import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translator'
 import { DATASET_KINDS, FIELDS } from '@/core/import/mapping'
 import { listDatasets } from '@/core/import/repository'
+import { reportCadence } from '@/core/import/expectations'
+import type { CadenceState as CadenceStateName } from '@/core/import/cadence'
 import { Icon } from '@/ui/primitives/Icon'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { ImportForm, type FieldOption } from './import-form'
+import { CadenceForm, type CadenceStatus } from './cadence-form'
 import styles from './import.module.css'
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -18,6 +21,34 @@ const STATUS_TONE: Record<string, Tone> = {
   failed: 'critical',
   pending: 'warn',
 }
+
+const CADENCE_TONE: Record<CadenceStateName, Tone> = {
+  onTime: 'ok',
+  awaiting: 'info',
+  late: 'warn',
+  missing: 'critical',
+  never: 'critical',
+  paused: 'neutral',
+}
+
+/*
+ * Kratak spisak zona umesto svih četiri stotine iz IANA baze. Ponuda u kojoj se
+ * traži znači da neko bira prvu koja liči — a pogrešna zona pomera rok za sate.
+ */
+const TIME_ZONES = [
+  'Europe/Belgrade',
+  'Europe/Zagreb',
+  'Europe/Sarajevo',
+  'Europe/Podgorica',
+  'Europe/Skopje',
+  'Europe/Ljubljana',
+  'Europe/Vienna',
+  'Europe/Berlin',
+  'Europe/London',
+  'Asia/Dubai',
+  'Asia/Shanghai',
+  'UTC',
+]
 
 export default async function ImportPage({
   params,
@@ -34,7 +65,14 @@ export default async function ImportPage({
   const locale = await requestLocale(user.locale)
   const { t, formatDate } = createTranslator(locale)
 
-  const datasets = await listDatasets(db, orgId, integrationId)
+  const [datasets, cadence] = await Promise.all([
+    listDatasets(db, orgId, integrationId),
+    reportCadence(db, orgId, integrationId),
+  ])
+
+  const byKind = new Map(
+    cadence.ok ? cadence.value.map((report) => [report.kind, report] as const) : [],
+  )
 
   const fields: Record<string, readonly FieldOption[]> = {}
   for (const kind of DATASET_KINDS) {
@@ -90,6 +128,91 @@ export default async function ImportPage({
           messages: messagesFor(locale, ['error.', 'import.error.']),
         }}
       />
+
+      <section className={styles.head}>
+        <h2 className={styles.label}>{t('import.cadence.title')}</h2>
+        <p className={styles.lede}>{t('import.cadence.lede')}</p>
+      </section>
+
+      {DATASET_KINDS.map((kind) => {
+        const report = byKind.get(kind)
+        const verdict = report?.verdict
+
+        const detail = !verdict
+          ? ''
+          : [
+              verdict.lastArrivalAt
+                ? t('import.cadence.lastArrival', {
+                    when: formatDate(verdict.lastArrivalAt, {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    }),
+                  })
+                : t('import.cadence.never'),
+              verdict.nextDueAt
+                ? t('import.cadence.nextDue', {
+                    when: formatDate(verdict.nextDueAt, {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    }),
+                  })
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' · ')
+
+        const status: CadenceStatus | null = verdict
+          ? {
+              label: t(`import.cadence.state.${verdict.state}` as MessageKey),
+              tone: CADENCE_TONE[verdict.state],
+              detail,
+            }
+          : null
+
+        return (
+          <CadenceForm
+            key={kind}
+            organizationId={orgId}
+            integrationId={integrationId}
+            kind={kind}
+            kindLabel={t(`import.kind.${kind}` as MessageKey)}
+            value={
+              report
+                ? {
+                    weekdays: report.expectation.weekdays,
+                    byTime: report.expectation.by_time.slice(0, 5),
+                    timeZone: report.expectation.time_zone,
+                    graceMinutes: report.expectation.grace_minutes,
+                    pausedUntil: report.expectation.paused_until,
+                    enabled: report.expectation.enabled,
+                  }
+                : null
+            }
+            status={status}
+            labels={{
+              days: t('import.cadence.days'),
+              byTime: t('import.cadence.byTime'),
+              timeZone: t('import.cadence.timeZone'),
+              grace: t('import.cadence.grace'),
+              graceUnit: t('import.cadence.graceUnit'),
+              graceHint: t('import.cadence.graceHint'),
+              enabled: t('import.cadence.enabled'),
+              pausedUntil: t('import.cadence.pausedUntil'),
+              pausedHint: t('import.cadence.pausedHint'),
+              save: t('import.cadence.save'),
+              saved: t('import.cadence.saved'),
+              remove: t('import.cadence.remove'),
+              none: t('import.cadence.none'),
+              weekdays: [1, 2, 3, 4, 5, 6, 7].map((value) => ({
+                value,
+                label: t(`import.cadence.weekday.${value}` as MessageKey),
+              })),
+              zones: TIME_ZONES,
+              messages: messagesFor(locale, ['error.', 'import.cadence.error.']),
+            }}
+          />
+        )
+      })}
 
       <section className={styles.head}>
         <h2 className={styles.label}>{t('import.history')}</h2>

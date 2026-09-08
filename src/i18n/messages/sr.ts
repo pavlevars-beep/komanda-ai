@@ -700,6 +700,55 @@ export const sr = {
   'import.field.averageDailySales': 'Prosečna dnevna potrošnja',
   'import.field.leadTimeDays': 'Rok isporuke u danima',
 
+  'import.cadence.title': 'Kada se podatak očekuje',
+  'import.cadence.lede':
+    'Dogovoreni ritam je jedino prema čemu sistem može da izmeri tišinu. Bez njega tabela koja ne stigne prolazi neprimećeno, a stari brojevi se prikazuju kao današnji.',
+  'import.cadence.days': 'Dani',
+  'import.cadence.byTime': 'Do',
+  'import.cadence.timeZone': 'Vremenska zona',
+  'import.cadence.grace': 'Tolerancija',
+  'import.cadence.graceUnit': 'minuta',
+  'import.cadence.graceHint': 'Koliko kašnjenja se prećutkuje pre nego što se oglasi.',
+  'import.cadence.enabled': 'Prati ritam',
+  'import.cadence.pausedUntil': 'Pauza do',
+  'import.cadence.pausedHint': 'Kolektivni odmor i praznici — dok traje, tišina se ne prijavljuje.',
+  'import.cadence.save': 'Sačuvaj ritam',
+  'import.cadence.saved': 'Ritam je sačuvan.',
+  'import.cadence.remove': 'Ukloni praćenje',
+  'import.cadence.none': 'Ritam nije dogovoren — izostanak podatka se neće primetiti.',
+  'import.cadence.nextDue': 'Sledeći rok: {when}',
+  'import.cadence.lastArrival': 'Poslednji uvoz: {when}',
+  'import.cadence.never': 'Nijedan uvoz još nije stigao.',
+
+  'import.cadence.state.onTime': 'Stiže na vreme',
+  'import.cadence.state.awaiting': 'Čeka se prvi rok',
+  'import.cadence.state.late': 'Kasni',
+  'import.cadence.state.missing': 'Ne stiže',
+  'import.cadence.state.never': 'Nikad nije stiglo',
+  'import.cadence.state.paused': 'Pauzirano',
+
+  'import.cadence.weekday.1': 'Pon',
+  'import.cadence.weekday.2': 'Uto',
+  'import.cadence.weekday.3': 'Sre',
+  'import.cadence.weekday.4': 'Čet',
+  'import.cadence.weekday.5': 'Pet',
+  'import.cadence.weekday.6': 'Sub',
+  'import.cadence.weekday.7': 'Ned',
+
+  'import.cadence.error.noDays': 'Izaberite bar jedan dan.',
+  'import.cadence.error.badTime': 'Vreme mora biti u obliku 08:00.',
+  'import.cadence.error.badZone': 'Nepoznata vremenska zona.',
+  'import.cadence.error.saveFailed': 'Ritam nije sačuvan.',
+
+  'staleness.title': 'Podatak nije stigao',
+  'staleness.late':
+    '{kind}: podatak nije stigao za {when}. Brojevi ispod su od prethodnog uvoza.',
+  'staleness.missing':
+    '{kind}: podatak ne stiže od {when} — propušteno rokova: {count}. Brojevi ispod su zastareli i ne treba ih koristiti za odluke.',
+  'staleness.never':
+    '{kind}: podatak nije stigao nijednom. Dotok podataka još nije uspostavljen.',
+  'staleness.asOf': 'Prikazano stanje je od {when}.',
+
   'import.error.empty': 'Fajl je prazan.',
   'import.error.notAZip': 'Fajl nije ispravna tabela.',
   'import.error.notASpreadsheet': 'U fajlu nema nijednog lista sa podacima.',

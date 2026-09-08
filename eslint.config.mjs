@@ -109,6 +109,22 @@ export default tseslint.config(
     rules: { 'no-restricted-imports': ['error', { patterns: [NO_SERVICE_ROLE] }] },
   },
 
+  /*
+   * Jedini izuzetak: zakazani nadzor.
+   *
+   * To je pozadinski posao koji po definiciji nema korisnika u kontekstu, pa
+   * nema ni RLS koji bi ga omeđio — obilazi granicu organizacije zato što mu je
+   * posao da prođe kroz sve.
+   *
+   * Izuzetak je namerno vezan za JEDNU putanju, ne za `api/**`. Šira dozvola bi
+   * vremenom pustila service_role u rute koje opslužuju korisnika, a to je
+   * upravo ono što pravilo čuva.
+   */
+  {
+    files: ['src/app/api/nadzor/*/route.ts'],
+    rules: { 'no-restricted-imports': 'off' },
+  },
+
   // Logger je jedino mesto gde je ispis dozvoljen.
   {
     files: ['src/server/logger.ts'],

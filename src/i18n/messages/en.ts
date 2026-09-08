@@ -678,6 +678,55 @@ export const en: Messages = {
   'import.field.averageDailySales': 'Average daily demand',
   'import.field.leadTimeDays': 'Lead time in days',
 
+  'import.cadence.title': 'When data is expected',
+  'import.cadence.lede':
+    'An agreed schedule is the only thing silence can be measured against. Without it, a file that never arrives goes unnoticed and stale numbers are shown as today\u2019s.',
+  'import.cadence.days': 'Days',
+  'import.cadence.byTime': 'By',
+  'import.cadence.timeZone': 'Time zone',
+  'import.cadence.grace': 'Grace',
+  'import.cadence.graceUnit': 'minutes',
+  'import.cadence.graceHint': 'How much lateness passes in silence before an alert is raised.',
+  'import.cadence.enabled': 'Track this schedule',
+  'import.cadence.pausedUntil': 'Paused until',
+  'import.cadence.pausedHint': 'Company holidays — while it lasts, silence is not reported.',
+  'import.cadence.save': 'Save schedule',
+  'import.cadence.saved': 'Schedule saved.',
+  'import.cadence.remove': 'Stop tracking',
+  'import.cadence.none': 'No schedule agreed — missing data will go unnoticed.',
+  'import.cadence.nextDue': 'Next due: {when}',
+  'import.cadence.lastArrival': 'Last import: {when}',
+  'import.cadence.never': 'No import has arrived yet.',
+
+  'import.cadence.state.onTime': 'Arriving on time',
+  'import.cadence.state.awaiting': 'Awaiting first deadline',
+  'import.cadence.state.late': 'Late',
+  'import.cadence.state.missing': 'Not arriving',
+  'import.cadence.state.never': 'Never arrived',
+  'import.cadence.state.paused': 'Paused',
+
+  'import.cadence.weekday.1': 'Mon',
+  'import.cadence.weekday.2': 'Tue',
+  'import.cadence.weekday.3': 'Wed',
+  'import.cadence.weekday.4': 'Thu',
+  'import.cadence.weekday.5': 'Fri',
+  'import.cadence.weekday.6': 'Sat',
+  'import.cadence.weekday.7': 'Sun',
+
+  'import.cadence.error.noDays': 'Pick at least one day.',
+  'import.cadence.error.badTime': 'Time must look like 08:00.',
+  'import.cadence.error.badZone': 'Unknown time zone.',
+  'import.cadence.error.saveFailed': 'Schedule was not saved.',
+
+  'staleness.title': 'Data has not arrived',
+  'staleness.late':
+    '{kind}: no data arrived for {when}. The figures below are from the previous import.',
+  'staleness.missing':
+    '{kind}: no data since {when} — {count} deadlines missed. The figures below are stale and should not be used for decisions.',
+  'staleness.never':
+    '{kind}: no data has ever arrived. The data flow is not established yet.',
+  'staleness.asOf': 'Showing the state as of {when}.',
+
   'import.error.empty': 'The file is empty.',
   'import.error.notAZip': 'The file is not a valid spreadsheet.',
   'import.error.notASpreadsheet': 'The file contains no data sheet.',

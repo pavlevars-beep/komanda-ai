@@ -104,6 +104,33 @@ values
    'demo-reminder-1042', now() + interval '7 days');
 
 -- ---------------------------------------------------------------------------
+-- Uvoz tabele i dogovoreni ritam
+-- ---------------------------------------------------------------------------
+--
+-- Postoji i zbog TESTA: provera izolacije nabraja svaku tabelu sa
+-- organization_id i gleda da li korisnik jedne firme vidi tuđe redove. Tabela
+-- bez ijednog reda prolazi tu proveru trivijalno — a test koji prolazi zato što
+-- nema šta da vidi izgleda kao pokrivenost, a nije.
+
+insert into public.integrations
+  (id, organization_id, connector_type_key, name, environment, status, auth_type,
+   config, is_read_only, is_demo, created_by)
+values
+  ('00000000-0000-0000-0000-00000000e003', '00000000-0000-0000-0000-00000000d002',
+   'file', 'Dnevni izvoz iz ERP-a', 'sandbox', 'connected', 'none',
+   '{}', true, true, '00000000-0000-0000-0000-0000000000a1')
+on conflict (id) do nothing;
+
+insert into public.import_expectations
+  (organization_id, integration_id, kind, weekdays, by_time, time_zone,
+   grace_minutes, active_from, enabled, created_by)
+values
+  ('00000000-0000-0000-0000-00000000d002', '00000000-0000-0000-0000-00000000e003',
+   'sales', '{1,2,3,4,5}', '08:00', 'Europe/Belgrade',
+   30, now() - interval '30 days', true, '00000000-0000-0000-0000-0000000000a1')
+on conflict (integration_id, kind) do nothing;
+
+-- ---------------------------------------------------------------------------
 -- Demo Hotel Grupa — namerno u ranijoj fazi onboardinga
 -- ---------------------------------------------------------------------------
 

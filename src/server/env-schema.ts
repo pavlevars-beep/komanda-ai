@@ -85,6 +85,12 @@ const serverSchema = z
 
     /** Maksimalno trajanje sesije pristupa Delta Pro osoblja, u minutima. */
     IMPERSONATION_MAX_MINUTES: z.coerce.number().int().min(5).max(480).default(60),
+
+    /**
+     * Tajna kojom se zakazani poslovi predstavljaju. Bez nje ruta za nadzor
+     * ne postoji — radije nedostupna nego otvorena.
+     */
+    CRON_SECRET: z.string().min(24).optional(),
   })
   .superRefine((env, ctx) => {
     // Provera preko više polja stoji u šemi, ne posle nje, da bi je uhvatila i
@@ -94,6 +100,16 @@ const serverSchema = z
         code: 'custom',
         path: ['OPENAI_API_KEY'],
         message: 'obavezan kada je AI_PROVIDER=openai',
+      })
+    }
+
+    // Zakazani nadzor radi servisnom rolom. Tajna bez nje bi otvorila rutu koja
+    // nema čime da odradi posao, i tiho bi vraćala grešku pri svakom pozivu.
+    if (env.CRON_SECRET && !env.SUPABASE_SERVICE_ROLE_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SUPABASE_SERVICE_ROLE_KEY'],
+        message: 'obavezan kada je CRON_SECRET podešen',
       })
     }
   })

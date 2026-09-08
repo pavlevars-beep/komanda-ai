@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { uuid } from '@/core/shared/uuid'
 import { consoleAction, type ActionResultBase } from '@/server/http/with-action'
-import { formString } from '@/server/http/form'
+import { formString, formStringOrNull } from '@/server/http/form'
 import { redact } from '@/server/logger'
 import { readTable, ImportError, MAX_ROWS } from '@/core/import/table'
 import {
@@ -17,6 +17,7 @@ import {
 } from '@/core/import/mapping'
 import { normalizeRows } from '@/core/import/normalize'
 import { saveDataset } from '@/core/import/repository'
+import { deleteExpectation, saveExpectation } from '@/core/import/expectations'
 
 /** 25 MB; ista granica stoji i na kofi. */
 const MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -204,5 +205,78 @@ export const importFileAction = consoleAction<ImportState>(
 
     revalidatePath(`/console/clients/${organizationId}/integrations/${integrationId}/uvoz`)
     return { imported: { rows: normalized.rows.length, problems: normalized.problems.length } }
+  },
+)
+
+export interface CadenceState extends ActionResultBase {
+  readonly saved?: boolean
+}
+
+/**
+ * Čuvanje dogovorenog ritma.
+ *
+ * Dani stižu kao više vrednosti pod istim imenom, pa idu kroz `getAll`. Prazan
+ * izbor se NE popunjava podrazumevanim danima: tiho ubačena radna nedelja bi
+ * značila da konsultant misli da je isključio praćenje, a ono i dalje radi.
+ */
+export const saveCadence = consoleAction<CadenceState>(
+  { audit: 'integration.updated', rateLimit: 'write' },
+  async (ctx, _prev, formData) => {
+    const organizationId = uuid().safeParse(formString(formData, 'organizationId'))
+    const integrationId = uuid().safeParse(formString(formData, 'integrationId'))
+    const kind = formString(formData, 'kind')
+
+    if (!organizationId.success || !integrationId.success || !isKind(kind)) {
+      return { error: 'error.invalid_input' }
+    }
+
+    const weekdays = formData
+      .getAll('weekdays')
+      .map((v) => Number(v))
+      .filter((n) => Number.isInteger(n) && n >= 1 && n <= 7)
+
+    const remove = formString(formData, 'remove') === '1'
+
+    if (remove) {
+      const removed = await deleteExpectation(
+        ctx.db,
+        organizationId.data,
+        integrationId.data,
+        kind,
+      )
+      if (!removed.ok) return { error: removed.error.key }
+
+      revalidatePath(
+        `/console/clients/${organizationId.data}/integrations/${integrationId.data}/uvoz`,
+      )
+      return { saved: true }
+    }
+
+    const grace = Number(formString(formData, 'graceMinutes') ?? '30')
+
+    const saved = await saveExpectation(ctx.db, {
+      organizationId: organizationId.data,
+      integrationId: integrationId.data,
+      kind,
+      weekdays,
+      byTime: formString(formData, 'byTime') ?? '',
+      timeZone: formString(formData, 'timeZone') ?? '',
+      graceMinutes: Number.isFinite(grace) ? Math.min(1440, Math.max(0, grace)) : 30,
+      pausedUntil: formStringOrNull(formData, 'pausedUntil'),
+      enabled: formString(formData, 'enabled') === '1',
+      userId: ctx.user.id,
+    })
+
+    if (!saved.ok) {
+      return {
+        error: saved.error.key,
+        ...(saved.error.detail ? { detail: String(redact(saved.error.detail)) } : {}),
+      }
+    }
+
+    revalidatePath(
+      `/console/clients/${organizationId.data}/integrations/${integrationId.data}/uvoz`,
+    )
+    return { saved: true }
   },
 )
