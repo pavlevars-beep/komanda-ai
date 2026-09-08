@@ -10,6 +10,7 @@ import { ok, err, domainError, type Result } from '../../../shared/result'
 import type { Provenance } from '../../../shared/provenance'
 import {
   dailySales,
+  dailySeries,
   financialSummary,
   headcount,
   inventoryAlerts,
@@ -194,6 +195,18 @@ const CAPABILITIES = [
     }),
   },
   {
+    key: 'get_sales_daily',
+    mode: 'read',
+    requiredPermission: 'view_sales',
+    classification: 'calculation',
+    freshnessSlaSeconds: 900,
+    inputSchema: z.object({ days: z.number().int().min(1).max(90) }),
+    outputSchema: z.object({
+      currency: z.string(),
+      days: z.array(z.object({ date: z.string(), total: z.string() })),
+    }),
+  },
+  {
     key: 'get_sales_history',
     mode: 'read',
     requiredPermission: 'view_sales',
@@ -375,6 +388,18 @@ export const demoConnector: Connector = {
         const data = salesSummary(dataset, ctx.organizationId, now)
         return Promise.resolve(
           ok({ data, provenance: provenanceFor(capabilityKey, now, 900), rowCount: 3 }),
+        )
+      }
+
+      case 'get_sales_daily': {
+        const args = input as { days: number }
+        const data = dailySeries(dataset, ctx.organizationId, now, args.days)
+        return Promise.resolve(
+          ok({
+            data,
+            provenance: provenanceFor(capabilityKey, now, 900),
+            rowCount: data.days.length,
+          }),
         )
       }
 

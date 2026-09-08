@@ -1,0 +1,125 @@
+/*
+ * Boje grafikona.
+ *
+ * Rampa je JEDAN ton, od svetlijeg ka tamnijem, i prošla je proveru u obe teme:
+ * monotonost svetline, razmak između koraka, kontrast najsvetlijeg koraka
+ * prema površini i jedinstvo tona. Vrednosti nisu birane po oku.
+ *
+ * Tamne vrednosti stoje i pod `prefers-color-scheme` i pod `data-theme`, da
+ * prekidač teme pobedi u oba smera.
+ */
+.viz {
+  --viz-1: #84c0bc;
+  --viz-2: #48a09a;
+  --viz-3: #137c76;
+  --viz-4: #064e4b;
+  --viz-line: var(--viz-3);
+  --viz-grid: var(--line);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .viz {
+    --viz-1: #24625e;
+    --viz-2: #2f817b;
+    --viz-3: #45a49d;
+    --viz-4: #7fcdc7;
+    --viz-line: var(--viz-3);
+  }
+}
+
+:root[data-theme='dark'] .viz {
+  --viz-1: #24625e;
+  --viz-2: #2f817b;
+  --viz-3: #45a49d;
+  --viz-4: #7fcdc7;
+  --viz-line: var(--viz-3);
+}
+
+.figure { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.caption { font-size: var(--text-sm); color: var(--muted); }
+.svg { display: block; width: 100%; overflow: visible; }
+
+/* Linija je 2px, spojevi zaobljeni; ispuna je isti ton kao pranje, ne blok. */
+.line { fill: none; stroke: var(--viz-line); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.area { fill: var(--viz-line); opacity: 0.1; }
+/* Prsten u boji površine drži tačku čitljivom tamo gde preseca liniju. */
+.endDot { fill: var(--viz-line); stroke: var(--surface); stroke-width: 2; }
+
+/*
+ * `align-self: stretch` na stubiću NIJE ukras.
+ *
+ * U flex redu se dete skuplja na visinu sadržaja, a sadržaj je ispuna čija je
+ * visina zadata u procentima — procenat od nule je nula, pa se ceo grafikon
+ * iscrtavao prazan. Kvar se ne vidi ni u jednom testu: SVG i CSS su ispravni,
+ * samo je rezultat nevidljiv.
+ */
+.columns { display: flex; align-items: flex-end; gap: 2px; }
+.column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  align-self: stretch;
+  justify-content: center;
+}
+.columnFill {
+  width: 100%;
+  /*
+   * Stubić se ograničava i ostavlja vazduh u opsegu. Ispunjen opseg pravi
+   * zid od boje u kojem se pojedinačni dan više ne razaznaje — a grafikon po
+   * danima postoji upravo zato da bi se video pojedinačan dan.
+   */
+  max-width: 24px;
+  background: var(--viz-3);
+  /* Zaobljen samo gornji kraj; osnova ostaje ravna na liniji nule. */
+  border-radius: 4px 4px 0 0;
+}
+
+.bars { display: flex; flex-direction: column; gap: var(--space-2); }
+.bar { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--space-3); align-items: baseline; }
+.barLabel { font-size: var(--text-sm); color: var(--ink-2); min-width: 0; }
+.barValue { font-size: var(--text-sm); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); }
+.barTrack { grid-column: 1 / -1; height: 8px; background: var(--surface-sunk); border-radius: 4px; overflow: hidden; }
+.barFill { height: 100%; border-radius: 0 4px 4px 0; }
+.barStep1 { background: var(--viz-1); }
+.barStep2 { background: var(--viz-2); }
+.barStep3 { background: var(--viz-3); }
+.barStep4 { background: var(--viz-4); }
+
+/*
+ * Oznake ose stoje ispod SVOJE kolone, ne razmaknute po širini.
+ *
+ * `justify-content: space-between` ih raspoređuje ravnomerno, pa se srednje
+ * oznake razilaze sa stubićima na koje se odnose — greška koja se ne primeti
+ * dok neko ne pokuša da očita konkretan dan.
+ */
+.axis { display: grid; gap: var(--space-2); }
+.tick {
+  font-size: var(--text-2xs);
+  color: var(--faint);
+  white-space: nowrap;
+  justify-self: center;
+  grid-row: 1;
+}
+/* Krajnje oznake se poravnavaju sa ivicom da ne bi izašle iz okvira. */
+.tickFirst { justify-self: start; }
+.tickLast { justify-self: end; }
+
+/* Osa linijskog grafikona: tačke stoje na ivicama opsega, ne u sredini. */
+.axisLine { position: relative; height: 14px; }
+.axisLine .tick {
+  position: absolute;
+  transform: translateX(-50%);
+  justify-self: auto;
+}
+.axisLine .tickFirst { transform: none; }
+.axisLine .tickLast { transform: translateX(-100%); }
+
+/* Tabelarni prikaz — isti podaci za čitač ekrana i za proveru rukom. */
+.tableToggle { font-size: var(--text-sm); color: var(--muted); cursor: pointer; }
+.tableToggle::-webkit-details-marker { display: none; }
+.tableToggle::before { content: '▸ '; }
+details[open] > .tableToggle::before { content: '▾ '; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); margin-top: var(--space-2); }
+.table th, .table td { text-align: left; padding: 2px var(--space-2); border-bottom: 1px solid var(--line); }
+.table td:last-child, .table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }

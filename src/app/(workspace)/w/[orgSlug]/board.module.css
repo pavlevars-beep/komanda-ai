@@ -1,0 +1,67 @@
+.board { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.liveBar {
+  display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.live { display: inline-flex; align-items: center; gap: var(--space-2); }
+.liveMeta { color: var(--faint); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+.dotBusy { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; }
+
+/* --- Pokazatelji --- */
+/*
+ * Najmanja širina je merena prema NAJDUŽEM brojem koji se očekuje —
+ * osmocifreni iznos sa oznakom valute. Uža kartica lomi „19.204.000 RSD" na
+ * dva reda, pa se red pokazatelja čita kao neuredan iako je svaki broj tačan.
+ */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: var(--space-3); }
+.kpi {
+  display: flex; flex-direction: column; gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+.kpiLabel { font-size: var(--text-sm); color: var(--muted); }
+/* Herojska brojka: proporcionalne cifre, jer tabularne na ovoj veličini
+   razvuku broj poput 121 na širinu tri nule. */
+.kpiValue { font-size: var(--text-lg); letter-spacing: -0.01em; }
+.kpiFoot { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+.kpiDelta { font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.kpiNote { font-size: var(--text-sm); color: var(--faint); }
+.up { color: var(--ok); }
+.down { color: var(--critical); }
+.warn { color: var(--warn); }
+.critical { color: var(--critical); }
+.kpiSpark { margin-top: var(--space-1); }
+.kpiPending { color: var(--faint); font-size: var(--text-base); }
+
+/* --- Grafikoni --- */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-3); }
+.chartCard {
+  display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+}
+.chartTitle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); }
+.chartTitle svg { color: var(--muted); }
+.chartWide { grid-column: 1 / -1; }
+.chartFoot {
+  display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+  font-size: var(--text-sm); color: var(--faint);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-2);
+}
+.chartPending {
+  padding: var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  font-size: var(--text-base);
+}

@@ -6,6 +6,7 @@ import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadMorningBrief } from '@/core/brief/loader'
+import { loadBoard } from '@/core/dashboard/board'
 import { businessRulesFor } from '@/core/rules/repository'
 import { briefSections } from '@/core/brief/focus'
 import { initialiseConnectors } from '@/core/connectors'
@@ -14,8 +15,18 @@ import { createTranslator } from '@/i18n/translator'
 import { writeAudit } from '@/core/audit/writer'
 import { requestLocale } from '@/server/http/locale'
 import { Brief } from './brief'
+import { MetricsBoard } from './board'
 import { WorldClocks, type Clock } from './clocks'
 import styles from './brief.module.css'
+
+/**
+ * Razmak automatskog osvežavanja.
+ *
+ * Šezdeset sekundi je izabrano prema tome koliko brzo se podatak STVARNO
+ * menja, ne prema tome koliko često ekran može da se ponovi. Kraći razmak
+ * troši ograničenje broja zahteva ka izvoru, a brojevi ostaju isti.
+ */
+const REFRESH_SECONDS = 60
 
 function greetingKey(hour: number) {
   if (hour < 11) return 'home.greeting.morning' as const
@@ -61,13 +72,20 @@ export default async function WorkspaceHome({
     businessRulesFor(db, org.organizationId),
   ])
 
-  const brief = await loadMorningBrief(
-    db,
-    org,
-    source.integrationId,
-    source.connectorType,
-    rules,
-  )
+  /*
+   * Tabla i brif se učitavaju UPOREDO. Redom bi se njihova vremena čekanja
+   * sabrala, a oba čitaju iz istog izvora — nema razloga da drugi čeka prvi.
+   */
+  const [brief, board] = await Promise.all([
+    loadMorningBrief(db, org, source.integrationId, source.connectorType, rules),
+    loadBoard(
+      db,
+      org,
+      source.integrationId,
+      source.connectorType,
+      rules.forecastHistoryYears,
+    ),
+  ])
 
   await writeAudit(db, {
     action: 'workspace.opened',
@@ -97,8 +115,55 @@ export default async function WorkspaceHome({
     ...partnerClocks.filter((c) => c.timeZone !== org.timezone),
   ]
 
+  const money = (value: string | number, currency: string) =>
+    new Intl.NumberFormat(intl, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Number(value))
+
+  const percent = (value: number) =>
+    new Intl.NumberFormat(intl, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
+
   return (
     <>
+      {/*
+        Tabla stoji IZNAD brifa, ne umesto njega. Tabla odgovara na „koliko" i
+        „kako se kreće", brif na „šta danas traži pažnju".
+      */}
+      <section className={styles.section} style={{ maxWidth: 900, marginBottom: 'var(--space-7)' }}>
+        <h2 className={styles.sectionTitle}>{t('board.title')}</h2>
+        <MetricsBoard
+          board={board}
+          brief={brief}
+          rules={rules}
+          refreshSeconds={REFRESH_SECONDS}
+          f={{
+            t,
+            money,
+            number: (value) => formatNumber(value),
+            percent,
+            // Skraćen zapis za ose i opise: pun iznos u milionima ne staje
+            // ispod stubića i gura ceo grafikon u vodoravno klizanje.
+            compact: (value, currency) =>
+              new Intl.NumberFormat(intl, {
+                style: 'currency',
+                currency,
+                notation: 'compact',
+                maximumFractionDigits: 1,
+              }).format(value),
+            monthLabel: (month) =>
+              new Intl.DateTimeFormat(intl, { month: 'short', year: '2-digit' }).format(
+                new Date(`${month}-01T00:00:00Z`),
+              ),
+            dayLabel: (date) =>
+              new Intl.DateTimeFormat(intl, { day: 'numeric', month: 'numeric' }).format(
+                new Date(`${date}T00:00:00Z`),
+              ),
+          }}
+        />
+      </section>
+
       <Brief
         brief={brief}
         orgSlug={org.organizationSlug}

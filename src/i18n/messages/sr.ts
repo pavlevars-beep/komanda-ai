@@ -652,6 +652,41 @@ export const sr = {
   'history.monthsWithEvents': 'Meseci sa zabeleženim kontekstom',
   'history.baseline': 'Osnovica',
 
+  // --- Tabla sa pokazateljima ---
+  'board.title': 'Pregled',
+  'board.readAt': 'Očitano {when}',
+  'board.autoRefresh': 'Osvežava se na svakih {seconds} s',
+  'board.refresh': 'Osveži sada',
+  'board.refreshing': 'Osvežavam…',
+  'board.unavailable': 'Nedostupno',
+  'board.table': 'Prikaži kao tabelu',
+  'board.col.period': 'Period',
+  'board.col.value': 'Vrednost',
+  'board.col.item': 'Stavka',
+
+  'board.kpi.salesYesterday': 'Prodaja juče',
+  'board.kpi.sales7': 'Prodaja, 7 dana',
+  'board.kpi.salesMonth': 'Prodaja, ovaj mesec',
+  'board.kpi.revenue': 'Prihod, 30 dana',
+  'board.kpi.expenses': 'Rashod, 30 dana',
+  'board.kpi.profit': 'Dobit, 30 dana',
+  'board.kpi.margin': 'Marža',
+  'board.kpi.receivables': 'Potraživanja',
+  'board.kpi.overdue': 'Dospelo preko {days} dana',
+  'board.kpi.payables7': 'Obaveze u 7 dana',
+  'board.kpi.stockRisk': 'Zalihe u riziku',
+  'board.kpi.headcount': 'Zaposlenih',
+  'board.kpi.items': '{count} artikala',
+  'board.kpi.departments': '{count} odeljenja',
+
+  'board.chart.daily': 'Prodaja po danima, poslednjih 30',
+  'board.chart.history': 'Prodaja po mesecima',
+  'board.chart.aging': 'Potraživanja po starosti duga',
+  'board.chart.coverage': 'Pokrivenost zaliha, najkraća prva',
+  'board.chart.departments': 'Zaposleni po odeljenjima',
+
+  'board.vsPrevious': 'prema prethodnom',
+
   // --- Jutarnji brif ---
   'brief.attention': 'Zahteva pažnju',
   'brief.attention.none': 'Ništa ne traži pažnju. Sve je u okviru zadatih granica.',

@@ -630,6 +630,41 @@ export const en: Messages = {
   'history.monthsWithEvents': 'Months with recorded context',
   'history.baseline': 'Baseline',
 
+  // --- Metrics board ---
+  'board.title': 'Overview',
+  'board.readAt': 'Read {when}',
+  'board.autoRefresh': 'Refreshes every {seconds} s',
+  'board.refresh': 'Refresh now',
+  'board.refreshing': 'Refreshing…',
+  'board.unavailable': 'Unavailable',
+  'board.table': 'Show as table',
+  'board.col.period': 'Period',
+  'board.col.value': 'Value',
+  'board.col.item': 'Item',
+
+  'board.kpi.salesYesterday': 'Sales yesterday',
+  'board.kpi.sales7': 'Sales, 7 days',
+  'board.kpi.salesMonth': 'Sales, this month',
+  'board.kpi.revenue': 'Revenue, 30 days',
+  'board.kpi.expenses': 'Expenses, 30 days',
+  'board.kpi.profit': 'Profit, 30 days',
+  'board.kpi.margin': 'Margin',
+  'board.kpi.receivables': 'Receivables',
+  'board.kpi.overdue': 'Overdue past {days} days',
+  'board.kpi.payables7': 'Payables within 7 days',
+  'board.kpi.stockRisk': 'Stock at risk',
+  'board.kpi.headcount': 'Employees',
+  'board.kpi.items': '{count} items',
+  'board.kpi.departments': '{count} departments',
+
+  'board.chart.daily': 'Daily sales, last 30',
+  'board.chart.history': 'Monthly sales',
+  'board.chart.aging': 'Receivables by age of debt',
+  'board.chart.coverage': 'Stock coverage, shortest first',
+  'board.chart.departments': 'Employees by department',
+
+  'board.vsPrevious': 'vs previous',
+
   // --- Morning brief ---
   'brief.attention': 'Requires attention',
   'brief.attention.none': 'Nothing requires attention. Everything is within the configured limits.',

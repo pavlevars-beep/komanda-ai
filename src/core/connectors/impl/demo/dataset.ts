@@ -693,3 +693,45 @@ export function salesHistory(
 
   return { currency: profile.currency, months }
 }
+
+// ---------------------------------------------------------------------------
+// Dnevni niz prodaje
+// ---------------------------------------------------------------------------
+
+export interface DailyPoint {
+  readonly date: string
+  readonly total: string
+}
+
+export interface DailySeries {
+  readonly currency: string
+  readonly days: readonly DailyPoint[]
+}
+
+/**
+ * Prodaja po danima, unazad od juče.
+ *
+ * Vrednosti dolaze iz `dailySales`, iste one koje daju i zbirove — grafikon i
+ * kartica iznad njega moraju da se slažu, jer se prvo poredi baš to.
+ *
+ * Niz se završava JUČE, ne danas. Dan koji je u toku bi na grafikonu bio
+ * kratak stubić na kraju i čitao bi se kao nagli pad, a reč je o nepotpunom
+ * podatku.
+ */
+export function dailySeries(
+  dataset: DemoDataset,
+  orgId: string,
+  today: Date,
+  days: number,
+): DailySeries {
+  const profile = PROFILES[dataset]
+  const count = Math.max(1, Math.min(90, days))
+  const points: DailyPoint[] = []
+
+  for (let back = count; back >= 1; back--) {
+    const iso = new Date(today.getTime() - back * 86_400_000).toISOString().slice(0, 10)
+    points.push({ date: iso, total: dailySales(dataset, orgId, iso).total })
+  }
+
+  return { currency: profile.currency, days: points }
+}
