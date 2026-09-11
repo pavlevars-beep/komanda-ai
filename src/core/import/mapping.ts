@@ -186,3 +186,81 @@ export function validateMapping(
 
   return problems
 }
+
+/**
+ * Zapamćeno mapiranje, prevedeno na novo zaglavlje.
+ *
+ * Mapiranje se pamti kao polje → INDEKS kolone, ali indeks nije stabilan: kada
+ * neko ubaci kolonu na drugo mesto, svi indeksi posle nje se pomere. Zapamćen
+ * indeks bi tada tiho pokazivao na pogrešnu kolonu — a to je kvar koji niko ne
+ * primeti, jer brojevi i dalje postoje, samo su iz druge kolone.
+ *
+ * Zato se uz mapiranje pamti i ZAGLAVLJE po kojem je nastalo. Prevod ide preko
+ * naziva: polje → naziv kolone u starom zaglavlju → njen indeks u novom. Naziv
+ * preživljava premeštanje kolone; indeks ne.
+ */
+
+export interface RememberedMapping {
+  readonly mapping: ColumnMapping
+  /** Polja čija kolona više ne postoji — traže odluku čoveka. */
+  readonly missing: readonly string[]
+  /** Kolone koje su se premestile; mapiranje je već ispravljeno. */
+  readonly moved: readonly string[]
+  /** Kolone kojih pre nije bilo. */
+  readonly added: readonly string[]
+  /** Da li se zaglavlje razlikuje od zapamćenog. */
+  readonly headersChanged: boolean
+}
+
+export function applyRememberedMapping(
+  savedMapping: ColumnMapping,
+  savedHeaders: readonly string[],
+  headers: readonly string[],
+): RememberedMapping {
+  /*
+   * Poređenje ide preko normalizovanog naziva. Izvozi umeju da menjaju veliko
+   * slovo, razmak ili dijakritik između dva dana, a to nije promena kolone —
+   * to je ista kolona drugačije ispisana.
+   */
+  const indexByName = new Map<string, number>()
+  headers.forEach((name, index) => {
+    const key = normalizeHeader(name)
+    // Prvo pojavljivanje pobeđuje: kod dve istoimene kolone bi poslednja tiho
+    // preuzela mapiranje prve.
+    if (key !== '' && !indexByName.has(key)) indexByName.set(key, index)
+  })
+
+  const savedNames = new Set(savedHeaders.map(normalizeHeader).filter((n) => n !== ''))
+
+  const mapping: Record<string, number> = {}
+  const missing: string[] = []
+  const moved: string[] = []
+
+  for (const [field, savedIndex] of Object.entries(savedMapping)) {
+    const savedName = savedHeaders[savedIndex]
+    if (savedName === undefined) {
+      missing.push(field)
+      continue
+    }
+
+    const index = indexByName.get(normalizeHeader(savedName))
+    if (index === undefined) {
+      missing.push(field)
+      continue
+    }
+
+    mapping[field] = index
+    if (index !== savedIndex) moved.push(savedName)
+  }
+
+  const added = headers.filter((name) => {
+    const key = normalizeHeader(name)
+    return key !== '' && !savedNames.has(key)
+  })
+
+  const headersChanged =
+    headers.length !== savedHeaders.length ||
+    headers.some((name, i) => normalizeHeader(name) !== normalizeHeader(savedHeaders[i] ?? ''))
+
+  return { mapping, missing, moved, added, headersChanged }
+}

@@ -126,6 +126,14 @@ export default async function ImportPage({
           withProblems: t('import.withProblems', { rows: '{rows}', problems: '{problems}' }),
           fields: messagesFor(locale, ['import.field.']),
           messages: messagesFor(locale, ['error.', 'import.error.']),
+          duplicate: t('import.duplicate'),
+          duplicateWhen: t('import.duplicateWhen', { when: '{when}', file: '{file}' }),
+          duplicateHint: t('import.duplicateHint'),
+          remembered: t('import.mapping.remembered'),
+          headersChanged: t('import.mapping.changed'),
+          moved: t('import.mapping.moved', { columns: '{columns}' }),
+          added: t('import.mapping.added', { columns: '{columns}' }),
+          missing: t('import.mapping.missing', { fields: '{fields}' }),
         }}
       />
 

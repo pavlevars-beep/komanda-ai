@@ -727,6 +727,18 @@ export const en: Messages = {
     '{kind}: no data has ever arrived. The data flow is not established yet.',
   'staleness.asOf': 'Showing the state as of {when}.',
 
+  'import.duplicate': 'This exact table is already in use — nothing was imported.',
+  'import.duplicateWhen': 'It was imported {when}, as \u201C{file}\u201D.',
+  'import.duplicateHint':
+    'The data was NOT refreshed. If the export was meant to bring new rows, check whether it ran at all — the same file sent again does not mean the data is new.',
+
+  'import.mapping.remembered': 'Columns were taken from a previously confirmed mapping.',
+  'import.mapping.changed': 'The header changed since the last import — check the columns before confirming.',
+  'import.mapping.moved': 'Moved columns, mapping corrected by name: {columns}',
+  'import.mapping.added': 'New columns: {columns}',
+  'import.mapping.missing':
+    'Columns from the earlier mapping no longer exist in the table: {fields}. Pick a replacement — a required field cannot be skipped.',
+
   'import.error.empty': 'The file is empty.',
   'import.error.notAZip': 'The file is not a valid spreadsheet.',
   'import.error.notASpreadsheet': 'The file contains no data sheet.',

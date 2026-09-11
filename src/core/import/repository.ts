@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { uuid } from '../shared/uuid'
 import type { Db } from '@/server/db/types'
@@ -95,6 +96,8 @@ export interface SaveInput {
   readonly rows: readonly Readonly<Record<string, string | number | null>>[]
   readonly problems: readonly RowProblem[]
   readonly importedBy: string
+  /** SHA-256 sadržaja fajla — po njemu se prepoznaje ponovo poslata ista tabela. */
+  readonly contentHash: string
 }
 
 /** Koliko redova ide u jednom upisu. Ceo niz od sto hiljada redova ruši zahtev. */
@@ -127,6 +130,7 @@ export async function saveDataset(db: Db, input: SaveInput): Promise<Result<stri
       problem_count: input.problems.length,
       problems: input.problems.slice(0, 20),
       imported_by: input.importedBy,
+      content_hash: input.contentHash,
     })
     .select('id')
     .single()
@@ -245,5 +249,164 @@ export async function readyDatasets(
         rowCount: r.row_count,
       },
     ]),
+  )
+}
+
+/**
+ * Otisak sadržaja fajla.
+ *
+ * Računa se nad BAJTOVIMA, ne nad pročitanim redovima. Isti podaci sačuvani
+ * ponovo iz Excel-a daju drugačije bajtove (menja se vreme izmene unutar
+ * arhive), pa otisak neće prepoznati takav fajl kao isti — i to je ispravno:
+ * tada je izvoz stvarno ponovo pokrenut. Prepoznaje se tačno ono što jeste
+ * isti fajl poslat dvaput.
+ */
+export function contentHash(bytes: Buffer): string {
+  return createHash('sha256').update(bytes).digest('hex')
+}
+
+export interface ActiveDataset {
+  readonly id: string
+  readonly fileName: string
+  readonly importedAt: string
+  readonly seenCount: number
+}
+
+/**
+ * Aktivan skup iste vrste, ako mu je sadržaj identičan.
+ *
+ * Poredi se samo sa `ready` skupom — onim koji se trenutno čita. Poklapanje sa
+ * ranije zamenjenim skupom je vraćanje na stariji fajl, što ume da bude i
+ * namerno (ispravka pa povratak), pa se ne blokira.
+ */
+export async function findActiveByHash(
+  db: Db,
+  organizationId: string,
+  integrationId: string,
+  kind: DatasetKind,
+  hash: string,
+): Promise<ActiveDataset | null> {
+  const { data, error } = await db
+    .from('imported_datasets')
+    .select('id, file_name, imported_at, seen_count')
+    .eq('organization_id', organizationId)
+    .eq('integration_id', integrationId)
+    .eq('kind', kind)
+    .eq('status', 'ready')
+    .eq('content_hash', hash)
+    .limit(1)
+
+  if (error) return null
+
+  const rows = z
+    .array(
+      z.object({
+        id: uuid(),
+        file_name: z.string(),
+        imported_at: z.string(),
+        seen_count: z.number().int(),
+      }),
+    )
+    .safeParse(data)
+
+  const row = rows.success ? rows.data[0] : undefined
+  if (!row) return null
+
+  return {
+    id: row.id,
+    fileName: row.file_name,
+    importedAt: row.imported_at,
+    seenCount: row.seen_count,
+  }
+}
+
+/**
+ * Beleženje da je ista tabela poslata ponovo.
+ *
+ * Pokušaj se NE odbacuje ćutke. „Klijent svaki dan šalje istu tabelu" je nalaz
+ * koji objašnjava zašto alarm na tišinu i dalje stoji iako neko svakodnevno
+ * nešto otprema — bez ovog traga bi ta dva podatka izgledala protivrečno.
+ *
+ * Brojač je OKVIRAN, ne tačan: čita se pa upisuje, pa bi dva istovremena
+ * otpremanja istog fajla upisala istu vrednost. Tačan brojač bi tražio
+ * funkciju u bazi, a razlika između „poslato 7 puta" i „poslato 8 puta" ne
+ * menja nijednu odluku. Vreme poslednjeg slanja, koje i jeste poenta, ostaje
+ * tačno u svakom slučaju.
+ */
+export async function recordResubmission(
+  db: Db,
+  organizationId: string,
+  datasetId: string,
+  seenCount: number,
+  now = new Date(),
+): Promise<void> {
+  await db
+    .from('imported_datasets')
+    .update({ last_seen_at: now.toISOString(), seen_count: seenCount + 1 })
+    .eq('organization_id', organizationId)
+    .eq('id', datasetId)
+}
+
+// ---------------------------------------------------------------------------
+// Zapamćeno mapiranje kolona
+// ---------------------------------------------------------------------------
+
+const mappingRow = z.object({
+  mapping: z.record(z.string(), z.number()),
+  headers: z.array(z.string()),
+  confirmed_at: z.string(),
+})
+
+export type StoredMapping = z.infer<typeof mappingRow>
+
+export async function getStoredMapping(
+  db: Db,
+  organizationId: string,
+  integrationId: string,
+  kind: DatasetKind,
+): Promise<StoredMapping | null> {
+  const { data, error } = await db
+    .from('import_mappings')
+    .select('mapping, headers, confirmed_at')
+    .eq('organization_id', organizationId)
+    .eq('integration_id', integrationId)
+    .eq('kind', kind)
+    .maybeSingle()
+
+  if (error) return null
+
+  const parsed = mappingRow.safeParse(data)
+  return parsed.success ? parsed.data : null
+}
+
+/**
+ * Pamćenje potvrđenog mapiranja.
+ *
+ * Pamti se TEK po uspešnom uvozu, i pamti se ono što je čovek potvrdio — ne
+ * ono što je sistem predložio. Zapamćen predlog koji niko nije pogledao bi
+ * sledeći put prošao bez pitanja, sa greškom u sebi.
+ */
+export async function rememberMapping(
+  db: Db,
+  input: {
+    readonly organizationId: string
+    readonly integrationId: string
+    readonly kind: DatasetKind
+    readonly mapping: ColumnMapping
+    readonly headers: readonly string[]
+    readonly userId: string
+  },
+): Promise<void> {
+  await db.from('import_mappings').upsert(
+    {
+      organization_id: input.organizationId,
+      integration_id: input.integrationId,
+      kind: input.kind,
+      mapping: input.mapping,
+      headers: [...input.headers],
+      confirmed_at: new Date().toISOString(),
+      confirmed_by: input.userId,
+    },
+    { onConflict: 'integration_id,kind' },
   )
 }

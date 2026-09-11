@@ -749,6 +749,18 @@ export const sr = {
     '{kind}: podatak nije stigao nijednom. Dotok podataka još nije uspostavljen.',
   'staleness.asOf': 'Prikazano stanje je od {when}.',
 
+  'import.duplicate': 'Ista tabela je već u upotrebi — ništa nije uvezeno.',
+  'import.duplicateWhen': 'Uvezena je {when}, kao „{file}".',
+  'import.duplicateHint':
+    'Podatak NIJE osvežen. Ako je izvoz trebalo da donese nove redove, proverite da li je uopšte pokrenut — isti fajl poslat ponovo ne znači da su podaci novi.',
+
+  'import.mapping.remembered': 'Kolone su preuzete iz ranije potvrđenog mapiranja.',
+  'import.mapping.changed': 'Zaglavlje se promenilo od prošlog uvoza — proverite kolone pre potvrde.',
+  'import.mapping.moved': 'Premeštene kolone, mapiranje je ispravljeno po nazivu: {columns}',
+  'import.mapping.added': 'Nove kolone: {columns}',
+  'import.mapping.missing':
+    'Kolone iz ranijeg mapiranja više ne postoje u tabeli: {fields}. Izaberite zamenu — obavezno polje se ne može preskočiti.',
+
   'import.error.empty': 'Fajl je prazan.',
   'import.error.notAZip': 'Fajl nije ispravna tabela.',
   'import.error.notASpreadsheet': 'U fajlu nema nijednog lista sa podacima.',

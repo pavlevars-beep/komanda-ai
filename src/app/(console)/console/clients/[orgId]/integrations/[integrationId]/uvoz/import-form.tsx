@@ -34,6 +34,16 @@ export interface Labels {
   readonly withProblems: string
   readonly fields: Readonly<Record<string, string>>
   readonly messages: Readonly<Record<string, string>>
+  readonly duplicate: string
+  /** Šabloni sa {when}, {file}. */
+  readonly duplicateWhen: string
+  readonly duplicateHint: string
+  readonly remembered: string
+  readonly headersChanged: string
+  /** Šabloni sa {columns}, {fields}. */
+  readonly moved: string
+  readonly added: string
+  readonly missing: string
 }
 
 /**
@@ -73,6 +83,14 @@ export function ImportForm({
   return (
     <>
       <form action={analyze} className={styles.card}>
+        {/*
+          I prvi korak nosi organizaciju i integraciju: bez njih se ne može
+          pročitati zapamćeno mapiranje, pa bi se kolone iznova pogađale i kod
+          klijenta koji je isti izvoz već potvrdio.
+        */}
+        <input type="hidden" name="organizationId" value={organizationId} />
+        <input type="hidden" name="integrationId" value={integrationId} />
+
         <div className={styles.row}>
           <div className={styles.group}>
             <label className={styles.label} htmlFor="import-kind">
@@ -131,9 +149,42 @@ export function ImportForm({
                 count: detected.headers.length,
                 rows: detected.rowCount,
               })}{' '}
-              {labels.mappingHint}
+              {detected.source === 'remembered' ? labels.remembered : labels.mappingHint}
             </span>
           </div>
+
+          {/*
+            Promena zaglavlja se PRIJAVLJUJE, ne prećutkuje. Kolone se i dalje
+            prate po nazivu, pa mapiranje ostaje ispravno kada se kolona samo
+            premesti — ali kada nestane, odluku donosi čovek. Tiho ponovno
+            pogađanje je način na koji kolona sa obavezama počne da se čita kao
+            potraživanja i mesec dana niko ne primeti.
+          */}
+          {detected.missing.length > 0 ? (
+            <p className={styles.error} role="alert">
+              {interpolate(labels.missing, {
+                fields: detected.missing
+                  .map((key) => labels.fields[key] ?? key)
+                  .join(', '),
+              })}
+            </p>
+          ) : null}
+
+          {detected.moved.length > 0 || detected.added.length > 0 ? (
+            <div className={styles.hints}>
+              <p className={styles.warn}>{labels.headersChanged}</p>
+              {detected.moved.length > 0 ? (
+                <p className={styles.hint}>
+                  {interpolate(labels.moved, { columns: detected.moved.join(', ') })}
+                </p>
+              ) : null}
+              {detected.added.length > 0 ? (
+                <p className={styles.hint}>
+                  {interpolate(labels.added, { columns: detected.added.join(', ') })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className={styles.row}>
             {(fields[detected.kind] ?? []).map((field) => (
@@ -214,6 +265,24 @@ export function ImportForm({
               </span>
             ) : null}
           </div>
+
+          {/*
+            Isti fajl nije greška — konsultant nije ništa pogrešio. Ali nije ni
+            uspeh, jer podatak nije osvežen. Zeleno „uvezeno" ovde bi bilo
+            netačno, a crveno bi terao na traženje kvara kojeg nema.
+          */}
+          {result.duplicate ? (
+            <div className={styles.hints} role="status">
+              <p className={styles.warn}>{labels.duplicate}</p>
+              <p className={styles.hint}>
+                {interpolate(labels.duplicateWhen, {
+                  when: new Date(result.duplicate.importedAt).toLocaleString(),
+                  file: result.duplicate.fileName,
+                })}
+              </p>
+              <p className={styles.hint}>{labels.duplicateHint}</p>
+            </div>
+          ) : null}
         </form>
       ) : null}
     </>

@@ -10,13 +10,21 @@ import { readTable, ImportError, MAX_ROWS } from '@/core/import/table'
 import {
   DATASET_KINDS,
   FIELDS,
+  applyRememberedMapping,
   suggestMapping,
   validateMapping,
   type ColumnMapping,
   type DatasetKind,
 } from '@/core/import/mapping'
 import { normalizeRows } from '@/core/import/normalize'
-import { saveDataset } from '@/core/import/repository'
+import {
+  contentHash,
+  findActiveByHash,
+  getStoredMapping,
+  recordResubmission,
+  rememberMapping,
+  saveDataset,
+} from '@/core/import/repository'
 import { deleteExpectation, saveExpectation } from '@/core/import/expectations'
 
 /** 25 MB; ista granica stoji i na kofi. */
@@ -32,11 +40,20 @@ export interface AnalyzeState extends ActionResultBase {
     /** Sadržaj fajla, base64, da drugi korak ne traži ponovno otpremanje. */
     readonly payload: string
     readonly fileName: string
+    /** Odakle mapiranje dolazi: predlog sistema ili zapamćena potvrda. */
+    readonly source: 'suggested' | 'remembered'
+    /** Kolone koje su nestale iz zaglavlja — traže odluku čoveka. */
+    readonly missing: readonly string[]
+    /** Kolone koje su se premestile; mapiranje je već ispravljeno po nazivu. */
+    readonly moved: readonly string[]
+    readonly added: readonly string[]
   }
 }
 
 export interface ImportState extends ActionResultBase {
   readonly imported?: { readonly rows: number; readonly problems: number }
+  /** Ista tabela je već u upotrebi — nije greška, ali nije ni nov podatak. */
+  readonly duplicate?: { readonly fileName: string; readonly importedAt: string }
 }
 
 function isKind(value: unknown): value is DatasetKind {
@@ -52,9 +69,13 @@ function isKind(value: unknown): value is DatasetKind {
  */
 export const analyzeFileAction = consoleAction<AnalyzeState>(
   { rateLimit: 'write', audit: 'integration.updated' },
-  async (_ctx, _prev, formData) => {
+  async ({ db }, _prev, formData) => {
     const kind = formString(formData, 'kind')
     if (!isKind(kind)) return { error: 'error.invalid_input' }
+
+    const organizationId = uuid().safeParse(formString(formData, 'organizationId'))
+    const integrationId = uuid().safeParse(formString(formData, 'integrationId'))
+    if (!organizationId.success || !integrationId.success) return { error: 'error.invalid_input' }
 
     const file = formData.get('file')
     if (!(file instanceof File) || file.size === 0) return { error: 'import.error.empty' }
@@ -67,6 +88,25 @@ export const analyzeFileAction = consoleAction<AnalyzeState>(
       const dataRows = Math.max(0, table.rows.length - 1)
       if (dataRows > MAX_ROWS) return { error: 'import.error.tooManyRows' }
 
+      /*
+       * Zapamćeno mapiranje ima PREDNOST nad pogađanjem.
+       *
+       * Pogađanje po nazivu kolone je dobro za prvi put, ali se od izvoza do
+       * izvoza ume da razreši drugačije — a isti fajl mora svaki put da se
+       * pročita isto. Kada je čovek jednom potvrdio kolone, to je odluka, ne
+       * pretpostavka, i sistem je ne preispituje sam.
+       */
+      const stored = await getStoredMapping(
+        db,
+        organizationId.data,
+        integrationId.data,
+        kind,
+      )
+
+      const remembered = stored
+        ? applyRememberedMapping(stored.mapping, stored.headers, table.headers)
+        : null
+
       return {
         analysis: {
           kind,
@@ -75,9 +115,13 @@ export const analyzeFileAction = consoleAction<AnalyzeState>(
           // toliko da se prikaz pretvori u pregled cele tabele.
           preview: table.rows.slice(1, 6),
           rowCount: dataRows,
-          mapping: suggestMapping(table.headers, kind),
+          mapping: remembered ? remembered.mapping : suggestMapping(table.headers, kind),
           payload: bytes.toString('base64'),
           fileName: file.name,
+          source: remembered ? 'remembered' : 'suggested',
+          missing: remembered ? remembered.missing : [],
+          moved: remembered ? remembered.moved : [],
+          added: remembered && remembered.headersChanged ? remembered.added : [],
         },
       }
     } catch (cause) {
@@ -118,6 +162,21 @@ export const importFileAction = consoleAction<ImportState>(
     const bytes = Buffer.from(payload, 'base64')
     if (bytes.length === 0 || bytes.length > MAX_FILE_BYTES) {
       return { error: 'import.error.unreadable' }
+    }
+
+    /*
+     * ISTI FAJL NIJE NOV PODATAK.
+     *
+     * Provera ide PRE svega ostalog: bez nje bi ponovno slanje jučerašnje
+     * tabele napravilo nov skup i pomerilo vreme podatka, pa bi sve izgledalo
+     * sveže iako ništa nije stiglo. To je tiho laganje i gore je od greške —
+     * greška se bar vidi.
+     */
+    const hash = contentHash(bytes)
+    const active = await findActiveByHash(db, organizationId, integrationId, kind, hash)
+    if (active) {
+      await recordResubmission(db, organizationId, active.id, active.seenCount)
+      return { duplicate: { fileName: active.fileName, importedAt: active.importedAt } }
     }
 
     let table
@@ -194,6 +253,7 @@ export const importFileAction = consoleAction<ImportState>(
       rows: normalized.rows,
       problems: normalized.problems,
       importedBy: user.id,
+      contentHash: hash,
     })
 
     if (!saved.ok) {
@@ -202,6 +262,23 @@ export const importFileAction = consoleAction<ImportState>(
         ...(saved.error.detail ? { detail: String(redact(saved.error.detail)) } : {}),
       }
     }
+
+    /*
+     * Mapiranje se pamti TEK sada, i pamti se ono što je čovek potvrdio — ne
+     * ono što je sistem predložio. Zapamćen predlog koji niko nije pogledao bi
+     * sledeći put prošao bez pitanja, sa greškom u sebi.
+     *
+     * Neuspeh pamćenja ne ruši uvoz: podaci su već upisani, a mapiranje je
+     * pogodnost za sledeći put.
+     */
+    await rememberMapping(db, {
+      organizationId,
+      integrationId,
+      kind,
+      mapping,
+      headers: table.headers,
+      userId: user.id,
+    })
 
     revalidatePath(`/console/clients/${organizationId}/integrations/${integrationId}/uvoz`)
     return { imported: { rows: normalized.rows.length, problems: normalized.problems.length } }
