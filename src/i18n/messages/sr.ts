@@ -653,6 +653,45 @@ export const sr = {
   'history.baseline': 'Osnovica',
 
   // --- Uvoz tabela ---
+  'mail.guide.title': 'Uputstvo za klijenta',
+  'mail.guide.nav': 'Uputstvo za slanje →',
+  'mail.guide.lede':
+    'Odštampajte ili prosledite osobi koja podešava izveštaje u ERP-u. Sve što joj treba je na ovoj strani.',
+  /*
+   * Naziv firme ima rod koji ne znamo: „Distribucija" je ženskog, „Delta Pro"
+   * muškog, „Preduzeće" srednjeg. Rečenica zato izbegava prošli particip
+   * („imao/imala"), koji se slaže, i koristi prezent, koji se ne slaže.
+   */
+  'mail.guide.intro':
+    'ERP firme {org} treba da zakaže izveštaj i pošalje ga kao prilog na adresu ispod. Tako {org} svakog jutra ima svoje brojeve — ništa se ne instalira i niko ne otprema ručno.',
+  'mail.guide.forKind': 'Za: {kind}',
+  'mail.guide.sendTo': 'Poslati na adresu',
+  'mail.guide.sendFrom': 'Slati isključivo sa',
+  'mail.guide.sendFromHint':
+    'Poruka sa bilo koje druge adrese se odbija. Ako se adresa pošiljaoca menja, javite nam pre nego što je promenite.',
+  'mail.guide.noInbox': 'Adresa još nije napravljena za ovu vrstu podatka.',
+  'mail.guide.rules': 'Pravila',
+  'mail.guide.rule.oneTable': 'Tačno JEDNA tabela po poruci. Više tabela se odbija, da se ne bi pogađalo koja je koja.',
+  'mail.guide.rule.format': 'Format .xlsx (Excel) ili .csv. Stari .xls se ne čita.',
+  'mail.guide.rule.size': 'Do 4 MB. .xlsx je sažet i praktično uvek staje.',
+  'mail.guide.rule.headers': 'Prvi red mora da bude zaglavlje sa nazivima kolona.',
+  'mail.guide.rule.stable':
+    'Nazivi kolona treba da ostanu isti iz dana u dan. Ako se promene, uvoz staje i javlja se — ne pogađa.',
+  'mail.guide.columns': 'Kolone koje su potrebne',
+  'mail.guide.columnsHint':
+    'Nazivi ne moraju biti doslovno ovakvi — prepoznaju se i drugačiji. Bitno je da podatak postoji.',
+  'mail.guide.current': 'Kolone koje se trenutno koriste',
+  'mail.guide.currentHint':
+    'Ovako je tabela poslednji put pročitana. Zadržite ove nazive i izvoz će prolaziti bez ijedne dodatne radnje.',
+  'mail.guide.required': 'obavezno',
+  'mail.guide.optional': 'ako postoji',
+  'mail.guide.whenTitle': 'Kada slati',
+  'mail.guide.when': 'Očekuje se {days} do {time}.',
+  'mail.guide.whenNone': 'Ritam slanja još nije dogovoren.',
+  'mail.guide.silence':
+    'Ako poruka izostane, sistem to primeti i javlja — stari brojevi se NE prikazuju kao današnji.',
+  'mail.guide.print': 'Štampaj',
+
   'mail.title': 'Prijem poštom',
   'mail.lede':
     'ERP zakaže izveštaj i pošalje ga na namensku adresu. Podesi se jednom, ništa se ne instalira i niko ne mora ništa da otprema svakog dana.',

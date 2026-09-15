@@ -83,7 +83,11 @@ export default async function ImportPage({
    * nemaju gde da stignu — i to se kaže, umesto da adresa izgleda spremno.
    */
   const mailDomain = env().MAIL_DOMAIN
-  const mailReady = Boolean(mailDomain && env().MAIL_WEBHOOK_SECRET)
+  // Dovoljan je JEDAN put prijema: Mailgun potpisom, ili opšta ruta deljenom
+  // tajnom. Traženje oba bi značilo da podešen Mailgun i dalje izgleda neaktivno.
+  const mailReady = Boolean(
+    mailDomain && (env().MAILGUN_SIGNING_KEY || env().MAIL_WEBHOOK_SECRET),
+  )
 
   const inboxByKind = new Map(
     inboxes.ok ? inboxes.value.map((inbox) => [inbox.kind, inbox] as const) : [],
@@ -299,6 +303,21 @@ export default async function ImportPage({
           />
         )
       })}
+
+      {/*
+        Uputstvo stoji uz sandučad, ne u navigaciji: traži se tačno u trenutku
+        kada se sanduče podesi i treba javiti klijentu šta da uradi.
+      */}
+      <section className={styles.head}>
+        <Link
+          href={
+            `/console/clients/${orgId}/integrations/${integrationId}/uvoz/uputstvo` as Route
+          }
+          className={styles.crumb}
+        >
+          {t('mail.guide.nav')}
+        </Link>
+      </section>
 
       <section className={styles.head}>
         <h2 className={styles.label}>{t('mail.log')}</h2>

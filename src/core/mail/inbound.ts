@@ -64,6 +64,32 @@ function extensionOf(fileName: string): string {
 }
 
 /**
+ * Prilozi koji mogu biti tabela.
+ *
+ * Izvučeno da bi postojalo JEDNO mesto koje odlučuje šta je kandidat. Adapter
+ * mora da zna koji prilog da učita pre nego što pozove pravila (čitanje sadržaja
+ * je asinhrono, pravila nisu), pa bi bez ovoga imao sopstveni spisak nastavaka —
+ * i ta dva spiska bi se jednog dana razišla.
+ */
+export function tableCandidates(
+  attachments: readonly InboundAttachment[],
+): readonly InboundAttachment[] {
+  return attachments.filter((a) => TABLE_EXTENSIONS.includes(extensionOf(a.fileName)))
+}
+
+/**
+ * Prilog koji će pravila izabrati, ako ga ima tačno jedan.
+ *
+ * Ne donosi odluku o prihvatanju — samo kaže čiji sadržaj vredi pripremiti.
+ */
+export function soleTableCandidate(
+  attachments: readonly InboundAttachment[],
+): InboundAttachment | null {
+  const candidates = tableCandidates(attachments)
+  return candidates.length === 1 ? candidates[0]! : null
+}
+
+/**
  * Da li je pošiljalac na spisku.
  *
  * Domen se poredi CELO, ne kao završetak: `@firma.rs` ne sme da propusti
@@ -118,9 +144,7 @@ export function judgeInboundEmail(email: InboundEmail, rule: MailboxRule): MailV
   // Stari binarni `.xls` se ne čita, ali se prepoznaje — poruka „sačuvajte kao
   // .xlsx" je rešiva, „fajl se ne može pročitati" nije.
   const legacy = email.attachments.filter((a) => extensionOf(a.fileName) === '.xls')
-  const candidates = email.attachments.filter((a) =>
-    TABLE_EXTENSIONS.includes(extensionOf(a.fileName)),
-  )
+  const candidates = tableCandidates(email.attachments)
 
   if (candidates.length === 0) {
     if (legacy.length > 0) {

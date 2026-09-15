@@ -102,6 +102,15 @@ const serverSchema = z
      */
     MAIL_DOMAIN: z.string().min(3).optional(),
     MAIL_WEBHOOK_SECRET: z.string().min(24).optional(),
+
+    /**
+     * Ključ kojim Mailgun potpisuje webhook pozive.
+     *
+     * Jači od deljene tajne u zaglavlju: potpis se menja sa svakim pozivom, pa
+     * jednom snimljen zahtev ne važi zauvek. Zove se „HTTP webhook signing key"
+     * u Mailgun-ovim podešavanjima i NIJE isti kao API ključ.
+     */
+    MAILGUN_SIGNING_KEY: z.string().min(16).optional(),
   })
   .superRefine((env, ctx) => {
     // Provera preko više polja stoji u šemi, ne posle nje, da bi je uhvatila i
@@ -138,6 +147,20 @@ const serverSchema = z
         code: 'custom',
         path: ['SUPABASE_SERVICE_ROLE_KEY'],
         message: 'obavezan kada je MAIL_WEBHOOK_SECRET podešen',
+      })
+    }
+    if (env.MAILGUN_SIGNING_KEY && !env.MAIL_DOMAIN) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['MAIL_DOMAIN'],
+        message: 'obavezan kada je MAILGUN_SIGNING_KEY podešen',
+      })
+    }
+    if (env.MAILGUN_SIGNING_KEY && !env.SUPABASE_SERVICE_ROLE_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SUPABASE_SERVICE_ROLE_KEY'],
+        message: 'obavezan kada je MAILGUN_SIGNING_KEY podešen',
       })
     }
   })

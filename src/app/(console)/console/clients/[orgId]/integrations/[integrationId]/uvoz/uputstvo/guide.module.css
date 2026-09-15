@@ -1,0 +1,194 @@
+/*
+ * Uputstvo za klijenta.
+ *
+ * Pravljeno da se ODŠTAMPA. Papir preživi ekran i čita ga osoba koja podešava
+ * ERP, a koja najčešće nije ona sa kojom je razgovor vođen.
+ */
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+}
+
+.toolbar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.crumb {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.crumb:hover {
+  color: var(--ink-2);
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.doc {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.docHead {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+  color: var(--ink);
+}
+
+.intro {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+.block + .block {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.blockTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-md);
+  color: var(--ink);
+}
+
+/*
+ * Oznaka i vrednost u dve kolone na ekranu, jedna ispod druge na uskom i na
+ * papiru: prelom u dve kolone na A4 ostavlja adresu bez mesta.
+ */
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--text-base);
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--ink);
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+
+  .facts dd {
+    margin-bottom: var(--space-3);
+  }
+}
+
+/* Token je neprekinut niz od 32 znaka i mora da sme da se prelomi. */
+.address {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.note {
+  display: block;
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.columns {
+  margin-top: var(--space-4);
+}
+
+.columnsTitle {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.columnList {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+.columnList code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.badge {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.rules {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+
+.empty {
+  font-size: var(--text-base);
+  color: var(--muted);
+}
+
+/*
+ * Za štampu se sklanja sve osim dokumenta. Bočna traka i dugmad na papiru ne
+ * znače ništa, a zauzimaju prvu stranicu.
+ */
+@media print {
+  .toolbar {
+    display: none;
+  }
+
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .doc {
+    border: none;
+    padding: 0;
+    background: none;
+  }
+
+  .block {
+    break-inside: avoid;
+  }
+}

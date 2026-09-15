@@ -124,7 +124,7 @@ export default tseslint.config(
    * upravo ono što pravilo čuva.
    */
   {
-    files: ['src/app/api/nadzor/*/route.ts'],
+    files: ['src/app/api/nadzor/**/route.ts'],
     rules: { 'no-restricted-imports': 'off' },
   },
 

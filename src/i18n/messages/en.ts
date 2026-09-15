@@ -631,6 +631,40 @@ export const en: Messages = {
   'history.baseline': 'Baseline',
 
   // --- Spreadsheet import ---
+  'mail.guide.title': 'Instructions for the client',
+  'mail.guide.nav': 'Sending instructions \u2192',
+  'mail.guide.lede':
+    'Print this or forward it to whoever configures reports in the ERP. Everything they need is on this page.',
+  'mail.guide.intro':
+    'The ERP at {org} should schedule a report and send it as an attachment to the address below. That way {org} has its numbers every morning \u2014 nothing to install, and nobody uploading by hand.',
+  'mail.guide.forKind': 'For: {kind}',
+  'mail.guide.sendTo': 'Send to',
+  'mail.guide.sendFrom': 'Send only from',
+  'mail.guide.sendFromHint':
+    'A message from any other address is rejected. If the sender address is going to change, tell us before you change it.',
+  'mail.guide.noInbox': 'No address has been created for this kind of data yet.',
+  'mail.guide.rules': 'Rules',
+  'mail.guide.rule.oneTable': 'Exactly ONE table per message. More than one is rejected rather than guessed between.',
+  'mail.guide.rule.format': 'Format .xlsx (Excel) or .csv. The old .xls cannot be read.',
+  'mail.guide.rule.size': 'Up to 4 MB. .xlsx is compressed and almost always fits.',
+  'mail.guide.rule.headers': 'The first row must be a header with column names.',
+  'mail.guide.rule.stable':
+    'Column names should stay the same day to day. If they change, the import stops and reports it \u2014 it does not guess.',
+  'mail.guide.columns': 'Columns needed',
+  'mail.guide.columnsHint':
+    'The names do not have to be exactly these \u2014 other wordings are recognised too. What matters is that the data is there.',
+  'mail.guide.current': 'Columns currently in use',
+  'mail.guide.currentHint':
+    'This is how the table was read last time. Keep these names and the export will keep going through with no extra work.',
+  'mail.guide.required': 'required',
+  'mail.guide.optional': 'if available',
+  'mail.guide.whenTitle': 'When to send',
+  'mail.guide.when': 'Expected {days} by {time}.',
+  'mail.guide.whenNone': 'No sending schedule agreed yet.',
+  'mail.guide.silence':
+    'If a message does not arrive, the system notices and reports it \u2014 old numbers are NOT shown as today\u2019s.',
+  'mail.guide.print': 'Print',
+
   'mail.title': 'Receive by email',
   'mail.lede':
     'The ERP schedules a report and sends it to a dedicated address. Set up once, nothing to install, and nobody has to upload anything every day.',
