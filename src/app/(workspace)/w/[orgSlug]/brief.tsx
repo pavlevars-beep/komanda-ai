@@ -403,6 +403,17 @@ export function Brief({
       </section>
 
       {sections.map((section) => blocks[section])}
+
+      {/*
+        Prilagođavanje stoji na DNU brifa, ne na vrhu.
+        Ko je zadovoljan redosledom ne treba da ga vidi svako jutro; ko nije,
+        dolazi do njega tek pošto skroluje pored onoga što mu ne treba — a to je
+        upravo trenutak kada mu ta ponuda ima smisla.
+      */}
+      <Link href={`/w/${orgSlug}/brif` as Route} className={styles.customize}>
+        <Icon name="settings" size={15} />
+        {f.t('brief.prefs.customize')}
+      </Link>
     </div>
   )
 }

@@ -796,6 +796,31 @@ export const en: Messages = {
   'board.vsPrevious': 'vs previous',
 
   // --- Morning brief ---
+  'brief.prefs.title': 'My brief',
+  'brief.prefs.lede':
+    'The order follows your role. If a section matters to you sooner \u2014 or not at all \u2014 change it here. This changes only your view, not anyone else\u2019s.',
+  'brief.prefs.nav': 'Customize brief',
+  'brief.prefs.customize': 'Customize',
+  'brief.prefs.order': 'Order and visibility',
+  'brief.prefs.up': 'Move up',
+  'brief.prefs.down': 'Move down',
+  'brief.prefs.show': 'Show in brief',
+  'brief.prefs.position': 'position {position}',
+  'brief.prefs.save': 'Save',
+  'brief.prefs.saved': 'Your brief has been customized.',
+  'brief.prefs.reset': 'Reset to default',
+  'brief.prefs.resetDone': 'Reset to the order for your role.',
+  'brief.prefs.attentionNote':
+    'The \u201CNeeds attention\u201D section is always first and cannot be turned off \u2014 it is why the brief exists.',
+  'brief.prefs.accessNote':
+    'This chooses layout only. A section missing from this list is missing because you do not have access to that data \u2014 that is changed by your role, not by this screen.',
+  'brief.prefs.hiddenCount': 'Hidden sections: {count}',
+  'brief.prefs.allHidden':
+    'All sections are hidden. The brief will show only what needs attention.',
+  'brief.prefs.empty':
+    'You do not have access to any brief section. Contact your organization administrator.',
+  'brief.prefs.error.saveFailed': 'The setting was not saved.',
+
   'brief.attention': 'Requires attention',
   'brief.attention.none': 'Nothing requires attention. Everything is within the configured limits.',
   'brief.attention.why': 'Why am I seeing this?',

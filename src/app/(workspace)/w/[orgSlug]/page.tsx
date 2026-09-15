@@ -10,7 +10,8 @@ import { loadBoard } from '@/core/dashboard/board'
 import { businessRulesFor } from '@/core/rules/repository'
 import { organizationStaleness } from '@/core/import/expectations'
 import { formatLocal } from '@/core/import/silence-message'
-import { briefSections } from '@/core/brief/focus'
+import { resolveBriefSections } from '@/core/brief/preferences'
+import { getBriefPreference } from '@/core/brief/preferences-repository'
 import { initialiseConnectors } from '@/core/connectors'
 import { INTL_LOCALE } from '@/i18n/config'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
@@ -70,7 +71,7 @@ export default async function WorkspaceHome({
 
   initialiseConnectors()
 
-  const [source, rules, staleness] = await Promise.all([
+  const [source, rules, staleness, briefPreference] = await Promise.all([
     primaryIntegration(db, org.organizationId),
     businessRulesFor(db, org.organizationId),
     /*
@@ -80,6 +81,7 @@ export default async function WorkspaceHome({
      * kada je zakazani posao stao.
      */
     organizationStaleness(db, org.organizationId),
+    getBriefPreference(db, org.organizationId, user.id),
   ])
 
   /*
@@ -208,7 +210,7 @@ export default async function WorkspaceHome({
         brief={brief}
         orgSlug={org.organizationSlug}
         greeting={greeting}
-        sections={briefSections(org.memberRole, org.permissions)}
+        sections={resolveBriefSections(briefPreference, org.memberRole, org.permissions)}
         f={{
           t,
           money: (amount, currency) =>

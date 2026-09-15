@@ -120,3 +120,30 @@ details[open] > .whySummary::before { content: '▾ '; }
 .barFill { height: 100%; border-radius: 2px; background: var(--accent); }
 .barFillWarn { background: var(--warn); }
 .barFillCritical { background: var(--critical); }
+
+/*
+ * Prečica ka prilagođavanju. Namerno tiha: to je podešavanje koje se dira
+ * jednom, a stoji na dnu ekrana koji se čita svakog jutra.
+ */
+.customize {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.customize:hover {
+  color: var(--ink-2);
+  background: var(--surface-sunk);
+}
+
+.customize:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}

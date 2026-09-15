@@ -818,6 +818,31 @@ export const sr = {
   'board.vsPrevious': 'prema prethodnom',
 
   // --- Jutarnji brif ---
+  'brief.prefs.title': 'Moj brif',
+  'brief.prefs.lede':
+    'Redosled je podešen prema vašoj ulozi. Ako vam neki odeljak treba ranije — ili vam uopšte ne treba — promenite ga ovde. Menja se samo vaš prikaz, ne i ono što vide ostali.',
+  'brief.prefs.nav': 'Prilagodi brif',
+  'brief.prefs.customize': 'Prilagodi',
+  'brief.prefs.order': 'Redosled i vidljivost',
+  'brief.prefs.up': 'Pomeri gore',
+  'brief.prefs.down': 'Pomeri dole',
+  'brief.prefs.show': 'Prikaži u brifu',
+  'brief.prefs.position': '{position}. mesto',
+  'brief.prefs.save': 'Sačuvaj',
+  'brief.prefs.saved': 'Brif je prilagođen.',
+  'brief.prefs.reset': 'Vrati na podrazumevano',
+  'brief.prefs.resetDone': 'Vraćeno na redosled po ulozi.',
+  'brief.prefs.attentionNote':
+    'Odeljak „Zahteva pažnju" uvek stoji prvi i ne može se isključiti — zbog njega brif i postoji.',
+  'brief.prefs.accessNote':
+    'Ovde se bira samo raspored. Odeljak koji ne vidite ne postoji na ovom spisku zato što nemate pravo pristupa tim podacima — to se menja ulogom, ne ovim ekranom.',
+  'brief.prefs.hiddenCount': 'Skriveno odeljaka: {count}',
+  'brief.prefs.allHidden':
+    'Svi odeljci su skriveni. Brif će prikazivati samo ono što zahteva pažnju.',
+  'brief.prefs.empty':
+    'Nemate pristup nijednom odeljku brifa. Obratite se administratoru vaše organizacije.',
+  'brief.prefs.error.saveFailed': 'Podešavanje nije sačuvano.',
+
   'brief.attention': 'Zahteva pažnju',
   'brief.attention.none': 'Ništa ne traži pažnju. Sve je u okviru zadatih granica.',
   'brief.attention.why': 'Zašto ovo vidim?',

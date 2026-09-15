@@ -61,6 +61,14 @@ export const AUDIT_ACTIONS = [
   'staff.assignment_granted',
   'staff.assignment_revoked',
 
+  // Lična podešavanja
+  //
+  // Zapisuje se pod svojim imenom, a ne pod tuđim. Upis prilagođavanja brifa
+  // kao „otvoren radni prostor" bi bio lažan red u tragu — a trag čija se
+  // imena ne poklapaju sa onim što se desilo gori je od nepostojećeg, jer se
+  // na njega neko osloni.
+  'preferences.updated',
+
   // Bezbednost
   'security.permission_denied',
   'security.rate_limited',

@@ -40,6 +40,8 @@ const PATHS = {
   wallet: 'M3 7.5A1.5 1.5 0 0 1 4.5 6h13A1.5 1.5 0 0 1 19 7.5V9M3 7.5V18a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18v-7.5H5.5A2.5 2.5 0 0 1 3 8ZM16.5 14v.1',
   building: 'M4 21V5.5A1.5 1.5 0 0 1 5.5 4h7A1.5 1.5 0 0 1 14 5.5V21M14 10h4.5A1.5 1.5 0 0 1 20 11.5V21M2.5 21h19M7 8h4M7 12h4M7 16h4M16.5 14h1M16.5 17.5h1',
   plus: 'M12 5v14M5 12h14',
+  chevronUp: 'M5.5 15 12 8.5 18.5 15',
+  chevronDown: 'M5.5 9 12 15.5 18.5 9',
 } as const
 
 export type IconName = keyof typeof PATHS
