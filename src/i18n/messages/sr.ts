@@ -905,6 +905,18 @@ export const sr = {
   'board.vsPrevious': 'prema prethodnom',
 
   // --- Jutarnji brif ---
+  'ask.dock.open': 'Pitajte',
+  'ask.dock.close': 'Zatvori',
+  'ask.dock.title': 'Pitajte svoje poslovanje',
+  'ask.dock.thinking': 'Tražim odgovor…',
+  'ask.dock.full': 'Ceo razgovor →',
+
+  'ask.saveNote': 'Sačuvaj kao belešku',
+  'ask.savedNote': 'Sačuvano u beleške.',
+  'ask.note.header': 'Iz razgovora, {when}',
+  'ask.note.question': 'Pitanje:',
+  'ask.error.noAnswer': 'Taj odgovor više ne postoji.',
+
   'ask.home.title': 'Pitajte svoje poslovanje',
   'ask.home.placeholder': 'Pitajte bilo šta o svojim brojevima…',
   'ask.home.open': 'Otvori razgovor',

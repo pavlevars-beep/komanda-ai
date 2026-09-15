@@ -5,7 +5,7 @@ import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator, type MessageKey } from '@/i18n/translator'
+import { createTranslator, type MessageKey, messagesFor } from '@/i18n/translator'
 import { initialiseConnectors } from '@/core/connectors'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { askableIntents } from '@/core/ai/ask'
@@ -17,6 +17,7 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { AskForm } from './ask-form'
+import { SaveNoteButton } from './save-note-button'
 import styles from './ask.module.css'
 
 const CLASSIFICATION_TONE: Record<string, Tone> = {
@@ -160,6 +161,20 @@ export default async function AskPage({ params }: { params: Promise<{ orgSlug: s
                       </div>
                     )
                   })()}
+
+                  {/*
+                    Čuvanje se nudi SAMO uz odgovor koji nosi sadržaj. Uz
+                    objašnjenje zašto odgovora nema, beleška bi sačuvala prazno.
+                  */}
+                  {!unanswered && message.content ? (
+                    <SaveNoteButton
+                      orgSlug={org.organizationSlug}
+                      messageId={message.id}
+                      label={t('ask.saveNote')}
+                      savedLabel={t('ask.savedNote')}
+                      messages={messagesFor(locale, ['error.', 'ask.error.', 'notes.error.'])}
+                    />
+                  ) : null}
 
                   <div className={styles.meta}>
                     {unanswered ? (

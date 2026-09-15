@@ -878,6 +878,18 @@ export const en: Messages = {
   'board.vsPrevious': 'vs previous',
 
   // --- Morning brief ---
+  'ask.dock.open': 'Ask',
+  'ask.dock.close': 'Close',
+  'ask.dock.title': 'Ask your business',
+  'ask.dock.thinking': 'Looking for the answer\u2026',
+  'ask.dock.full': 'Full conversation \u2192',
+
+  'ask.saveNote': 'Save as a note',
+  'ask.savedNote': 'Saved to notes.',
+  'ask.note.header': 'From the conversation, {when}',
+  'ask.note.question': 'Question:',
+  'ask.error.noAnswer': 'That answer no longer exists.',
+
   'ask.home.title': 'Ask your business',
   'ask.home.placeholder': 'Ask anything about your numbers\u2026',
   'ask.home.open': 'Open the conversation',

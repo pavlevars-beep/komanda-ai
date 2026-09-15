@@ -189,3 +189,68 @@ export async function touchConversation(
     })
     .eq('id', conversationId)
 }
+
+export interface AnswerWithQuestion {
+  readonly question: string | null
+  readonly answer: string
+  readonly createdAt: string
+}
+
+/**
+ * Odgovor i pitanje koje ga je izazvalo.
+ *
+ * Čita se IZ BAZE po identifikatoru, nikad iz obrasca. Tekst poslat iz
+ * pregledača nije dokaz da je sistem to rekao — beleška koja tvrdi da je
+ * odgovor mora da bude ono što je odgovor stvarno bio.
+ *
+ * RLS propušta samo poruke iz sopstvenog razgovora, pa tuđi odgovor ne može da
+ * se sačuva ni kada se pogodi identifikator.
+ */
+export async function answerWithQuestion(
+  db: Db,
+  organizationId: string,
+  messageId: string,
+): Promise<AnswerWithQuestion | null> {
+  const { data, error } = await db
+    .from('ai_messages')
+    .select('conversation_id, role, content, created_at')
+    .eq('organization_id', organizationId)
+    .eq('id', messageId)
+    .maybeSingle()
+
+  if (error) return null
+
+  const parsed = z
+    .object({
+      conversation_id: uuid(),
+      role: z.string(),
+      content: z.string().nullable(),
+      created_at: z.string(),
+    })
+    .safeParse(data)
+
+  if (!parsed.success || parsed.data.role !== 'assistant') return null
+  const answer = parsed.data.content
+  if (!answer || answer.trim() === '') return null
+
+  // Pitanje je poslednja korisnikova poruka PRE ovog odgovora. Bez njega
+  // beleška nosi broj bez povoda, a povod je ono što se posle mesec dana traži.
+  const { data: previous } = await db
+    .from('ai_messages')
+    .select('content')
+    .eq('organization_id', organizationId)
+    .eq('conversation_id', parsed.data.conversation_id)
+    .eq('role', 'user')
+    .lt('created_at', parsed.data.created_at)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const question = z.object({ content: z.string().nullable() }).safeParse(previous)
+
+  return {
+    question: question.success ? question.data.content : null,
+    answer,
+    createdAt: parsed.data.created_at,
+  }
+}

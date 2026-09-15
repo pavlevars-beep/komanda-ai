@@ -9,7 +9,7 @@ import {
   resolveOrgContext,
 } from '@/core/tenancy/workspace-repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator } from '@/i18n/translator'
+import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translator'
 import { LocaleToggle } from '@/app/locale-toggle'
 import { ThemeToggle } from '@/app/theme-toggle'
 import { readThemeCookie } from '@/ui/theme/theme'
@@ -20,6 +20,11 @@ import { DemoBadge } from '@/ui/patterns/StatusBadge'
 import { NavList, type NavItem } from '@/ui/patterns/NavList'
 import { BrandLogo } from '@/ui/patterns/BrandLogo'
 import { countUnread } from '@/core/messages/repository'
+import { initialiseConnectors } from '@/core/connectors'
+import { primaryIntegration } from '@/core/dashboard/loader'
+import { askableIntents } from '@/core/ai/ask'
+import { suggestQuestions } from '@/core/ai/suggestions'
+import { AskDock } from './ask-dock'
 import { EndAccessButton } from './end-access-button'
 import styles from '../../layout.module.css'
 
@@ -84,6 +89,21 @@ export default async function WorkspaceLayout({
 
   // Prikazuje se samo ono što postoji. Ostalo je vidljivo, ali označeno kao
   // nedostupno — link koji vodi na 404 izgleda kao kvar, ne kao nedovršenost.
+  /*
+   * Predlozi za traku dolaze iz DOSTUPNIH sposobnosti, ne iz stavki pažnje.
+   *
+   * Traka stoji na svakom ekranu radnog prostora, pa bi računanje stavki pažnje
+   * ovde značilo pet poziva ka izvoru pri svakom otvaranju bilo koje stranice.
+   * Predlozi izvedeni iz podataka ostaju na početnoj, gde su besplatni jer je
+   * brif tamo ionako učitan.
+   */
+  initialiseConnectors()
+  const source = await primaryIntegration(db, org.organizationId)
+  const intents = await askableIntents(db, org, source.integrationId)
+  const dockSuggestions = suggestQuestions({ attention: [], answerable: intents }).map((s) =>
+    t(`ask.suggest.${s.key}` as MessageKey, s.params),
+  )
+
   const nav: NavItem[] = [
     { href: `/w/${org.organizationSlug}` as Route, label: t('nav.home'), icon: 'home' },
     { href: `/w/${org.organizationSlug}/pitanja` as Route, label: t('nav.ask'), icon: 'ask' },
@@ -180,6 +200,28 @@ export default async function WorkspaceLayout({
         </aside>
 
         <main className={styles.main}>{children}</main>
+
+        {/*
+          Traka stoji IZVAN glavnog sadržaja, pa je ima na svakom ekranu radnog
+          prostora. Pitanje se rodi dok se gleda nešto drugo, a odlazak na
+          zaseban ekran znači da se to mesto izgubi — ko izgubi mesto, ne pita.
+        */}
+        <AskDock
+          orgSlug={org.organizationSlug}
+          suggestions={dockSuggestions}
+          labels={{
+            open: t('ask.dock.open'),
+            close: t('ask.dock.close'),
+            title: t('ask.dock.title'),
+            placeholder: t('ask.home.placeholder'),
+            thinking: t('ask.dock.thinking'),
+            full: t('ask.dock.full'),
+            saveNote: t('ask.saveNote'),
+            savedNote: t('ask.savedNote'),
+            none: t('ask.home.none'),
+            messages: messagesFor(locale, ['error.', 'ask.error.', 'notes.error.']),
+          }}
+        />
       </div>
     </div>
   )

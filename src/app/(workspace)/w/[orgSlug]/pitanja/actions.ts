@@ -15,12 +15,25 @@ import { ask } from '@/core/ai/ask'
 import { chat } from '@/core/ai/chat'
 import { openAiPort } from '@/server/ai/openai-port'
 import { businessRulesFor } from '@/core/rules/repository'
+import { answerWithQuestion, latestConversation, listMessages } from '@/core/ai/repository'
+import { noteFromAnswer } from '@/core/ai/note-from-answer'
+import { addNote } from '@/core/notes/repository'
+import { uuid } from '@/core/shared/uuid'
+import type { Db } from '@/server/db/types'
 
 /** Gornja granica dužine pitanja; duži tekst nije pitanje nego nalepljen dokument. */
 const MAX_QUESTION_LENGTH = 500
 
 export interface AskState extends ActionResultBase {
   readonly answered?: boolean
+  /**
+   * Poslednji odgovor, da bi traka mogla da ga prikaže na licu mesta.
+   *
+   * Čita se iz razgovora POSLE poziva, isto za oba režima. Vraćanje teksta koji
+   * je akcija sastavila značilo bi dva puta do istog odgovora — jedan za traku,
+   * drugi za stranicu — i ta dva bi vremenom počela da se razlikuju.
+   */
+  readonly answer?: { readonly id: string; readonly text: string }
 }
 
 /**
@@ -87,7 +100,7 @@ export const askAction = workspaceAction<AskState>(
       })
 
       revalidatePath(`/w/${slug}/pitanja`)
-      return { answered: true }
+      return { answered: true, ...(await lastAnswer(db, org.organizationId, user.id)) }
     }
 
     const result = await ask(db, org, {
@@ -119,6 +132,82 @@ export const askAction = workspaceAction<AskState>(
     // traka povrh toga izgledala bi kao kvar, a nije — sistem je odgovorio,
     // samo ne brojem.
     revalidatePath(`/w/${slug}/pitanja`)
-    return { answered: result.ok }
+    return { answered: result.ok, ...(await lastAnswer(db, org.organizationId, user.id)) }
+  },
+)
+
+/** Poslednji odgovor u tekućem razgovoru, ili ništa kada ga nema. */
+async function lastAnswer(
+  db: Db,
+  organizationId: string,
+  userId: string,
+): Promise<{ answer?: { id: string; text: string } }> {
+  const conversation = await latestConversation(db, organizationId, userId)
+  if (!conversation.ok || !conversation.value) return {}
+
+  const messages = await listMessages(db, conversation.value.id, 40)
+  if (!messages.ok) return {}
+
+  for (let i = messages.value.length - 1; i >= 0; i -= 1) {
+    const message = messages.value[i]!
+    if (message.role === 'assistant' && message.content && message.content.trim() !== '') {
+      return { answer: { id: message.id, text: message.content } }
+    }
+  }
+
+  return {}
+}
+
+export interface SaveNoteState extends ActionResultBase {
+  readonly saved?: boolean
+}
+
+/**
+ * Čuvanje odgovora kao beleške.
+ *
+ * Tekst se čita IZ BAZE po identifikatoru poruke, nikad iz obrasca. Tekst
+ * poslat iz pregledača nije dokaz da je sistem to rekao, a beleška koja tvrdi
+ * da je odgovor mora da bude ono što je odgovor stvarno bio.
+ *
+ * RLS propušta samo poruke iz sopstvenog razgovora, pa tuđi odgovor ne može da
+ * se sačuva ni kada se pogodi identifikator.
+ */
+export const saveAnswerAsNote = workspaceAction<SaveNoteState>(
+  { rateLimit: 'write', audit: 'note.created' },
+  async ({ db, user }, _prev, formData) => {
+    const slug = formString(formData, 'orgSlug')
+    const messageId = uuid().safeParse(formString(formData, 'messageId'))
+    if (!slug || !messageId.success) return { error: 'error.invalid_input' }
+
+    const resolved = await resolveOrgContext(db, {
+      slug,
+      userId: user.id,
+      userName: user.fullName,
+      requestId: makeRequestId(await headers()),
+    })
+    if (!resolved.ok) return { error: 'error.not_found.organization' }
+
+    const org = resolved.value
+    const source = await answerWithQuestion(db, org.organizationId, messageId.data)
+    if (!source) return { error: 'ask.error.noAnswer' }
+
+    const locale = await requestLocale(user.locale ?? org.locale)
+    const { t, formatDate } = createTranslator(locale)
+
+    const body = noteFromAnswer(
+      {
+        question: source.question,
+        answer: source.answer,
+        when: formatDate(source.createdAt, { dateStyle: 'medium', timeStyle: 'short' }),
+      },
+      { header: t('ask.note.header', { when: '{when}' }), questionLabel: t('ask.note.question') },
+    )
+
+    const created = await addNote(db, org.organizationId, user.id, body)
+    if (!created.ok) return { error: created.error.key }
+
+    revalidatePath(`/w/${slug}/pitanja`)
+    revalidatePath(`/w/${slug}/beleske`)
+    return { saved: true }
   },
 )

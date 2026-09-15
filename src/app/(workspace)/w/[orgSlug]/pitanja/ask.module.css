@@ -119,3 +119,52 @@
   text-decoration: none;
 }
 .nextActionLink:hover { text-decoration: underline; }
+
+/* --- Čuvanje odgovora kao beleške --- */
+
+.saveNoteForm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/*
+ * Tiho dugme: čuvanje je pogodnost, a ne ono zbog čega se odgovor čita. Vidljivo
+ * dugme uz svaki odgovor bi se takmičilo sa samim odgovorom.
+ */
+.saveNote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.saveNote:hover:not(:disabled) {
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+
+.saveNote:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.savedNote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--ok);
+}
+
+.saveNoteError {
+  font-size: var(--text-sm);
+  color: var(--critical);
+}
