@@ -95,7 +95,12 @@ export interface SaveInput {
   readonly currency: string
   readonly rows: readonly Readonly<Record<string, string | number | null>>[]
   readonly problems: readonly RowProblem[]
-  readonly importedBy: string
+  /**
+   * Ko je uvezao. `null` kada je skup stigao poštom — tada korisnika stvarno
+   * nema, i upisivanje nekog „sistemskog" naloga bi izmislilo odgovornost koju
+   * niko nije preuzeo.
+   */
+  readonly importedBy: string | null
   /** SHA-256 sadržaja fajla — po njemu se prepoznaje ponovo poslata ista tabela. */
   readonly contentHash: string
 }

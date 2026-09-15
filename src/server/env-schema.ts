@@ -91,6 +91,17 @@ const serverSchema = z
      * ne postoji — radije nedostupna nego otvorena.
      */
     CRON_SECRET: z.string().min(24).optional(),
+
+    /**
+     * Prijem podataka poštom.
+     *
+     * `MAIL_DOMAIN` je domen namenskih adresa (`uvoz+<token>@domen`), a
+     * `MAIL_WEBHOOK_SECRET` tajna kojom se dobavljač pošte predstavlja. Bez oba
+     * prijem ne postoji: konzola tada pokazuje adresu kao NEAKTIVNU umesto da
+     * ponudi nešto što ne može da primi.
+     */
+    MAIL_DOMAIN: z.string().min(3).optional(),
+    MAIL_WEBHOOK_SECRET: z.string().min(24).optional(),
   })
   .superRefine((env, ctx) => {
     // Provera preko više polja stoji u šemi, ne posle nje, da bi je uhvatila i
@@ -110,6 +121,23 @@ const serverSchema = z
         code: 'custom',
         path: ['SUPABASE_SERVICE_ROLE_KEY'],
         message: 'obavezan kada je CRON_SECRET podešen',
+      })
+    }
+
+    // Pola podešenog prijema je gore od nepodešenog: adresa bi se prikazivala
+    // kao aktivna, a poruke ne bi imale gde da stignu.
+    if (env.MAIL_WEBHOOK_SECRET && !env.MAIL_DOMAIN) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['MAIL_DOMAIN'],
+        message: 'obavezan kada je MAIL_WEBHOOK_SECRET podešen',
+      })
+    }
+    if (env.MAIL_WEBHOOK_SECRET && !env.SUPABASE_SERVICE_ROLE_KEY) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SUPABASE_SERVICE_ROLE_KEY'],
+        message: 'obavezan kada je MAIL_WEBHOOK_SECRET podešen',
       })
     }
   })

@@ -26,6 +26,7 @@ import {
   saveDataset,
 } from '@/core/import/repository'
 import { deleteExpectation, saveExpectation } from '@/core/import/expectations'
+import { deleteInbox, saveInbox } from '@/core/mail/repository'
 
 /** 25 MB; ista granica stoji i na kofi. */
 const MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -340,6 +341,60 @@ export const saveCadence = consoleAction<CadenceState>(
       timeZone: formString(formData, 'timeZone') ?? '',
       graceMinutes: Number.isFinite(grace) ? Math.min(1440, Math.max(0, grace)) : 30,
       pausedUntil: formStringOrNull(formData, 'pausedUntil'),
+      enabled: formString(formData, 'enabled') === '1',
+      userId: ctx.user.id,
+    })
+
+    if (!saved.ok) {
+      return {
+        error: saved.error.key,
+        ...(saved.error.detail ? { detail: String(redact(saved.error.detail)) } : {}),
+      }
+    }
+
+    revalidatePath(
+      `/console/clients/${organizationId.data}/integrations/${integrationId.data}/uvoz`,
+    )
+    return { saved: true }
+  },
+)
+
+export interface MailboxState extends ActionResultBase {
+  readonly saved?: boolean
+}
+
+/**
+ * Upis namenskog sandučeta.
+ *
+ * Token se pravi u repozitorijumu i samo pri prvom upisu — ovde se nikad ne
+ * prihvata iz obrasca. Prihvaćen token bi značio da onaj ko pogodi tuđi može
+ * da ga prepiše na svoju integraciju.
+ */
+export const saveMailbox = consoleAction<MailboxState>(
+  { audit: 'integration.updated', rateLimit: 'write' },
+  async (ctx, _prev, formData) => {
+    const organizationId = uuid().safeParse(formString(formData, 'organizationId'))
+    const integrationId = uuid().safeParse(formString(formData, 'integrationId'))
+    const kind = formString(formData, 'kind')
+
+    if (!organizationId.success || !integrationId.success || !isKind(kind)) {
+      return { error: 'error.invalid_input' }
+    }
+
+    if (formString(formData, 'remove') === '1') {
+      const removed = await deleteInbox(ctx.db, organizationId.data, integrationId.data, kind)
+      if (!removed.ok) return { error: removed.error.key }
+      revalidatePath(
+        `/console/clients/${organizationId.data}/integrations/${integrationId.data}/uvoz`,
+      )
+      return { saved: true }
+    }
+
+    const saved = await saveInbox(ctx.db, {
+      organizationId: organizationId.data,
+      integrationId: integrationId.data,
+      kind,
+      senders: (formString(formData, 'senders') ?? '').split('\n'),
       enabled: formString(formData, 'enabled') === '1',
       userId: ctx.user.id,
     })

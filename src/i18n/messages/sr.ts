@@ -653,6 +653,54 @@ export const sr = {
   'history.baseline': 'Osnovica',
 
   // --- Uvoz tabela ---
+  'mail.title': 'Prijem poštom',
+  'mail.lede':
+    'ERP zakaže izveštaj i pošalje ga na namensku adresu. Podesi se jednom, ništa se ne instalira i niko ne mora ništa da otprema svakog dana.',
+  'mail.address': 'Adresa za slanje',
+  'mail.addressHint':
+    'Unesite je kao primaoca u zakazanom izveštaju ERP-a. Jedna adresa prima jednu vrstu podatka — zato se dve tabele u istoj poruci odbijaju umesto da se pogađa koja je koja.',
+  'mail.notConfigured':
+    'Prijem poštom još nije uključen na nivou sistema (nedostaje domen i tajna dobavljača pošte). Adresa se može pripremiti, ali poruke neće stizati dok se to ne podesi.',
+  'mail.needsMapping':
+    'Pošta puni tek pošto je jedan uvoz urađen ručno. Prvi put kolone potvrđuje čovek; posle toga se ta odluka ponavlja. Bez toga bi pogrešno pogođena kolona mesecima prolazila kao pogrešan broj.',
+  'mail.senders': 'Dozvoljeni pošiljaoci',
+  'mail.sendersHint':
+    'Jedan po redu: puna adresa (erp@firma.rs) ili ceo domen (@firma.rs). Prazan spisak ne propušta nikoga — adresa za slanje se ne čuva kao tajna, pa je ovo prava brava.',
+  'mail.enabled': 'Primaj poruke',
+  'mail.on': 'Uključeno',
+  'mail.off': 'Isključeno',
+  'mail.save': 'Sačuvaj',
+  'mail.saved': 'Sanduče je sačuvano.',
+  'mail.remove': 'Ukloni sanduče',
+  'mail.none': 'Sanduče nije napravljeno.',
+  'mail.log': 'Dolazne poruke',
+  'mail.logEmpty': 'Nijedna poruka još nije stigla.',
+  'mail.accepted': 'Primljeno',
+  'mail.rejected': 'Odbijeno',
+  'mail.attachments': 'Prilozi: {files}',
+
+  'mail.reason.disabled': 'Prijem je isključen za ovo sanduče.',
+  'mail.reason.sender_not_allowed': 'Pošiljalac nije na spisku dozvoljenih.',
+  'mail.reason.not_authenticated':
+    'Poruka nije prošla proveru autentičnosti (SPF/DKIM). Adresa pošiljaoca se lako lažira, pa se bez te provere ne prima ništa.',
+  'mail.reason.no_table': 'U poruci nema nijednog priloga koji može biti tabela.',
+  'mail.reason.many_tables':
+    'U poruci je više tabela. Jedna adresa prima jednu vrstu podatka — pošaljite ih u odvojenim porukama.',
+  'mail.reason.legacy_xls': 'Stari .xls oblik se ne čita. Sačuvajte kao .xlsx.',
+  'mail.reason.too_large': 'Prilog je prevelik za prenos. .xlsx je sažet i gotovo uvek staje.',
+  'mail.reason.unknown_address': 'Adresa primaoca ne postoji.',
+  'mail.reason.no_mapping': 'Kolone još nisu potvrđene. Uradite jedan uvoz ručno, pa će pošta nastaviti sama.',
+  'mail.reason.header_changed':
+    'Zaglavlje tabele se promenilo i neka kolona više ne postoji. Uradite jedan uvoz ručno da potvrdite nove kolone.',
+  'mail.reason.unreadable': 'Prilog ne može da se pročita.',
+  'mail.reason.duplicate': 'Ista tabela je već u upotrebi — podatak nije osvežen.',
+  'mail.reason.no_rows': 'U tabeli nema nijednog upotrebljivog reda.',
+  'mail.reason.save_failed': 'Upis nije uspeo.',
+
+  'mail.error.badSender': 'Neispravan unos: {detail}',
+  'mail.error.noSenders': 'Da bi prijem bio uključen, mora postojati bar jedan dozvoljeni pošiljalac.',
+  'mail.error.saveFailed': 'Sanduče nije sačuvano.',
+
   'import.title': 'Uvoz tabele',
   'import.lede':
     'Otpremite izvoz iz ERP-a ili Excel tabelu. Kolone se prepoznaju automatski; vi ih potvrdite pre nego što se podaci pročitaju.',

@@ -110,13 +110,16 @@ export default tseslint.config(
   },
 
   /*
-   * Jedini izuzetak: zakazani nadzor.
+   * Jedini izuzetak: pozadinski prijem i nadzor.
    *
-   * To je pozadinski posao koji po definiciji nema korisnika u kontekstu, pa
-   * nema ni RLS koji bi ga omeđio — obilazi granicu organizacije zato što mu je
-   * posao da prođe kroz sve.
+   * Zakazana provera ritma i prijem pošte nemaju korisnika u kontekstu — prvu
+   * pokreće raspored, drugu tuđi mejl server — pa nemaju ni RLS koji bi ih
+   * omeđio. Obe obilaze granicu organizacije zato što im je posao da je pređu:
+   * jedna prolazi kroz sve klijente, druga tek iz adrese saznaje čija je poruka.
    *
-   * Izuzetak je namerno vezan za JEDNU putanju, ne za `api/**`. Šira dozvola bi
+   * Zato obe moraju da čitaju `organization_id` IZ BAZE, nikad iz zahteva.
+   *
+   * Izuzetak je vezan za `api/nadzor/*`, ne za `api/**`. Šira dozvola bi
    * vremenom pustila service_role u rute koje opslužuju korisnika, a to je
    * upravo ono što pravilo čuva.
    */

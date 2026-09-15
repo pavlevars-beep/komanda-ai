@@ -195,3 +195,56 @@ Nijedan od njih nije stabilan kao pravi ERP konektor, jer svi zavise od toga
 da neko drugi svaki dan uradi svoj deo. Uvoz tabele je MOST, ne odredište —
 zato `readImported` i postoji kao port: kada ERP stigne, tabla, brif i pitanja
 se ne diraju.
+
+## Prijem poštom: šta je gotovo, a šta traži odluku
+
+Pošta je izabrana kao glavni put jer jedina potpuno izbacuje čoveka iz
+svakodnevnog kruga: ERP zakaže izveštaj, pošalje ga na namensku adresu, i niko
+ništa ne otprema.
+
+Adresa je oblika `uvoz+<token>@domen`. Plus-adresiranje znači da jedno stvarno
+sanduče nosi koliko god adresa, bez otvaranja naloga po klijentu.
+
+**Adresa nije lozinka.** Token stoji u podešavanjima tuđeg ERP-a, prolazi kroz
+njihove logove i kroz svaki mejl server na putu. Zato adresa kaže samo KOJI
+izvor se puni, a da li se sme puniti odlučuju dve stvari:
+
+1. **Spisak dozvoljenih pošiljalaca.** Prazan spisak ne propušta nikoga.
+   Podrazumevano „primaj od svih" značilo bi da svako ko sazna adresu upisuje
+   brojeve u tuđu tablu.
+2. **Provera autentičnosti (SPF/DKIM).** Adresa pošiljaoca se trivijalno
+   lažira; spisak dozvoljenih bez ove provere je zaključana brava na otvorenim
+   vratima. Nepoznat rezultat se broji kao neuspeh, ne kao prolaz.
+
+**Jedna adresa prima jednu vrstu podatka.** Zbog toga dve tabele u istoj poruci
+smeju da se ODBIJU umesto da se pogađa koja je koja. Izbor „ona veća" ili „ona
+prva" jednog dana promaši, i tada prodaja bude upisana kao zalihe bez ijedne
+poruke o grešci.
+
+**Pošta puni tek pošto je jedan uvoz urađen ručno.** Pri ručnom uvozu kolone
+potvrđuje čovek. Ovde nema nikoga, pa pogođeno mapiranje niko ne bi proverio — a
+pogrešno pogođena kolona se ne vidi kao greška nego kao pogrešan broj, mesecima.
+Isto važi kada se zaglavlje promeni i kolona nestane: prijem staje i traži
+ručnu potvrdu.
+
+Zapisuje se SVAKA poruka, i primljena i odbijena, sa razlogom. Bez dnevnika
+odbijena poruka nestaje bez traga: klijent tvrdi da je poslao, sistem tvrdi da
+nije stiglo, i niko ne može da proveri ko je u pravu.
+
+### Šta ostaje
+
+**Dobavljač pošte nije izabran.** Ruta prima NORMALIZOVAN oblik poruke, namerno
+naš a ne nečiji: adapter koji prevodi Postmark, Mailgun ili SendGrid u taj
+oblik je nekoliko redova, dok bi vezivanje celog toka za jedan oblik značilo da
+se promena dobavljača plaća prepisivanjem prijema.
+
+Dok `MAIL_DOMAIN` i `MAIL_WEBHOOK_SECRET` nisu podešeni, konzola adresu
+prikazuje kao NEAKTIVNU i to piše. Adresa koja izgleda spremno a ne može da
+primi poruku je tačno ono što ovaj proizvod ne sme.
+
+**Granica veličine priloga je oko 3 MB**, i nije izabrana po tome koliko tabela
+ume da bude velika nego po tome koliko telo zahteva prolazi kroz platformu:
+base64 uveća sadržaj za trećinu, a serverless funkcija odbija telo preko ~4,5
+MB. `.xlsx` je sažet i praktično uvek staje; veliki `.csv` ne mora. Kada to
+postane usko grlo, sledeći korak je da dobavljač čuva prilog i pošalje URL, a
+mi ga dovučemo kroz postojeću zaštitu od SSRF-a.

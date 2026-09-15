@@ -8,11 +8,16 @@ import { createTranslator, messagesFor, type MessageKey } from '@/i18n/translato
 import { DATASET_KINDS, FIELDS } from '@/core/import/mapping'
 import { listDatasets } from '@/core/import/repository'
 import { reportCadence } from '@/core/import/expectations'
+import { getStoredMapping } from '@/core/import/repository'
+import { listDeliveries, listInboxes } from '@/core/mail/repository'
+import { mailAddress } from '@/core/mail/address'
+import { env } from '@/server/env'
 import type { CadenceState as CadenceStateName } from '@/core/import/cadence'
 import { Icon } from '@/ui/primitives/Icon'
 import { StatusBadge, type Tone } from '@/ui/patterns/StatusBadge'
 import { ImportForm, type FieldOption } from './import-form'
 import { CadenceForm, type CadenceStatus } from './cadence-form'
+import { MailboxForm } from './mailbox-form'
 import styles from './import.module.css'
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -65,10 +70,36 @@ export default async function ImportPage({
   const locale = await requestLocale(user.locale)
   const { t, formatDate } = createTranslator(locale)
 
-  const [datasets, cadence] = await Promise.all([
+  const [datasets, cadence, inboxes, deliveries] = await Promise.all([
     listDatasets(db, orgId, integrationId),
     reportCadence(db, orgId, integrationId),
+    listInboxes(db, orgId, integrationId),
+    listDeliveries(db, orgId, integrationId),
   ])
+
+  /*
+   * Prijem poštom je uključen na nivou SISTEMA, ne po klijentu: traži domen i
+   * tajnu dobavljača pošte. Dok ih nema, adresa se može pripremiti ali poruke
+   * nemaju gde da stignu — i to se kaže, umesto da adresa izgleda spremno.
+   */
+  const mailDomain = env().MAIL_DOMAIN
+  const mailReady = Boolean(mailDomain && env().MAIL_WEBHOOK_SECRET)
+
+  const inboxByKind = new Map(
+    inboxes.ok ? inboxes.value.map((inbox) => [inbox.kind, inbox] as const) : [],
+  )
+
+  // Pošta puni tek pošto je jedan uvoz urađen ručno — ovde se proverava da li
+  // je taj prvi korak obavljen, po vrsti podatka.
+  const mappedKinds = new Set(
+    (
+      await Promise.all(
+        DATASET_KINDS.map(async (kind) =>
+          (await getStoredMapping(db, orgId, integrationId, kind)) ? kind : null,
+        ),
+      )
+    ).filter((kind): kind is (typeof DATASET_KINDS)[number] => kind !== null),
+  )
 
   const byKind = new Map(
     cadence.ok ? cadence.value.map((report) => [report.kind, report] as const) : [],
@@ -221,6 +252,95 @@ export default async function ImportPage({
           />
         )
       })}
+
+      <section className={styles.head}>
+        <h2 className={styles.label}>{t('mail.title')}</h2>
+        <p className={styles.lede}>{t('mail.lede')}</p>
+      </section>
+
+      {DATASET_KINDS.map((kind) => {
+        const inbox = inboxByKind.get(kind)
+        return (
+          <MailboxForm
+            key={`mail-${kind}`}
+            organizationId={orgId}
+            integrationId={integrationId}
+            kind={kind}
+            kindLabel={t(`import.kind.${kind}` as MessageKey)}
+            systemReady={mailReady}
+            hasMapping={mappedKinds.has(kind)}
+            value={
+              inbox
+                ? {
+                    address: mailDomain ? mailAddress(inbox.token, mailDomain) : null,
+                    senders: inbox.allowed_senders,
+                    enabled: inbox.enabled,
+                  }
+                : null
+            }
+            labels={{
+              address: t('mail.address'),
+              addressHint: t('mail.addressHint'),
+              notConfigured: t('mail.notConfigured'),
+              needsMapping: t('mail.needsMapping'),
+              senders: t('mail.senders'),
+              sendersHint: t('mail.sendersHint'),
+              enabled: t('mail.enabled'),
+              save: t('mail.save'),
+              saved: t('mail.saved'),
+              remove: t('mail.remove'),
+              none: t('mail.none'),
+              // Stanje SANDUČETA, ne ishod poruke. „Primljeno" opisuje jednu
+              // poruku i na zaglavlju sandučeta tvrdi nešto što nije rečeno.
+              on: t('mail.on'),
+              off: t('mail.off'),
+              messages: messagesFor(locale, ['error.', 'mail.error.']),
+            }}
+          />
+        )
+      })}
+
+      <section className={styles.head}>
+        <h2 className={styles.label}>{t('mail.log')}</h2>
+      </section>
+
+      {/*
+        Dnevnik prikazuje i ODBIJENE poruke, sa razlogom. Bez toga odbijena
+        poruka nestaje bez traga: klijent tvrdi da je poslao, sistem tvrdi da
+        nije stiglo, i niko ne može da proveri ko je u pravu.
+      */}
+      {!deliveries.ok ? (
+        <p className={styles.empty}>{t('state.error.title')}</p>
+      ) : deliveries.value.length === 0 ? (
+        <p className={styles.empty}>{t('mail.logEmpty')}</p>
+      ) : (
+        <ul className={styles.deliveries}>
+          {deliveries.value.map((delivery) => (
+            <li key={delivery.id} className={styles.delivery}>
+              <div className={styles.deliveryHead}>
+                <StatusBadge
+                  tone={delivery.accepted ? 'ok' : 'warn'}
+                  label={delivery.accepted ? t('mail.accepted') : t('mail.rejected')}
+                />
+                <span className={styles.deliverySubject}>{delivery.subject || '—'}</span>
+              </div>
+              <span className={styles.deliveryMeta}>
+                {delivery.sender ?? '—'} ·{' '}
+                {formatDate(delivery.received_at, { dateStyle: 'short', timeStyle: 'short' })}
+                {delivery.attachments.length > 0
+                  ? ` · ${t('mail.attachments', { files: delivery.attachments.join(', ') })}`
+                  : ''}
+              </span>
+              {delivery.reason ? (
+                <span className={styles.deliveryMeta}>
+                  {t(`mail.reason.${delivery.reason}` as MessageKey)}
+                  {delivery.detail ? ` — ${delivery.detail}` : ''}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <section className={styles.head}>
         <h2 className={styles.label}>{t('import.history')}</h2>

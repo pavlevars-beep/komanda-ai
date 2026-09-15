@@ -120,7 +120,8 @@
   margin: var(--space-3) 0 0;
 }
 
-.hints p {
+.hints p,
+.hints .warn {
   margin: 0;
 }
 
@@ -131,4 +132,78 @@
   font-size: var(--text-sm);
   color: var(--ink-2);
   margin-top: var(--space-2);
+}
+
+/* --- Prijem poštom --- */
+
+/*
+ * Adresa je tekst za kopiranje, ne polje za unos. Prelama se po znaku jer je
+ * token neprekinut niz od 32 znaka — bez toga bi na uskom ekranu izlazio iz
+ * kartice ili gurao ceo red u vodoravno klizanje.
+ */
+.address {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.textarea {
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--text-base);
+  font-family: var(--font-mono);
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  resize: vertical;
+}
+
+.textarea:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.deliveries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.delivery {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.deliveryHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.deliverySubject {
+  font-size: var(--text-base);
+  color: var(--ink);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.deliveryMeta {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }

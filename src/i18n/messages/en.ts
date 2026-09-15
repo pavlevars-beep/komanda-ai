@@ -631,6 +631,54 @@ export const en: Messages = {
   'history.baseline': 'Baseline',
 
   // --- Spreadsheet import ---
+  'mail.title': 'Receive by email',
+  'mail.lede':
+    'The ERP schedules a report and sends it to a dedicated address. Set up once, nothing to install, and nobody has to upload anything every day.',
+  'mail.address': 'Address to send to',
+  'mail.addressHint':
+    'Enter it as the recipient of the scheduled ERP report. One address receives one kind of data \u2014 which is why two tables in one message are rejected rather than guessed between.',
+  'mail.notConfigured':
+    'Email receiving is not switched on system-wide yet (the domain and mail provider secret are missing). The address can be prepared, but messages will not arrive until that is configured.',
+  'mail.needsMapping':
+    'Email only starts filling in after one import has been done by hand. The first time a person confirms the columns; after that the decision repeats. Without it, a wrongly guessed column would pass as a wrong number for months.',
+  'mail.senders': 'Allowed senders',
+  'mail.sendersHint':
+    'One per line: a full address (erp@company.com) or a whole domain (@company.com). An empty list lets nobody through \u2014 the sending address is not kept secret, so this is the real lock.',
+  'mail.enabled': 'Receive messages',
+  'mail.on': 'On',
+  'mail.off': 'Off',
+  'mail.save': 'Save',
+  'mail.saved': 'Mailbox saved.',
+  'mail.remove': 'Remove mailbox',
+  'mail.none': 'No mailbox created.',
+  'mail.log': 'Incoming messages',
+  'mail.logEmpty': 'No message has arrived yet.',
+  'mail.accepted': 'Accepted',
+  'mail.rejected': 'Rejected',
+  'mail.attachments': 'Attachments: {files}',
+
+  'mail.reason.disabled': 'Receiving is switched off for this mailbox.',
+  'mail.reason.sender_not_allowed': 'The sender is not on the allowed list.',
+  'mail.reason.not_authenticated':
+    'The message failed authentication (SPF/DKIM). A sender address is easily forged, so nothing is accepted without that check.',
+  'mail.reason.no_table': 'The message has no attachment that could be a table.',
+  'mail.reason.many_tables':
+    'The message contains more than one table. One address receives one kind of data \u2014 send them in separate messages.',
+  'mail.reason.legacy_xls': 'The old .xls format cannot be read. Save it as .xlsx.',
+  'mail.reason.too_large': 'The attachment is too large to transfer. .xlsx is compressed and almost always fits.',
+  'mail.reason.unknown_address': 'The recipient address does not exist.',
+  'mail.reason.no_mapping': 'Columns are not confirmed yet. Do one import by hand and email will carry on by itself.',
+  'mail.reason.header_changed':
+    'The table header changed and a column no longer exists. Do one import by hand to confirm the new columns.',
+  'mail.reason.unreadable': 'The attachment cannot be read.',
+  'mail.reason.duplicate': 'This exact table is already in use \u2014 the data was not refreshed.',
+  'mail.reason.no_rows': 'The table has no usable rows.',
+  'mail.reason.save_failed': 'The write failed.',
+
+  'mail.error.badSender': 'Invalid entry: {detail}',
+  'mail.error.noSenders': 'To switch receiving on, there must be at least one allowed sender.',
+  'mail.error.saveFailed': 'The mailbox was not saved.',
+
   'import.title': 'Import spreadsheet',
   'import.lede':
     'Upload an ERP export or an Excel file. Columns are detected automatically; you confirm them before the data is read.',
