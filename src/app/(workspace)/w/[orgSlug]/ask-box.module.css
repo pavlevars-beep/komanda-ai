@@ -1,0 +1,112 @@
+/*
+ * Polje za pitanje na početnom ekranu.
+ *
+ * Namerno tiho: stoji ispod table, ne iznad nje. Brojevi su ono zbog čega se
+ * ekran otvara; pitanje je ono što sledi pošto se brojevi pročitaju.
+ */
+
+.box {
+  max-width: 900px;
+  margin-bottom: var(--space-7);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--ink);
+}
+
+.open {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.open:hover {
+  color: var(--ink-2);
+}
+
+.form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3);
+  font: inherit;
+  font-size: var(--text-base);
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+
+/*
+ * Predlog je dugme, ne link: ne vodi nikuda nego upisuje tekst u polje iznad.
+ * Prelama se, jer pitanje na srpskom ume da bude dugačko, a odsečeno pitanje
+ * ne kaže šta pita.
+ */
+.chip {
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  color: var(--ink-2);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.none,
+.sent {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.sent a {
+  color: var(--brand);
+}

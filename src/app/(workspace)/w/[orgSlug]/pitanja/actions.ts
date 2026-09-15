@@ -12,6 +12,9 @@ import { INTL_LOCALE } from '@/i18n/config'
 import { initialiseConnectors } from '@/core/connectors'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { ask } from '@/core/ai/ask'
+import { chat } from '@/core/ai/chat'
+import { openAiPort } from '@/server/ai/openai-port'
+import { businessRulesFor } from '@/core/rules/repository'
 
 /** Gornja granica dužine pitanja; duži tekst nije pitanje nego nalepljen dokument. */
 const MAX_QUESTION_LENGTH = 500
@@ -54,6 +57,38 @@ export const askAction = workspaceAction<AskState>(
 
     initialiseConnectors()
     const source = await primaryIntegration(db, org.organizationId)
+
+    /*
+     * DVA REŽIMA, ISTI PRISTUP PODACIMA.
+     *
+     * Sa podešenim modelom razgovor planira: bira alate, poziva ih više puta,
+     * poredi i sastavlja odgovor. Bez modela radi deterministički — jedno
+     * pitanje, jedna sposobnost, isti odgovor kao do sada.
+     *
+     * Razlika je u PLANIRANJU, ne u pristupu: oba režima biraju iz istog spiska
+     * sposobnosti, uz istu proveru prava. Zato nepodešen model ne otvara nikakav
+     * ekran koji bi inače bio zatvoren, niti ga zatvara.
+     *
+     * Oba upisuju u ISTI razgovor, pa stranica ne mora da zna koji je radio.
+     */
+    const port = openAiPort()
+
+    if (port) {
+      const rules = await businessRulesFor(db, org.organizationId)
+      await chat(db, org, {
+        port,
+        question,
+        integrationId: source.integrationId,
+        connectorType: source.connectorType,
+        locale,
+        rules,
+        organizationName: org.organizationName,
+        currency: org.currency,
+      })
+
+      revalidatePath(`/w/${slug}/pitanja`)
+      return { answered: true }
+    }
 
     const result = await ask(db, org, {
       question,

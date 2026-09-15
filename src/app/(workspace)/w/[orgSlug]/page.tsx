@@ -21,6 +21,9 @@ import { Brief } from './brief'
 import { MetricsBoard } from './board'
 import { WorldClocks, type Clock } from './clocks'
 import { StalenessBanner } from './staleness'
+import { AskBox } from './ask-box'
+import { suggestQuestions } from '@/core/ai/suggestions'
+import { askableIntents } from '@/core/ai/ask'
 import styles from './brief.module.css'
 
 /**
@@ -161,6 +164,19 @@ export default async function WorkspaceHome({
     ? ('critical' as const)
     : ('warn' as const)
 
+  /*
+   * Predlozi pitanja se računaju OVDE, a ne na stranici razgovora.
+   *
+   * Stavke koje traže pažnju su već učitane za brif, pa predlog izveden iz njih
+   * ne košta nijedan dodatni poziv ka izvoru. Ista računica na drugom ekranu
+   * značila bi pet poziva samo da bi se ponudila četiri pitanja.
+   */
+  const intents = await askableIntents(db, org, source.integrationId)
+  const suggestions = suggestQuestions({
+    attention: brief.attention,
+    answerable: intents,
+  }).map((s) => t(`ask.suggest.${s.key}` as MessageKey, s.params))
+
   return (
     <>
       <StalenessBanner
@@ -205,6 +221,17 @@ export default async function WorkspaceHome({
           }}
         />
       </section>
+
+      <AskBox
+        orgSlug={org.organizationSlug}
+        suggestions={suggestions}
+        labels={{
+          title: t('ask.home.title'),
+          placeholder: t('ask.home.placeholder'),
+          open: t('ask.home.open'),
+          none: t('ask.home.none'),
+        }}
+      />
 
       <Brief
         brief={brief}

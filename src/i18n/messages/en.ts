@@ -878,6 +878,24 @@ export const en: Messages = {
   'board.vsPrevious': 'vs previous',
 
   // --- Morning brief ---
+  'ask.home.title': 'Ask your business',
+  'ask.home.placeholder': 'Ask anything about your numbers\u2026',
+  'ask.home.open': 'Open the conversation',
+  'ask.home.none': 'No data source is connected yet, so there is nothing to ask about.',
+
+  'ask.suggest.overdueDebtors': 'Who owes us the most past {days} days?',
+  'ask.suggest.largestDebtor': 'Which customer has the largest open debt?',
+  'ask.suggest.stockRunningOut': 'Which items will run out before the delivery arrives?',
+  'ask.suggest.stockSitting': 'What has been sitting in stock too long?',
+  'ask.suggest.payablesDue': 'What is due for payment this week?',
+  'ask.suggest.salesDrop': 'Why did sales fall against the previous period?',
+  'ask.suggest.salesYesterday': 'How much did we sell yesterday?',
+  'ask.suggest.salesMonth': 'How are we doing this month against last?',
+  'ask.suggest.whoOwesUs': 'Who owes us the most?',
+  'ask.suggest.financialSummary': 'What is our margin over the last month?',
+  'ask.suggest.stockRisk': 'Which stock is at risk?',
+  'ask.suggest.payablesWeek': 'How much is due to suppliers?',
+
   'brief.prefs.title': 'My brief',
   'brief.prefs.lede':
     'The order follows your role. If a section matters to you sooner \u2014 or not at all \u2014 change it here. This changes only your view, not anyone else\u2019s.',

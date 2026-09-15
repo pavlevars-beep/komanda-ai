@@ -905,6 +905,25 @@ export const sr = {
   'board.vsPrevious': 'prema prethodnom',
 
   // --- Jutarnji brif ---
+  'ask.home.title': 'Pitajte svoje poslovanje',
+  'ask.home.placeholder': 'Pitajte bilo šta o svojim brojevima…',
+  'ask.home.open': 'Otvori razgovor',
+  'ask.home.none':
+    'Nijedan izvor podataka još nije povezan, pa nema o čemu da se pita.',
+
+  'ask.suggest.overdueDebtors': 'Ko nam duguje najviše preko {days} dana?',
+  'ask.suggest.largestDebtor': 'Koji kupac ima najveće otvoreno dugovanje?',
+  'ask.suggest.stockRunningOut': 'Koji artikli će nestati pre nego što stigne isporuka?',
+  'ask.suggest.stockSitting': 'Šta nam predugo stoji na zalihama?',
+  'ask.suggest.payablesDue': 'Šta nam dospeva za plaćanje ove nedelje?',
+  'ask.suggest.salesDrop': 'Zašto je prodaja pala u odnosu na prethodni period?',
+  'ask.suggest.salesYesterday': 'Koliko smo juče prodali?',
+  'ask.suggest.salesMonth': 'Kako stojimo ovog meseca u odnosu na prošli?',
+  'ask.suggest.whoOwesUs': 'Ko nam najviše duguje?',
+  'ask.suggest.financialSummary': 'Kakva nam je marža u poslednjih mesec dana?',
+  'ask.suggest.stockRisk': 'Koje zalihe su u riziku?',
+  'ask.suggest.payablesWeek': 'Koliko nam dospeva prema dobavljačima?',
+
   'brief.prefs.title': 'Moj brif',
   'brief.prefs.lede':
     'Redosled je podešen prema vašoj ulozi. Ako vam neki odeljak treba ranije — ili vam uopšte ne treba — promenite ga ovde. Menja se samo vaš prikaz, ne i ono što vide ostali.',
