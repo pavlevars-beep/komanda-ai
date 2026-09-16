@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import { cookies, headers } from 'next/headers'
 import { resolveLocale, INTL_LOCALE } from '@/i18n/config'
 import { readThemeCookie } from '@/ui/theme/theme'
@@ -13,17 +13,22 @@ import './globals.css'
  * ni popuštanja politike sadržaja.
  */
 
-const plexSans = IBM_Plex_Sans({
+/*
+ * `latin-ext` je OBAVEZAN podskup: bez njega č, ć, š, ž i đ padaju na rezervni
+ * font, pa se u istoj reči mešaju dva pisma. Na srpskom se to vidi u svakoj
+ * drugoj reči.
+ */
+const sans = Inter({
   subsets: ['latin', 'latin-ext'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-plex-sans',
+  variable: '--font-sans-loaded',
   display: 'swap',
 })
 
-const plexMono = IBM_Plex_Mono({
+const mono = JetBrains_Mono({
   subsets: ['latin', 'latin-ext'],
   weight: ['400', '500'],
-  variable: '--font-plex-mono',
+  variable: '--font-mono-loaded',
   display: 'swap',
 })
 
@@ -56,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang={INTL_LOCALE[locale]}
       // "system" ne postavlja atribut — tada odlučuje prefers-color-scheme.
       {...(theme === 'system' ? {} : { 'data-theme': theme })}
-      className={`${plexSans.variable} ${plexMono.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <body>{children}</body>

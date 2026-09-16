@@ -42,7 +42,40 @@ const PATHS = {
   plus: 'M12 5v14M5 12h14',
   chevronUp: 'M5.5 15 12 8.5 18.5 15',
   chevronDown: 'M5.5 9 12 15.5 18.5 9',
+  arrowRight: 'M4 12h15M13 6l6 6-6 6',
+  trendUp: 'M4 17 10 11l4 4 6-6M15 5h5v5',
+  trendDown: 'M4 7 10 13l4-4 6 6M15 19h5v-5',
+  search: 'M11 18.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15ZM20 20l-3.7-3.7',
+  calendar:
+    'M4.5 6.5h15v13h-15v-13ZM8 3.5V7M16 3.5V7M4.5 10.5h15M9 14h2M15 14h2M9 17h2M15 17h2',
+  mail: 'M3.5 6h17v12h-17V6ZM3.5 6.5 12 13l8.5-6.5',
+  shield: 'M12 3.5 20 6v6.5c0 4-3.3 6.8-8 8-4.7-1.2-8-4-8-8V6l8-2.5ZM9 12l2.2 2.2L15.5 10',
+  refresh: 'M20 5.5v5h-5M4 18.5v-5h5M19.3 9.5A7.5 7.5 0 0 0 6.2 7.2L4 9M4.7 14.5a7.5 7.5 0 0 0 13.1 2.3L20 15',
+  filter: 'M4 5h16l-6.3 7.3v5.2l-3.4 1.7v-6.9L4 5Z',
 } as const
+
+/*
+ * Optičko izjednačavanje.
+ *
+ * Putanje su crtane u raznim trenucima i rasponi su se razišli: najveća je
+ * zauzimala 21,7 od 24, najmanja 13. U redu ikonica to se vidi i čita kao
+ * domaća izrada, iako je svaka pojedinačno uredna.
+ *
+ * Umesto precrtavanja — mereno pa skalirano oko središta. `non-scaling-stroke`
+ * je ovde nužan: bez njega bi smanjena ikonica dobila tanju liniju i problem bi
+ * se samo preselio iz veličine u debljinu.
+ *
+ * Sitni znaci (plus, strelice, kvačica) NAMERNO ostaju manji — oni nisu slike
+ * nego interpunkcija, i uvećani bi vikali na ekranu na kojem ništa ne treba da
+ * viče.
+ */
+const SCALE: Partial<Record<IconName, number>> = {
+  settings: 0.85,
+  users: 0.92,
+  sun: 0.92,
+  warning: 0.92,
+  building: 0.97,
+}
 
 export type IconName = keyof typeof PATHS
 
@@ -75,7 +108,15 @@ export function Icon({
       role={label ? 'img' : undefined}
       aria-label={label}
     >
-      <path d={PATHS[name]} />
+      <path
+        d={PATHS[name]}
+        {...(SCALE[name]
+          ? {
+              transform: `translate(12 12) scale(${SCALE[name]}) translate(-12 -12)`,
+              vectorEffect: 'non-scaling-stroke' as const,
+            }
+          : {})}
+      />
     </svg>
   )
 }

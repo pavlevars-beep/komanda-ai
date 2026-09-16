@@ -48,21 +48,54 @@
   --info: #2b5f9e;
   --info-soft: #e6eef8;
 
-  --shadow-sm: 0 1px 2px rgba(20, 26, 27, 0.05);
-  --shadow-md: 0 1px 2px rgba(20, 26, 27, 0.05), 0 8px 24px -16px rgba(20, 26, 27, 0.28);
+  /*
+   * Senka u SLOJEVIMA, ne jedna.
+   *
+   * Jedna senka daje ravnu, gumenu ivicu; dva-tri sloja različitog rastojanja
+   * opisuju kako svetlo stvarno pada. To je razlika koju niko ne ume da imenuje,
+   * a svako je vidi.
+   */
+  --shadow-sm: 0 1px 1px rgba(20, 26, 27, 0.03), 0 2px 4px -2px rgba(20, 26, 27, 0.05);
+  --shadow-md:
+    0 1px 1px rgba(20, 26, 27, 0.03), 0 4px 10px -4px rgba(20, 26, 27, 0.08),
+    0 16px 32px -16px rgba(20, 26, 27, 0.16);
+  --shadow-lg:
+    0 1px 1px rgba(20, 26, 27, 0.04), 0 8px 20px -6px rgba(20, 26, 27, 0.1),
+    0 28px 56px -24px rgba(20, 26, 27, 0.22);
 
   /* --- Tipografija --- */
-  --font-sans: var(--font-plex-sans), 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-plex-mono), 'SFMono-Regular', Consolas, monospace;
+  --font-sans: var(--font-sans-loaded), 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-loaded), 'SFMono-Regular', Consolas, monospace;
 
-  --text-2xs: 10.5px;
-  --text-xs: 11.5px;
-  --text-sm: 12.5px;
-  --text-base: 13.5px;
-  --text-md: 15px;
-  --text-lg: 18px;
-  --text-xl: 22px;
-  --text-2xl: 28px;
+  /*
+   * Razmera je PROREĐENA na krajevima, ne ravnomerna.
+   *
+   * Ravnomeran korak daje ekran na kojem je sve podjednako važno — a to se čita
+   * kao prazno, iako na njemu ima isto toliko sadržaja. Razlika između oznake i
+   * broja mora da bude vidljiva iz drugog reda, ne merljiva lenjirom.
+   */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14.5px;
+  --text-md: 16px;
+  --text-lg: 19px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /*
+   * Krupan tekst se skuplja, sitan razmiče. Inter na 24px i više deluje
+   * razliveno bez negativnog razmaka, a verzalne oznake bez pozitivnog se
+   * slepe u blok.
+   */
+  --tracking-tight: -0.014em;
+  --tracking-snug: -0.006em;
+  --tracking-label: 0.07em;
 
   /* --- Prostor: skala od 4px, bez izuzetaka --- */
   --space-1: 4px;
@@ -76,9 +109,9 @@
   --space-12: 56px;
   --space-16: 72px;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 11px;
   --radius-full: 999px;
 
   --header-height: 52px;
@@ -116,8 +149,13 @@
     --info: #6f9fd8;
     --info-soft: #172433;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.7);
+    --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-md:
+      0 1px 1px rgba(0, 0, 0, 0.3), 0 4px 10px -4px rgba(0, 0, 0, 0.45),
+      0 16px 32px -16px rgba(0, 0, 0, 0.6);
+    --shadow-lg:
+      0 1px 1px rgba(0, 0, 0, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.5),
+      0 28px 56px -24px rgba(0, 0, 0, 0.7);
 
     color-scheme: dark;
   }
@@ -151,8 +189,13 @@
   --info: #6f9fd8;
   --info-soft: #172433;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md:
+    0 1px 1px rgba(0, 0, 0, 0.3), 0 4px 10px -4px rgba(0, 0, 0, 0.45),
+    0 16px 32px -16px rgba(0, 0, 0, 0.6);
+  --shadow-lg:
+    0 1px 1px rgba(0, 0, 0, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.5),
+    0 28px 56px -24px rgba(0, 0, 0, 0.7);
 
   color-scheme: dark;
 }

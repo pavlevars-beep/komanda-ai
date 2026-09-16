@@ -5,7 +5,6 @@ export interface ContextLinkRow {
   readonly key: string
   readonly url: string
   readonly label: string
-  readonly hint: string
 }
 
 /**
@@ -15,8 +14,8 @@ export interface ContextLinkRow {
  * gleda ko mu duguje, provera da li je tom kupcu račun u blokadi je SLEDEĆI
  * potez — a ne nešto što će potražiti kasnije, kada se seti da postoji.
  *
- * Objašnjenje ide uz svaki: bez njega je ovo spisak skraćenica, sa njim je
- * savet.
+ * Bez objašnjenja uz svaki: naslov odeljka već kaže zašto su tu, a red sivog
+ * teksta ispod svakog linka pretvara pomoć u zid.
  */
 export function ContextLinks({
   title,
@@ -45,7 +44,6 @@ export function ContextLinks({
             >
               {link.label}
             </a>
-            <span className={styles.hint}>{link.hint}</span>
           </li>
         ))}
       </ul>

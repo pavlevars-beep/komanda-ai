@@ -21,7 +21,8 @@
     "check:bundle": "./scripts/check-bundle.sh",
     "verify": "npm run build && npm run typecheck && npm run lint && npm run test && npm run check:bundle",
     "verify:quick": "npm run typecheck && npm run lint && npm run test",
-    "check:links": "./scripts/check-links.sh"
+    "check:links": "./scripts/check-links.sh",
+    "check:icons": "node scripts/check-icons.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

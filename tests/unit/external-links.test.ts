@@ -32,11 +32,10 @@ describe('katalog javnih servisa', () => {
     }
   })
 
-  it('svaki link ima prevod i objašnjenje na oba jezika', () => {
+  it('svaki link ima naziv na oba jezika', () => {
     for (const link of EXTERNAL_LINKS) {
       for (const messages of [sr, en]) {
         expect(messages).toHaveProperty(`links.${link.key}`)
-        expect(messages).toHaveProperty(`links.${link.key}.hint`)
       }
     }
   })

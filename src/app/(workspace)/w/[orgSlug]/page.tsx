@@ -268,7 +268,6 @@ export default async function WorkspaceHome({
       */}
       <LinksCard
         title={t('links.title')}
-        lede={t('links.lede')}
         needsAccountLabel={t('links.needsAccount')}
         groups={groupedLinks().map((group) => ({
           category: group.category,
@@ -277,7 +276,6 @@ export default async function WorkspaceHome({
             key: link.key,
             url: link.url,
             label: t(`links.${link.key}` as MessageKey),
-            hint: t(`links.${link.key}.hint` as MessageKey),
             needsAccount: link.needsAccount ?? false,
           })),
         }))}

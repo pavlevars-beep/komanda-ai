@@ -14,24 +14,17 @@
   border-radius: var(--radius-lg);
 }
 
-.head {
-  margin-bottom: var(--space-4);
-}
-
 .title {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin: 0 0 var(--space-1);
+  /*
+   * Razmak do prve grupe je veći nego između grupa. Bez njega se naslov kartice
+   * slepi sa prvom oznakom i njih dve se čitaju kao jedan dvoredni naslov.
+   */
+  margin: 0 0 var(--space-5);
   font-size: var(--text-md);
   color: var(--ink);
-}
-
-.lede {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  line-height: 1.5;
 }
 
 /*
@@ -57,8 +50,9 @@
 .groupTitle {
   margin: 0 0 var(--space-2);
   font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   color: var(--faint);
 }
 
@@ -67,7 +61,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .item {
@@ -76,11 +70,14 @@
   min-width: 0;
 }
 
+/*
+ * Link je TOK TEKSTA, ne flex red.
+ *
+ * Kao flex sa prelamanjem, oznaka „traži nalog" pada u sopstveni red čim naziv
+ * postane dug — i tamo se čita kao zasebna stavka spiska. U toku teksta se
+ * prelama zajedno sa poslednjom rečju, gde joj je i mesto.
+ */
 .link {
-  display: inline-flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--space-2);
   font-size: var(--text-base);
   color: var(--brand);
   text-decoration: none;
@@ -98,18 +95,12 @@
 }
 
 .badge {
+  margin-left: var(--space-2);
   font-size: var(--text-2xs);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+  /* Sama oznaka se ne prelama — „traži" u jednom redu i „nalog" u drugom. */
+  white-space: nowrap;
 }
 
-/*
- * Objašnjenje uz link nije ukras. Bez njega je ovo spisak skraćenica; sa njim
- * je savet — a savet je ono zbog čega klijent i plaća konsultanta.
- */
-.hint {
-  font-size: var(--text-sm);
-  color: var(--muted);
-  line-height: 1.5;
-}

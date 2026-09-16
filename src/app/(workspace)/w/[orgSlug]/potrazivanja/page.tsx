@@ -165,7 +165,6 @@ export default async function ReceivablesPage({
           key: link.key,
           url: link.url,
           label: t(`links.${link.key}` as MessageKey),
-          hint: t(`links.${link.key}.hint` as MessageKey),
         }))}
       />
     </DetailShell>

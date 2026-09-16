@@ -5,7 +5,6 @@ export interface LinkRow {
   readonly key: string
   readonly url: string
   readonly label: string
-  readonly hint: string
   readonly needsAccount: boolean
 }
 
@@ -18,18 +17,16 @@ export interface LinkGroupRow {
 /**
  * Javni servisi.
  *
- * LINKOVI, ne podaci — i to piše. Sistem ne tvrdi ništa o sadržaju sa druge
- * strane, samo vodi do njega. Prikazivanje tuđeg podatka kao svog tražilo bi da
- * za njega odgovaramo svežinom i poreklom, a to je obaveza koju link ne nosi.
+ * Samo nazivi, bez objašnjenja uz svaki. Da su linkovi spoljni podrazumeva se
+ * iz ikonice i iz toga što se otvaraju u novoj kartici; rečenica koja to kaže
+ * naglas je red sivog teksta koji niko ne pročita dvaput.
  */
 export function LinksCard({
   title,
-  lede,
   needsAccountLabel,
   groups,
 }: {
   title: string
-  lede: string
   needsAccountLabel: string
   groups: readonly LinkGroupRow[]
 }) {
@@ -37,13 +34,10 @@ export function LinksCard({
 
   return (
     <section className={styles.card}>
-      <div className={styles.head}>
-        <h2 className={styles.title}>
-          <Icon name="external" size={16} />
-          {title}
-        </h2>
-        <p className={styles.lede}>{lede}</p>
-      </div>
+      <h2 className={styles.title}>
+        <Icon name="external" size={16} />
+        {title}
+      </h2>
 
       <div className={styles.groups}>
         {groups.map((group) => (
@@ -68,7 +62,6 @@ export function LinksCard({
                       <span className={styles.badge}>{needsAccountLabel}</span>
                     ) : null}
                   </a>
-                  <span className={styles.hint}>{link.hint}</span>
                 </li>
               ))}
             </ul>

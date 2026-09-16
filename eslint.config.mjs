@@ -27,6 +27,10 @@ export default tseslint.config(
       'coverage/**',
       'next-env.d.ts',
       'src/server/db/types.generated.ts',
+      // Pogonski alati, ne aplikacija: vrte se u Node-u, ispisuju na izlaz i ne
+      // ulaze ni u jedan paket. Pravila pisana za kod koji ide u pregledač im
+      // ne odgovaraju ni po jednoj tački.
+      'scripts/**',
     ],
   },
 
