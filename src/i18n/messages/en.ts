@@ -878,6 +878,39 @@ export const en: Messages = {
   'board.vsPrevious': 'vs previous',
 
   // --- Morning brief ---
+  'links.title': 'Public services',
+  'links.lede':
+    'External services, not our data \u2014 we link to them, we claim nothing about what is there. They open in a new tab.',
+  'links.needsAccount': 'account required',
+
+  'links.category.registry': 'Registries',
+  'links.category.finance': 'Finance',
+  'links.category.tax': 'Tax and contributions',
+  'links.category.customs': 'Customs',
+  'links.category.state': 'Government services',
+
+  'links.apr': 'APR \u2014 company registry search',
+  'links.apr.hint':
+    'The first check on a new customer: does the company exist, who represents it, and what do its last accounts look like. Deferred payment without that is a loan with no questions asked.',
+  'links.nbsBlocked': 'NBS \u2014 enforced collection and blocked accounts',
+  'links.nbsBlocked.hint':
+    'A customer whose account is blocked is not late paying \u2014 they CANNOT pay. That changes the move: instead of another call, you go for security over the debt.',
+  'links.nbsRates': 'NBS \u2014 exchange rate list',
+  'links.nbsRates.hint': 'The official middle rate, the one that counts for bookkeeping and invoicing.',
+  'links.purs': 'Tax Administration \u2014 ePorezi',
+  'links.purs.hint': 'Filing returns and checking the tax account.',
+  'links.euprava': 'eUprava',
+  'links.euprava.hint': 'Requests and certificates from government bodies in one place.',
+  'links.croso': 'CROSO \u2014 social insurance',
+  'links.croso.hint': 'Registering and deregistering employees, checking service records.',
+  'links.carina': 'Customs Administration',
+  'links.carina.hint': 'Duty rates and tariffs \u2014 for goods being imported.',
+  'links.rgz': 'Real estate cadastre',
+  'links.rgz.hint': 'Checking property when security over a debt is needed.',
+
+  'links.context.debtors': 'Check the debtor',
+  'links.context.stock': 'Duty rates',
+
   'ask.dock.open': 'Ask',
   'ask.dock.close': 'Close',
   'ask.dock.title': 'Ask your business',

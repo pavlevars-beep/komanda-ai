@@ -5,7 +5,7 @@ import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator } from '@/i18n/translator'
+import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { INTL_LOCALE } from '@/i18n/config'
 import { initialiseConnectors } from '@/core/connectors'
 import { primaryIntegration } from '@/core/dashboard/loader'
@@ -13,6 +13,8 @@ import { loadMorningBrief } from '@/core/brief/loader'
 import { businessRulesFor } from '@/core/rules/repository'
 import { DataTable } from '../data-table'
 import { DetailShell, Source, Stats, Thresholds, Unavailable } from '../detail-shell'
+import { ContextLinks } from '../context-links'
+import { linksFor } from '@/core/links/catalog'
 import styles from '../detail.module.css'
 
 export default async function ReceivablesPage({
@@ -151,6 +153,20 @@ export default async function ReceivablesPage({
         orgSlug={org.organizationSlug}
         text={t('detail.thresholds')}
         linkLabel={t('detail.thresholds.link')}
+      />
+
+      {/*
+        Provera dužnika stoji TU, uz spisak. Kupac čiji je račun u blokadi ne
+        kasni sa plaćanjem — on ne može da plati, i to menja sledeći potez.
+      */}
+      <ContextLinks
+        title={t('links.context.debtors')}
+        links={linksFor('debtors').map((link) => ({
+          key: link.key,
+          url: link.url,
+          label: t(`links.${link.key}` as MessageKey),
+          hint: t(`links.${link.key}.hint` as MessageKey),
+        }))}
       />
     </DetailShell>
   )

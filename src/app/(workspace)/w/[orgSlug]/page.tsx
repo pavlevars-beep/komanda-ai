@@ -22,6 +22,8 @@ import { MetricsBoard } from './board'
 import { WorldClocks, type Clock } from './clocks'
 import { StalenessBanner } from './staleness'
 import { AskBox } from './ask-box'
+import { LinksCard } from './links-card'
+import { groupedLinks } from '@/core/links/catalog'
 import { suggestQuestions } from '@/core/ai/suggestions'
 import { askableIntents } from '@/core/ai/ask'
 import styles from './brief.module.css'
@@ -260,7 +262,28 @@ export default async function WorkspaceHome({
 
       <section className={styles.section} style={{ maxWidth: 900, marginTop: 'var(--space-7)' }}>
         <h2 className={styles.sectionTitle}>{t('home.clocks')}</h2>
-        <WorldClocks clocks={clocks} locale={intl} />
+        {/*
+        Javni servisi stoje na DNU: to je pomoćni alat koji se otvori jednom
+        nedeljno, a ne podatak zbog kojeg se ekran gleda svakog jutra.
+      */}
+      <LinksCard
+        title={t('links.title')}
+        lede={t('links.lede')}
+        needsAccountLabel={t('links.needsAccount')}
+        groups={groupedLinks().map((group) => ({
+          category: group.category,
+          label: t(`links.category.${group.category}` as MessageKey),
+          links: group.links.map((link) => ({
+            key: link.key,
+            url: link.url,
+            label: t(`links.${link.key}` as MessageKey),
+            hint: t(`links.${link.key}.hint` as MessageKey),
+            needsAccount: link.needsAccount ?? false,
+          })),
+        }))}
+      />
+
+      <WorldClocks clocks={clocks} locale={intl} />
       </section>
     </>
   )

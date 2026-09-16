@@ -1,0 +1,115 @@
+/*
+ * Javni servisi.
+ *
+ * Namerno na dnu početne strane i tiho oblikovano: ovo je pomoćni alat koji se
+ * otvori jednom nedeljno, a ne podatak zbog kojeg se ekran gleda svakog jutra.
+ */
+
+.card {
+  max-width: 900px;
+  margin-bottom: var(--space-7);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.head {
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
+  color: var(--ink);
+}
+
+.lede {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/*
+ * Novinske kolone, ne mreža.
+ *
+ * Grupe su različite visine, a u mreži se redovi poravnavaju po najvišoj —
+ * ispod kraće grupe ostaje rupa koja se na renderu odmah vidi. Kolone teku,
+ * pa svaka grupa počinje tamo gde je prethodna stala.
+ *
+ * `break-inside: avoid` drži grupu na okupu: naslov na dnu jedne kolone i
+ * njegovi linkovi na vrhu druge su gori od bilo kakve rupe.
+ */
+.groups {
+  columns: 240px 3;
+  column-gap: var(--space-5);
+}
+
+.group {
+  break-inside: avoid;
+  margin-bottom: var(--space-4);
+}
+
+.groupTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.item {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--brand);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.badge {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+/*
+ * Objašnjenje uz link nije ukras. Bez njega je ovo spisak skraćenica; sa njim
+ * je savet — a savet je ono zbog čega klijent i plaća konsultanta.
+ */
+.hint {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: 1.5;
+}

@@ -905,6 +905,39 @@ export const sr = {
   'board.vsPrevious': 'prema prethodnom',
 
   // --- Jutarnji brif ---
+  'links.title': 'Javni servisi',
+  'links.lede':
+    'Spoljni servisi, ne naši podaci — vodimo do njih, ne tvrdimo ništa o sadržaju. Otvaraju se u novoj kartici.',
+  'links.needsAccount': 'traži nalog',
+
+  'links.category.registry': 'Registri',
+  'links.category.finance': 'Finansije',
+  'links.category.tax': 'Porezi i doprinosi',
+  'links.category.customs': 'Carina',
+  'links.category.state': 'Državni servisi',
+
+  'links.apr': 'APR — pretraga privrednih subjekata',
+  'links.apr.hint':
+    'Prva provera pri novom kupcu: postoji li firma, ko je zastupnik i kakav joj je poslednji bilans. Odloženo plaćanje bez toga je pozajmica bez ijednog pitanja.',
+  'links.nbsBlocked': 'NBS — prinudna naplata i računi u blokadi',
+  'links.nbsBlocked.hint':
+    'Kupac čiji je račun u blokadi ne kasni sa plaćanjem — on ne MOŽE da plati. To menja potez: umesto još jednog poziva, ide se na obezbeđenje naplate.',
+  'links.nbsRates': 'NBS — kursna lista',
+  'links.nbsRates.hint': 'Zvanični srednji kurs, merodavan za knjiženje i fakturisanje.',
+  'links.purs': 'Poreska uprava — ePorezi',
+  'links.purs.hint': 'Podnošenje prijava i uvid u poresku karticu.',
+  'links.euprava': 'eUprava',
+  'links.euprava.hint': 'Zahtevi i uverenja prema državnim organima na jednom mestu.',
+  'links.croso': 'CROSO — socijalno osiguranje',
+  'links.croso.hint': 'Prijave i odjave zaposlenih, provera staža.',
+  'links.carina': 'Uprava carina',
+  'links.carina.hint': 'Carinske stope i tarife — za robu koja se uvozi.',
+  'links.rgz': 'Katastar nepokretnosti',
+  'links.rgz.hint': 'Provera nepokretnosti kada se traži obezbeđenje naplate.',
+
+  'links.context.debtors': 'Proverite dužnika',
+  'links.context.stock': 'Carinske stope',
+
   'ask.dock.open': 'Pitajte',
   'ask.dock.close': 'Zatvori',
   'ask.dock.title': 'Pitajte svoje poslovanje',
