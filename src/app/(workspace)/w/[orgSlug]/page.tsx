@@ -191,7 +191,15 @@ export default async function WorkspaceHome({
         Tabla stoji IZNAD brifa, ne umesto njega. Tabla odgovara na „koliko" i
         „kako se kreće", brif na „šta danas traži pažnju".
       */}
-      <section className={styles.section} style={{ maxWidth: 900, marginBottom: 'var(--space-7)' }}>
+      {/*
+        Tabla NIJE ograničena na 900px kao ostatak brifa.
+
+        Devetsto piksela je mera za ČITANJE — red teksta duži od toga oko gubi
+        pri povratku u novi red. Tabla nije tekst nego mreža brojeva: na širem
+        ekranu ista ograničenja ostavljaju trećinu prozora praznu, a kartice
+        stisnutu u kolonu koja lomi iznose.
+      */}
+      <section className={styles.section} style={{ maxWidth: 1280, marginBottom: 'var(--space-7)' }}>
         <h2 className={styles.sectionTitle}>{t('board.title')}</h2>
         <MetricsBoard
           board={board}
@@ -201,6 +209,31 @@ export default async function WorkspaceHome({
           f={{
             t,
             money,
+            /*
+             * Rastavljanje ide kroz `formatToParts` ISTOG oblikovača koji pravi
+             * `money`, ne kroz sečenje gotove niske. Tako brojka na kartici ne
+             * može da se razlikuje od iste brojke drugde na ekranu, a valuta se
+             * nađe i kada u jeziku stoji ispred broja.
+             */
+            moneyParts: (amount, currency) => {
+              const parts = new Intl.NumberFormat(intl, {
+                style: 'currency',
+                currency,
+                maximumFractionDigits: 0,
+              }).formatToParts(Number(amount))
+
+              return {
+                value: parts
+                  .filter((part) => part.type !== 'currency')
+                  .map((part) => part.value)
+                  .join('')
+                  .trim(),
+                unit: parts
+                  .filter((part) => part.type === 'currency')
+                  .map((part) => part.value)
+                  .join(''),
+              }
+            },
             number: (value) => formatNumber(value),
             percent,
             // Skraćen zapis za ose i opise: pun iznos u milionima ne staje

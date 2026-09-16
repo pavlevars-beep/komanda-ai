@@ -1,7 +1,11 @@
 .page { display: flex; flex-direction: column; gap: var(--space-7); max-width: 900px; }
 
 .greeting { display: flex; flex-direction: column; gap: var(--space-1); }
-.hello { font-size: var(--text-xl); letter-spacing: -0.01em; }
+.hello {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .asOf { font-size: var(--text-sm); color: var(--faint); }
 .stale {
   display: flex; align-items: center; gap: var(--space-2);
@@ -15,21 +19,38 @@
 
 .section { display: flex; flex-direction: column; gap: var(--space-3); }
 .sectionTitle {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex; align-items: center; gap: var(--space-3);
   font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
 }
-.sectionTitle svg { color: var(--muted); }
+
+/*
+ * Ikonica dobija pločicu kroz SVG, bez omotača u JSX-u.
+ *
+ * `content-box` je ovde ključ: bez njega bi ispuna pojela samu ikonicu umesto
+ * da je okruži. Ovako se pločica pojavljuje na SVAKOM naslovu odeljka odjednom,
+ * a nijedan poziv u komponentama se ne menja.
+ */
+.sectionTitle svg {
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  flex: none;
+}
 .sectionMeta { font-size: var(--text-sm); color: var(--faint); font-weight: 400; margin-left: auto; }
 
 /* --- Zahteva pažnju --- */
 .attention { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
 .item {
   display: flex; flex-direction: column; gap: var(--space-2);
-  padding: var(--space-4);
+  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-left: 3px solid var(--line-strong);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .critical { border-left-color: var(--critical); }
 .warning { border-left-color: var(--warn); }
@@ -48,8 +69,24 @@
 .why { font-size: var(--text-sm); }
 .whySummary { color: var(--muted); cursor: pointer; list-style: none; }
 .whySummary::-webkit-details-marker { display: none; }
-.whySummary::before { content: '▸ '; }
-details[open] > .whySummary::before { content: '▾ '; }
+/*
+ * Trougao je nacrtan IVICAMA, ne znakom ▸ iz teksta.
+ *
+ * Geometrijski znakovi retko postoje u samom fontu, pa ih pregledač uzima iz
+ * rezervnog — i onda jedan jedini znak na ekranu ispadne iz druge porodice i
+ * druge visine. Ivice nemaju font.
+ */
+.whySummary::before {
+  content: '';
+  display: inline-block;
+  width: 0; height: 0;
+  margin-right: var(--space-2);
+  border-left: 5px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 120ms ease;
+}
+details[open] > .whySummary::before { transform: rotate(90deg); }
 .evidence {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -61,11 +98,12 @@ details[open] > .whySummary::before { content: '▾ '; }
 .evidenceValue { font-variant-numeric: tabular-nums; }
 
 .calm {
-  display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
 }
 .calm svg { color: var(--ok); }
@@ -73,17 +111,44 @@ details[open] > .whySummary::before { content: '▾ '; }
 /* --- Blokovi --- */
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
 .card {
-  display: flex; flex-direction: column; gap: var(--space-3);
-  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .rows { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
 .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+
+/*
+ * Kolona iznosa se PORAVNAVA po desnoj ivici.
+ *
+ * Bez ovoga su tri iznosa u istoj kartici počinjala na tri različita mesta i
+ * završavala na tri različita mesta — jer je promena pored njih („+12,4%" prema
+ * „−3,1%") različite širine, pa je gurala iznos levo-desno iz reda u red. Oko
+ * tada ne može da uporedi veličine bez čitanja svake cifre.
+ *
+ * Najmanja širina promene je mera najšireg oblika („−100,0%"), pa iznos uvek
+ * staje na isto mesto.
+ */
+.row .row { flex: none; justify-content: flex-end; }
 .rowLabel { font-size: var(--text-base); color: var(--muted); }
-.rowValue { font-size: var(--text-md); font-variant-numeric: tabular-nums; }
-.rowChange { font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+/* `dd` nosi podrazumevanu levu marginu pregledača — u redu sa dve kolone bi
+   iznos odgurnula za 40px bez ijednog pravila u ovom fajlu. */
+.rows dd { margin: 0; }
+.rowValue {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.rowChange {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  min-width: 58px;
+  text-align: right;
+}
 .up { color: var(--ok); }
 .down { color: var(--critical); }
 

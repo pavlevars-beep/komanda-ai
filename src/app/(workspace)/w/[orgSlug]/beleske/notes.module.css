@@ -15,7 +15,7 @@
   border-radius: var(--radius-lg);
   resize: vertical;
 }
-.input:focus-visible { outline: 2px solid var(--brand, var(--focus)); outline-offset: 1px; }
+.input:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 .actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
 .counter { font-size: var(--text-sm); color: var(--faint); font-variant-numeric: tabular-nums; }
 .error { font-size: var(--text-base); color: var(--critical); }

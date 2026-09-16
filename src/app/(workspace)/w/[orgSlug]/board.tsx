@@ -21,6 +21,17 @@ import styles from './board.module.css'
 export interface BoardFormat {
   readonly t: Translator['t']
   readonly money: (value: string | number, currency: string) => string
+  /**
+   * Isti iznos, rastavljen na brojku i oznaku valute.
+   *
+   * Kartica ih prikazuje u dve veličine, pa mora da ih dobije razdvojene — a
+   * razdvajanje ide kroz `formatToParts` istog oblikovača, ne kroz sečenje
+   * niske: valuta u nekim jezicima stoji ISPRED broja.
+   */
+  readonly moneyParts: (value: string | number, currency: string) => {
+    readonly value: string
+    readonly unit: string
+  }
   readonly number: (value: number) => string
   readonly percent: (value: number) => string
   readonly compact: (value: number, currency: string) => string
@@ -28,19 +39,46 @@ export interface BoardFormat {
   readonly dayLabel: (date: string) => string
 }
 
+/*
+ * Strelica je IKONICA, ne znak ↑ iz teksta.
+ *
+ * Znakovi strelica retko postoje u samom fontu, pa ih pregledač uzima iz
+ * rezervnog — i onda jedini element na kartici koji nosi smer ispadne iz druge
+ * porodice, druge debljine i druge visine od svega oko sebe.
+ */
 function Delta({ percent, f }: { percent: number | undefined; f: BoardFormat }) {
   if (percent === undefined || percent === 0) return null
+  const up = percent > 0
   return (
-    <span className={`${styles.kpiDelta} ${percent > 0 ? styles.up : styles.down}`}>
-      {percent > 0 ? '↑' : '↓'} {f.percent(Math.abs(percent))}
+    <span className={`${styles.kpiDelta} ${up ? styles.up : styles.down}`}>
+      <Icon name={up ? 'trendUp' : 'trendDown'} size={14} />
+      {f.percent(Math.abs(percent))}
     </span>
   )
+}
+
+/*
+ * Novčani pokazatelj: brojka i valuta odvojeno, ili ništa ako podatka nema.
+ *
+ * Vraća se ceo deo objekta (`value` + `unit`) da se na mestu upotrebe ne bi
+ * pisalo dva izraza koja mogu da se raziđu — jedan sa valutom, drugi bez.
+ */
+function moneyKpi(
+  f: BoardFormat,
+  amount: string | number | null | undefined,
+  currency: string | undefined,
+): { value: string | null; unit?: string } {
+  if (amount === null || amount === undefined || currency === undefined) return { value: null }
+  const parts = f.moneyParts(amount, currency)
+  return { value: parts.value, unit: parts.unit }
 }
 
 interface Kpi {
   readonly key: string
   readonly label: string
   readonly value: string | null
+  /** Oznaka valute uz brojku. Prazno kod pokazatelja koji nisu novac. */
+  readonly unit?: string
   readonly deltaPercent?: number
   readonly note?: string
   readonly tone?: 'warn' | 'critical'
@@ -62,6 +100,7 @@ function KpiCard({ kpi, f }: { kpi: Kpi; f: BoardFormat }) {
           }`.trim()}
         >
           {kpi.value}
+          {kpi.unit ? <span className={styles.kpiUnit}>{kpi.unit}</span> : null}
         </span>
       )}
 
@@ -97,7 +136,9 @@ function ChartCard({
   return (
     <section className={`${styles.chartCard} ${wide ? styles.chartWide : ''}`.trim()}>
       <h3 className={styles.chartTitle}>
-        <Icon name={icon} size={17} />
+        <span className={styles.chartIcon}>
+          <Icon name={icon} size={17} />
+        </span>
         {title}
       </h3>
       {children}
@@ -149,7 +190,7 @@ export function MetricsBoard({
     {
       key: 'salesYesterday',
       label: f.t('board.kpi.salesYesterday'),
-      value: sales ? f.money(sales.yesterday.total, sales.currency) : null,
+      ...moneyKpi(f, sales?.yesterday.total, sales?.currency),
       ...(sales ? { deltaPercent: sales.yesterday.changePercent } : {}),
       // Sparkline nosi poslednjih sedam dana — oblik kretanja, ne vrednosti.
       ...(dailyValues.length > 1 ? { spark: dailyValues.slice(-7) } : {}),
@@ -157,31 +198,31 @@ export function MetricsBoard({
     {
       key: 'sales7',
       label: f.t('board.kpi.sales7'),
-      value: sales ? f.money(sales.last7Days.total, sales.currency) : null,
+      ...moneyKpi(f, sales?.last7Days.total, sales?.currency),
       ...(sales ? { deltaPercent: sales.last7Days.changePercent } : {}),
       ...(dailyValues.length > 1 ? { spark: dailyValues.slice(-14) } : {}),
     },
     {
       key: 'salesMonth',
       label: f.t('board.kpi.salesMonth'),
-      value: sales ? f.money(sales.monthToDate.total, sales.currency) : null,
+      ...moneyKpi(f, sales?.monthToDate.total, sales?.currency),
       ...(sales ? { deltaPercent: sales.monthToDate.changePercent } : {}),
       ...(dailyValues.length > 1 ? { spark: dailyValues } : {}),
     },
     {
       key: 'revenue',
       label: f.t('board.kpi.revenue'),
-      value: financial ? f.money(financial.revenue, financial.currency) : null,
+      ...moneyKpi(f, financial?.revenue, financial?.currency),
     },
     {
       key: 'expenses',
       label: f.t('board.kpi.expenses'),
-      value: financial ? f.money(financial.expenses, financial.currency) : null,
+      ...moneyKpi(f, financial?.expenses, financial?.currency),
     },
     {
       key: 'profit',
       label: f.t('board.kpi.profit'),
-      value: financial ? f.money(financial.profit, financial.currency) : null,
+      ...moneyKpi(f, financial?.profit, financial?.currency),
       ...(financial && Number(financial.profit) < 0 ? { tone: 'critical' as const } : {}),
       ...(financial
         ? { note: `${f.t('board.kpi.margin')} ${f.percent(financial.marginPercent)}` }
@@ -190,15 +231,12 @@ export function MetricsBoard({
     {
       key: 'receivables',
       label: f.t('board.kpi.receivables'),
-      value: receivables ? f.money(receivables.total, receivables.currency) : null,
+      ...moneyKpi(f, receivables?.total, receivables?.currency),
     },
     {
       key: 'overdue',
       label: f.t('board.kpi.overdue', { days: rules.receivableCriticalDays }),
-      value:
-        overdueBeyondThreshold === null
-          ? null
-          : f.money(overdueBeyondThreshold, receivables!.currency),
+      ...moneyKpi(f, overdueBeyondThreshold, receivables?.currency),
       ...(overdueBeyondThreshold !== null && overdueBeyondThreshold > 0
         ? { tone: 'critical' as const }
         : {}),
@@ -206,7 +244,7 @@ export function MetricsBoard({
     {
       key: 'payables7',
       label: f.t('board.kpi.payables7'),
-      value: payables ? f.money(payables.dueWithin7Days, payables.currency) : null,
+      ...moneyKpi(f, payables?.dueWithin7Days, payables?.currency),
       ...(payables && Number(payables.dueWithin7Days) > 0 ? { tone: 'warn' as const } : {}),
     },
     {

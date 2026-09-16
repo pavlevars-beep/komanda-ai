@@ -12,45 +12,125 @@
 
 /* --- Pokazatelji --- */
 /*
- * Najmanja širina je merena prema NAJDUŽEM brojem koji se očekuje —
- * osmocifreni iznos sa oznakom valute. Uža kartica lomi „19.204.000 RSD" na
- * dva reda, pa se red pokazatelja čita kao neuredan iako je svaki broj tačan.
+ * Najmanja širina je MERENA u pregledaču, sa pravim Interom — ne procenjena.
+ *
+ * „42.980.000 RSD" na 32px, sa valutom u sitnom: 210px. Uz 2×20px unutrašnjeg
+ * razmaka to je 250px.
+ *
+ * Procena je ovde dvaput promašila. Prvi put jer je u računicu ušla valuta u
+ * punoj veličini (250px umesto 210). Drugi put jer je merenje išlo u pregledaču
+ * kojem font nije stigao, pa je merilo rezervni — a rezervni je širi od Intera
+ * za desetak procenata. Otud i ovaj komentar: broj u njemu je izmeren, a ne
+ * izveden.
  */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: var(--space-3); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-3); }
 .kpi {
-  display: flex; flex-direction: column; gap: var(--space-1);
-  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   min-width: 0;
 }
-.kpiLabel { font-size: var(--text-sm); color: var(--muted); }
-/* Herojska brojka: proporcionalne cifre, jer tabularne na ovoj veličini
-   razvuku broj poput 121 na širinu tri nule. */
-.kpiValue { font-size: var(--text-lg); letter-spacing: -0.01em; }
-.kpiFoot { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
-.kpiDelta { font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+
+/*
+ * Oznaka i brojka moraju da budu dve RAZLIČITE vrste teksta, ne isti tekst u
+ * dve veličine. Sitna verzalna oznaka se čita kao natpis nad brojem; ista reč
+ * u 13px sivoj se čita kao rečenica koja je ostala nedovršena.
+ */
+.kpiLabel {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+}
+
+/*
+ * Herojska brojka nosi karticu. Na 19px je bila samo krupniji tekst; razlika
+ * prema oznaci mora da se vidi iz drugog reda.
+ *
+ * Tabularne cifre su ovde NUŽNE, ne stvar ukusa: tabla se sama osvežava, pa se
+ * broj menja na mestu — sa proporcionalnim ciframa bi poskakivao u širini pri
+ * svakom osvežavanju.
+ */
+.kpiValue {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Valuta stoji PORED brojke, sitna, ne u njoj.
+ *
+ * Dva razloga. Brojka ostaje brojka — „RSD" u istoj veličini otima trećinu
+ * kartice i tera iznos u drugi red. I: valuta je na svih jedanaest kartica
+ * ista, pa ponovljena jedanaest puta u punoj veličini nije podatak nego šum.
+ */
+.kpiUnit {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0;
+  color: var(--faint);
+  margin-left: 5px;
+}
+
+.kpiFoot { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.kpiDelta {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
 .kpiNote { font-size: var(--text-sm); color: var(--faint); }
 .up { color: var(--ok); }
 .down { color: var(--critical); }
 .warn { color: var(--warn); }
 .critical { color: var(--critical); }
 .kpiSpark { margin-top: var(--space-1); }
-.kpiPending { color: var(--faint); font-size: var(--text-base); }
+.kpiPending { color: var(--faint); font-size: var(--text-md); line-height: 1.15; }
 
 /* --- Grafikoni --- */
-.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-3); }
+/*
+ * DVE kolone, ne tri.
+ *
+ * Grafikona je pet: jedan preko cele širine i četiri ispod njega. U tri kolone
+ * poslednji ostaje sam u redu i dve trećine reda zjapi prazno — a prazan red
+ * ispod punog se ne čita kao vazduh nego kao da nešto nije učitano.
+ *
+ * U dve kolone se četiri poravnaju u dva puna reda. Uz to grafikon dobija
+ * dvostruko širi prostor, pa nazivi opsega ispod stubića prestaju da se lome.
+ */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: var(--space-3); }
 .chartCard {
-  display: flex; flex-direction: column; gap: var(--space-3);
-  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   min-width: 0;
 }
-.chartTitle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); }
-.chartTitle svg { color: var(--muted); }
+.chartTitle {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+/*
+ * Ikonica stoji na svojoj pločici, ne gola pored teksta. Pločica daje naslovu
+ * levu ivicu koju oko prati niz karticu, i drži ikonicu iste veličine bez
+ * obzira na dužinu naslova.
+ */
+.chartIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+}
 .chartWide { grid-column: 1 / -1; }
 .chartFoot {
   display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
