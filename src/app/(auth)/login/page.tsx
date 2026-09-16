@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requestLocale } from '@/server/http/locale'
 import { createTranslator } from '@/i18n/translator'
 import { LocaleToggle } from '@/app/locale-toggle'
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: 'Prijava' }
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string; veza?: string }>
 }) {
   const [locale, params] = await Promise.all([requestLocale(), searchParams])
   const { t } = createTranslator(locale)
@@ -31,6 +32,17 @@ export default async function LoginPage({
             <p className={styles.subtitle}>{t('auth.signInSubtitle')}</p>
           </div>
 
+          {/*
+            Istrošen ili istekao link vraća ovde SA razlogom.
+            Bez ove poruke čovek koji je kliknuo na vezu iz mejla vidi običnu
+            prijavu i zaključi da link nije ni radio.
+          */}
+          {params.veza === 'istekla' ? (
+            <p className={styles.notice} role="status">
+              {t('auth.linkExpired')}
+            </p>
+          ) : null}
+
           <LoginForm
             {...(params.next ? { next: params.next } : {})}
             labels={{
@@ -41,6 +53,10 @@ export default async function LoginPage({
               rateLimited: t('error.rate_limited'),
             }}
           />
+
+          <Link href="/reset-password" className={styles.quietLink}>
+            {t('auth.forgotPassword')}
+          </Link>
         </div>
 
         <p className={styles.footer}>Delta Pro DOO</p>

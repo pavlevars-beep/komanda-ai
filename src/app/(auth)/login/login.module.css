@@ -55,3 +55,22 @@
 .ref { font-family: var(--font-mono); font-size: var(--text-2xs); opacity: 0.75; }
 
 .footer { font-size: var(--text-sm); color: var(--faint); text-align: center; }
+
+/* Potvrda da je mejl poslat. Stoji UMESTO forme, pa nosi njenu težinu. */
+.notice {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  font-size: var(--text-base);
+  color: var(--ink-2);
+}
+
+/* Sporedna veza ispod forme — namerno tiha: ovo je izlaz, ne poziv. */
+.quietLink {
+  align-self: center;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+.quietLink:hover { color: var(--ink); text-decoration: underline; }
