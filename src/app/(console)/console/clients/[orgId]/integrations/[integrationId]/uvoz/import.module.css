@@ -54,7 +54,18 @@
   text-align: left; padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line); white-space: nowrap;
 }
-.table th { color: var(--muted); font-weight: var(--weight-medium); }
+/* Zaglavlje u monospace verzalu — isto kao u ostalim tabelama konzole. Ove tri
+   su ostale na 13px sivom, pa je konzola bila nedosledna sama sa sobom. */
+.table th {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+  background: var(--surface-sunk);
+  white-space: nowrap;
+}
 .table tr:last-child td { border-bottom: 0; }
 .colIndex { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--faint); }
 
