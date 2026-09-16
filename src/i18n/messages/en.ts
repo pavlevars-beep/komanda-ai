@@ -512,6 +512,17 @@ export const en: Messages = {
   'health.state.ok': 'Healthy',
   'health.state.failing': 'Not responding',
   'health.state.unknown': 'Never checked',
+  'health.platform': 'Capabilities of this deploy',
+  'health.platform.on': 'On',
+  'health.platform.off': 'Off',
+  'health.platform.partial': 'Incomplete',
+  'health.platform.missing': 'Missing: {vars}',
+  'health.cap.ai': 'Assistant',
+  'health.cap.ai.note': 'Answers questions and writes notes. Needs AI_PROVIDER and OPENAI_API_KEY.',
+  'health.cap.cron': 'Scheduled jobs',
+  'health.cap.cron.note': 'Morning brief and the silence alarm. Needs CRON_SECRET.',
+  'health.cap.mail': 'Data intake by email',
+  'health.cap.mail.note': 'The table arrives at a dedicated address. Needs MAIL_DOMAIN and MAIL_WEBHOOK_SECRET.',
 
   // --- Integrations across the console ---
   'consoleIntegrations.lede':

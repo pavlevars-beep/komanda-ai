@@ -66,3 +66,37 @@
 }
 .link { color: var(--brand-ink, var(--accent)); text-decoration: none; }
 .link:hover { text-decoration: underline; }
+
+/* --- Sposobnosti deploy-a --- */
+.cardTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+.caps { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; }
+.cap { display: flex; flex-direction: column; gap: var(--space-1); }
+.capName {
+  display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+.capNote {
+  display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+/* Vrednost koja nije tajna — naziv modela, domen pošte. U monospace jer se
+   poredi sa onim što je uneto na Vercel-u, znak po znak. */
+.capDetail {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  color: var(--ink-2);
+}
+.capMissing {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--warn);
+}

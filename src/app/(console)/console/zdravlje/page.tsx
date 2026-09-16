@@ -4,8 +4,9 @@ import type { Route } from 'next'
 import { userDb } from '@/server/db/user-client'
 import { currentUser } from '@/server/auth/current-user'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator } from '@/i18n/translator'
+import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { listAllIntegrations } from '@/core/integrations/repository'
+import { deployFeatures } from '@/server/deploy-state'
 import { Icon } from '@/ui/primitives/Icon'
 import { StatusBadge } from '@/ui/patterns/StatusBadge'
 import styles from '../console-detail.module.css'
@@ -36,6 +37,40 @@ export default async function HealthPage() {
         </h1>
         <p className={styles.lede}>{t('health.lede')}</p>
       </header>
+
+      {/*
+        Sposobnosti stoje IZNAD integracija.
+        Integracija ne može biti ispravna ako sposobnost koja je pokreće nije
+        uključena, pa se prvo gleda ono što obara sve ostalo.
+      */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>{t('health.platform')}</h2>
+        <dl className={styles.caps}>
+          {deployFeatures().map((cap) => (
+            <div key={cap.key} className={styles.cap}>
+              <dt className={styles.capName}>
+                {t(`health.cap.${cap.key}` as MessageKey)}
+                {cap.on ? (
+                  <StatusBadge tone="ok" label={t('health.platform.on')} />
+                ) : cap.partial ? (
+                  <StatusBadge tone="warn" label={t('health.platform.partial')} />
+                ) : (
+                  <StatusBadge tone="neutral" label={t('health.platform.off')} />
+                )}
+              </dt>
+              <dd className={styles.capNote}>
+                {t(`health.cap.${cap.key}.note` as MessageKey)}
+                {cap.detail ? <span className={styles.capDetail}>{cap.detail}</span> : null}
+                {cap.missing.length > 0 ? (
+                  <span className={styles.capMissing}>
+                    {t('health.platform.missing', { vars: cap.missing.join(', ') })}
+                  </span>
+                ) : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {!integrations.ok ? (
         <p className={styles.empty}>{t('state.error.title')}</p>

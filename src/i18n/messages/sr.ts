@@ -534,6 +534,17 @@ export const sr = {
   'health.state.ok': 'Ispravno',
   'health.state.failing': 'Ne odgovara',
   'health.state.unknown': 'Nije proveravano',
+  'health.platform': 'Sposobnosti ovog deploy-a',
+  'health.platform.on': 'Uključeno',
+  'health.platform.off': 'Isključeno',
+  'health.platform.partial': 'Nepotpuno',
+  'health.platform.missing': 'Nedostaje: {vars}',
+  'health.cap.ai': 'Sagovornik',
+  'health.cap.ai.note': 'Odgovara na pitanja i piše beleške. Traži AI_PROVIDER i OPENAI_API_KEY.',
+  'health.cap.cron': 'Zakazani poslovi',
+  'health.cap.cron.note': 'Jutarnji brif i alarm na tišinu. Traži CRON_SECRET.',
+  'health.cap.mail': 'Prijem podataka poštom',
+  'health.cap.mail.note': 'Tabela stiže na namensku adresu. Traži MAIL_DOMAIN i MAIL_WEBHOOK_SECRET.',
 
   // --- Integracije kroz konzolu ---
   'consoleIntegrations.lede':
