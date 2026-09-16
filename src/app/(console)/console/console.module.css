@@ -19,11 +19,11 @@
 }
 
 .brand { display: flex; flex-direction: column; gap: var(--space-1); }
-.brandName { font-size: var(--text-md); font-weight: 600; letter-spacing: -0.01em; }
+.brandName { font-size: var(--text-md); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .brandMeta {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--accent);
 }

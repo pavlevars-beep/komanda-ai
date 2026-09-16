@@ -6,6 +6,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   min-width: 0;
 }
 
@@ -25,16 +26,16 @@
  */
 .value {
   font-size: var(--text-2xl);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
   color: var(--ink);
   line-height: 1.1;
 }
 
-.delta { font-size: var(--text-base); font-weight: 500; white-space: nowrap; }
+.delta { font-size: var(--text-base); font-weight: var(--weight-medium); white-space: nowrap; }
 .deltaGood { color: var(--ok); }
 .deltaBad { color: var(--critical); }
-.deltaPeriod { color: var(--muted); font-weight: 400; }
+.deltaPeriod { color: var(--muted); font-weight: var(--weight-normal); }
 
 /* --- Podnožje: odakle vrednost dolazi i koliko je sveža --- */
 .footer {
@@ -59,7 +60,7 @@
 .unavailableLabel {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.09em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--warn);
 }

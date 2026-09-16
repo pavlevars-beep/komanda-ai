@@ -11,6 +11,6 @@
 }
 .dot { width: 7px; height: 7px; border-radius: var(--radius-full); background: var(--warn); flex: none; }
 .text { flex: 1; min-width: 220px; }
-.org { font-weight: 600; color: var(--ink); }
+.org { font-weight: var(--weight-semibold); color: var(--ink); }
 .remaining { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--warn); }
 .form { display: inline-flex; }

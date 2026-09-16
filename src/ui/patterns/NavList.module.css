@@ -14,14 +14,14 @@
 
 .link { color: var(--muted); }
 .link:hover { background: var(--surface-sunk); color: var(--ink); }
-.active { background: var(--brand-soft); color: var(--brand-ink); font-weight: 500; }
+.active { background: var(--brand-soft); color: var(--brand-ink); font-weight: var(--weight-medium); }
 
 /* Nedostupna stavka nije link i ne reaguje na klik — vidi se da još ne radi. */
 .pending { color: var(--faint); cursor: default; }
 .soon {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--faint);
   border: 1px dashed var(--line-strong);

@@ -12,7 +12,7 @@ import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadMorningBrief } from '@/core/brief/loader'
 import { businessRulesFor } from '@/core/rules/repository'
 import { DataTable } from '../data-table'
-import { DetailShell, Source, Stats, Thresholds, Unavailable } from '../detail-shell'
+import { DetailShell, moneyStat, Source, Stats, Thresholds, Unavailable } from '../detail-shell'
 import { ContextLinks } from '../context-links'
 import { linksFor } from '@/core/links/catalog'
 import styles from '../detail.module.css'
@@ -76,28 +76,27 @@ export default async function ReceivablesPage({
         <>
           <Stats
             stats={[
-              {
-                label: t('brief.receivables.total'),
-                value: money(aging.total, aging.currency),
-              },
-              {
-                label: t('brief.receivables.overdue'),
-                value: money(aging.overdue, aging.currency),
-                tone: Number(aging.overdue) > 0 ? 'warn' : undefined,
-              },
+              moneyStat(t('brief.receivables.total'), aging.total, aging.currency, intl),
+              moneyStat(
+                t('brief.receivables.overdue'),
+                aging.overdue,
+                aging.currency,
+                intl,
+                Number(aging.overdue) > 0 ? 'warn' : undefined,
+              ),
               ...aging.buckets
                 .filter((b) => b.fromDays >= rules.receivableWarningDays)
-                .map((b) => ({
-                  label:
+                .map((b) =>
+                  moneyStat(
                     b.toDays === null
                       ? t('brief.receivables.bucketOpen', { from: b.fromDays })
                       : t('brief.receivables.bucket', { from: b.fromDays, to: b.toDays }),
-                  value: money(b.amount, aging.currency),
-                  tone:
-                    b.fromDays >= rules.receivableCriticalDays
-                      ? ('critical' as const)
-                      : ('warn' as const),
-                })),
+                    b.amount,
+                    aging.currency,
+                    intl,
+                    b.fromDays >= rules.receivableCriticalDays ? 'critical' : 'warn',
+                  ),
+                ),
             ]}
           />
           <div className={styles.card}>

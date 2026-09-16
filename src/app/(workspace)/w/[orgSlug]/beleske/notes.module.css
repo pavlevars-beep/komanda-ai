@@ -1,6 +1,10 @@
 .page { display: flex; flex-direction: column; gap: var(--space-6); max-width: 780px; }
 .head { display: flex; flex-direction: column; gap: var(--space-2); }
-.title { font-size: var(--text-xl); }
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-base); color: var(--muted); }
 
 .form { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -29,6 +33,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .body { font-size: var(--text-md); white-space: pre-wrap; overflow-wrap: anywhere; }
 .meta {
@@ -44,6 +49,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   text-align: center;
 }

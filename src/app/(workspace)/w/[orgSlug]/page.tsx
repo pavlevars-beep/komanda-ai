@@ -13,6 +13,7 @@ import { formatLocal } from '@/core/import/silence-message'
 import { resolveBriefSections } from '@/core/brief/preferences'
 import { getBriefPreference } from '@/core/brief/preferences-repository'
 import { initialiseConnectors } from '@/core/connectors'
+import { splitMoney } from '@/core/shared/money'
 import { INTL_LOCALE } from '@/i18n/config'
 import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { writeAudit } from '@/core/audit/writer'
@@ -209,31 +210,7 @@ export default async function WorkspaceHome({
           f={{
             t,
             money,
-            /*
-             * Rastavljanje ide kroz `formatToParts` ISTOG oblikovača koji pravi
-             * `money`, ne kroz sečenje gotove niske. Tako brojka na kartici ne
-             * može da se razlikuje od iste brojke drugde na ekranu, a valuta se
-             * nađe i kada u jeziku stoji ispred broja.
-             */
-            moneyParts: (amount, currency) => {
-              const parts = new Intl.NumberFormat(intl, {
-                style: 'currency',
-                currency,
-                maximumFractionDigits: 0,
-              }).formatToParts(Number(amount))
-
-              return {
-                value: parts
-                  .filter((part) => part.type !== 'currency')
-                  .map((part) => part.value)
-                  .join('')
-                  .trim(),
-                unit: parts
-                  .filter((part) => part.type === 'currency')
-                  .map((part) => part.value)
-                  .join(''),
-              }
-            },
+            moneyParts: (amount, currency) => splitMoney(amount, currency, intl),
             number: (value) => formatNumber(value),
             percent,
             // Skraćen zapis za ose i opise: pun iznos u milionima ne staje

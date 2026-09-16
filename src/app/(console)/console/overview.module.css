@@ -1,12 +1,17 @@
 .page { display: flex; flex-direction: column; gap: var(--space-6); max-width: 1000px; }
 .head { display: flex; flex-direction: column; gap: var(--space-1); }
-.title { font-size: var(--text-xl); }
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-md); color: var(--muted); }
 
 .tableWrap {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   background: var(--surface);
 }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
@@ -15,16 +20,16 @@
 .table th {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.09em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   background: var(--surface-sunk);
   white-space: nowrap;
 }
 .table tbody tr:last-child td { border-bottom: 0; }
 
-.name { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+.name { display: flex; align-items: center; gap: var(--space-2); font-weight: var(--weight-medium); }
 .muted { color: var(--muted); }
 
 .empty {
@@ -32,6 +37,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   text-align: center;
 }
@@ -48,7 +54,7 @@
 .pendingLabel {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--warn);
 }

@@ -2,7 +2,23 @@
 .head { display: flex; flex-direction: column; gap: var(--space-2); }
 .crumb { align-self: flex-start; font-size: var(--text-sm); color: var(--muted); text-decoration: none; }
 .crumb:hover { color: var(--ink); }
-.title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xl); }
+.title {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+/* Ista pločica kao na ostalim naslovima — `content-box` da ispuna okruži
+   ikonicu umesto da je pojede. */
+.title svg {
+  box-sizing: content-box;
+  padding: 7px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  flex: none;
+}
+
 .lede { font-size: var(--text-base); color: var(--muted); max-width: 68ch; }
 
 .card {
@@ -11,12 +27,13 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
 .group { display: flex; flex-direction: column; gap: var(--space-2); }
-.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-2); }
 .hint { font-size: var(--text-sm); color: var(--muted); }
-.required { font-size: var(--text-2xs); color: var(--warn); text-transform: uppercase; letter-spacing: 0.08em; }
+.required { font-size: var(--text-2xs); color: var(--warn); text-transform: uppercase; letter-spacing: var(--tracking-label); }
 .select, .file {
   padding: var(--space-2) var(--space-3);
   font: inherit; font-size: var(--text-base);
@@ -37,7 +54,7 @@
   text-align: left; padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--line); white-space: nowrap;
 }
-.table th { color: var(--muted); font-weight: 500; }
+.table th { color: var(--muted); font-weight: var(--weight-medium); }
 .table tr:last-child td { border-bottom: 0; }
 .colIndex { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--faint); }
 
@@ -54,6 +71,7 @@
 .empty {
   padding: var(--space-6); background: var(--surface);
   border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted); text-align: center;
 }
 
@@ -105,7 +123,7 @@
   border: 1px solid var(--brand);
   background: var(--brand);
   color: var(--brand-contrast);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
 .dayOff:focus-visible,

@@ -1,6 +1,22 @@
 .page { display: flex; flex-direction: column; gap: var(--space-5); }
 .head { display: flex; flex-direction: column; gap: var(--space-2); }
-.title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xl); }
+.title {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+/* Ista pločica kao na ostalim naslovima — `content-box` da ispuna okruži
+   ikonicu umesto da je pojede. */
+.title svg {
+  box-sizing: content-box;
+  padding: 7px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  flex: none;
+}
+
 .lede { font-size: var(--text-base); color: var(--muted); max-width: 72ch; }
 
 .card {
@@ -9,11 +25,12 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .tableWrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
 .table th {
-  text-align: left; font-weight: 500; color: var(--muted); font-size: var(--text-sm);
+  text-align: left; font-weight: var(--weight-medium); color: var(--muted); font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
@@ -34,6 +51,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   text-align: center;
 }

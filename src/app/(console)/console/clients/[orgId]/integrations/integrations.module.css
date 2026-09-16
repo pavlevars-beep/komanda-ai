@@ -3,13 +3,17 @@
 .headRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
 .crumb { font-size: var(--text-sm); color: var(--muted); text-decoration: none; }
 .crumb:hover { color: var(--ink); }
-.title { font-size: var(--text-xl); }
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-md); color: var(--muted); }
 
 .primaryLink {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--space-4);
   border-radius: var(--radius-md); background: var(--accent); color: var(--accent-contrast);
-  font-size: var(--text-base); font-weight: 500; text-decoration: none; white-space: nowrap;
+  font-size: var(--text-base); font-weight: var(--weight-medium); text-decoration: none; white-space: nowrap;
 }
 .primaryLink:hover { background: var(--accent-ink); }
 
@@ -18,19 +22,21 @@
   display: flex; align-items: flex-start; gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   text-decoration: none; color: inherit;
 }
 .card:hover { border-color: var(--line-strong); background: var(--surface-sunk); }
 .cardBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .cardTitle { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-.name { font-size: var(--text-md); font-weight: 500; }
+.name { font-size: var(--text-md); font-weight: var(--weight-medium); }
 .meta { font-size: var(--text-base); color: var(--muted); }
 .error { font-size: var(--text-base); color: var(--warn); }
 .when { font-size: var(--text-sm); color: var(--faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .empty {
   padding: var(--space-8); background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius-lg); color: var(--muted);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); color: var(--muted);
   display: flex; flex-direction: column; align-items: center; gap: var(--space-4); text-align: center;
 }
 
@@ -39,23 +45,25 @@
 .type {
   display: flex; flex-direction: column; gap: var(--space-2);
   padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: inherit;
 }
 .type:hover { border-color: var(--accent); }
 .typeSelected { border-color: var(--accent); background: var(--accent-soft); }
 .typeDisabled { opacity: 0.6; cursor: not-allowed; border-style: dashed; }
 .typeDisabled:hover { border-color: var(--line); }
-.typeName { font-size: var(--text-md); font-weight: 500; }
+.typeName { font-size: var(--text-md); font-weight: var(--weight-medium); }
 .typeMeta { font-size: var(--text-sm); color: var(--muted); }
 
 /* --- Forma i detalj --- */
 .form, .panel {
-  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); background: var(--surface);
   padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4);
 }
 .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .group { display: flex; flex-direction: column; gap: var(--space-2); }
-.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-2); }
 .hint { font-size: var(--text-sm); color: var(--muted); }
 .fieldError { font-size: var(--text-sm); color: var(--critical); }
 
@@ -101,7 +109,7 @@
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
 .tableCaption { caption-side: bottom; padding-top: var(--space-2); font-size: var(--text-sm); color: var(--muted); text-align: left; }
 .table th {
-  text-align: left; font-weight: 500; color: var(--muted); font-size: var(--text-sm);
+  text-align: left; font-weight: var(--weight-medium); color: var(--muted); font-size: var(--text-sm);
   padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap;
 }
 .table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); vertical-align: middle; }

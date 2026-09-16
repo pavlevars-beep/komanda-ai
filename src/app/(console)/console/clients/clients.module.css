@@ -10,18 +10,23 @@
   background: var(--accent);
   color: var(--accent-contrast);
   font-size: var(--text-base);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   text-decoration: none;
   white-space: nowrap;
 }
 .primaryLink:hover { background: var(--accent-ink); }
-.title { font-size: var(--text-xl); }
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-md); color: var(--muted); }
 
 .tableWrap {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   background: var(--surface);
 }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
@@ -35,10 +40,10 @@
 .table th {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.09em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   background: var(--surface-sunk);
   white-space: nowrap;
 }
@@ -46,14 +51,14 @@
 .table tbody tr:hover { background: var(--surface-sunk); }
 
 .company { display: flex; align-items: center; gap: var(--space-2); }
-.companyLink { font-weight: 500; color: var(--ink); text-decoration: none; }
+.companyLink { font-weight: var(--weight-medium); color: var(--ink); text-decoration: none; }
 .companyLink:hover { text-decoration: underline; }
 
 .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .muted { color: var(--muted); white-space: nowrap; }
 .sub { display: block; font-size: var(--text-sm); color: var(--faint); }
 
-.attention { color: var(--warn); font-weight: 500; }
+.attention { color: var(--warn); font-weight: var(--weight-medium); }
 
 .progress {
   display: flex;
@@ -77,6 +82,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   display: flex;
   flex-direction: column;

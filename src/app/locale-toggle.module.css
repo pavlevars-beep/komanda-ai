@@ -5,5 +5,5 @@
   background: transparent; color: var(--muted); font-size: var(--text-sm);
 }
 .option:hover { color: var(--ink); }
-.active { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 0.06)); }
+.active { background: var(--surface); color: var(--ink); font-weight: var(--weight-medium); box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 0.06)); }
 .option:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }

@@ -2,7 +2,11 @@
 .head { display: flex; flex-direction: column; gap: var(--space-1); }
 .crumb { font-size: var(--text-sm); color: var(--muted); text-decoration: none; }
 .crumb:hover { color: var(--ink); }
-.title { font-size: var(--text-xl); }
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-md); color: var(--muted); }
 
 .split { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--space-6); align-items: start; }
@@ -10,6 +14,7 @@
 .card {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   background: var(--surface);
   padding: var(--space-5);
   display: flex;
@@ -18,7 +23,7 @@
 }
 
 .group { display: flex; flex-direction: column; gap: var(--space-2); }
-.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-2); }
 .hint { font-size: var(--text-sm); color: var(--muted); }
 .fieldError { font-size: var(--text-sm); color: var(--critical); }
 
@@ -67,7 +72,7 @@
 .previewTitle {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -84,8 +89,8 @@
   flex-direction: column;
   gap: var(--space-1);
 }
-.previewOrg { font-size: var(--text-md); font-weight: 600; }
-.previewMeta { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.previewOrg { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+.previewMeta { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--muted); }
 .previewBody { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .previewItem { padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); font-size: var(--text-base); }
 .previewLink { font-size: var(--text-base); }
@@ -94,7 +99,7 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--text-base);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   border: 0;
 }
 .previewText { font-size: var(--text-base); color: var(--muted); }
@@ -113,6 +118,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .logoPreview {
   align-self: flex-start;

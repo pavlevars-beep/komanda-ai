@@ -12,7 +12,7 @@ import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadMorningBrief } from '@/core/brief/loader'
 import { businessRulesFor } from '@/core/rules/repository'
 import { DataTable } from '../data-table'
-import { DetailShell, Source, Stats, Thresholds, Unavailable } from '../detail-shell'
+import { DetailShell, moneyStat, Source, Stats, Thresholds, Unavailable } from '../detail-shell'
 import styles from '../detail.module.css'
 
 export default async function PayablesPage({
@@ -75,12 +75,14 @@ export default async function PayablesPage({
         <>
           <Stats
             stats={[
-              { label: t('brief.payables.total'), value: money(payables.total, payables.currency) },
-              {
-                label: t('brief.payables.soon'),
-                value: money(payables.dueWithin7Days, payables.currency),
-                tone: Number(payables.dueWithin7Days) > 0 ? 'warn' : undefined,
-              },
+              moneyStat(t('brief.payables.total'), payables.total, payables.currency, intl),
+              moneyStat(
+                t('brief.payables.soon'),
+                payables.dueWithin7Days,
+                payables.currency,
+                intl,
+                Number(payables.dueWithin7Days) > 0 ? 'warn' : undefined,
+              ),
               ...(overdue.length > 0
                 ? [
                     {

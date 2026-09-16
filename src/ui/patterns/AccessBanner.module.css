@@ -17,6 +17,6 @@
   flex: none;
 }
 .text { flex: 1; min-width: 200px; }
-.name { font-weight: 600; color: var(--ink); }
+.name { font-weight: var(--weight-semibold); color: var(--ink); }
 .reason { color: var(--muted); }
 .until { font-family: var(--font-mono); font-size: var(--text-sm); }

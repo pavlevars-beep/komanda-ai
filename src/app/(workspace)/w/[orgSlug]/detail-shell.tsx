@@ -3,6 +3,7 @@ import type { Route } from 'next'
 import type { Block } from '@/core/brief/loader'
 import type { MessageKey, Translator } from '@/i18n/translator'
 import { Icon, type IconName } from '@/ui/primitives/Icon'
+import { splitMoney } from '@/core/shared/money'
 import styles from './detail.module.css'
 
 /**
@@ -52,7 +53,27 @@ export function DetailShell({
 export interface Stat {
   readonly label: string
   readonly value: string
+  /** Oznaka valute uz brojku. Prazno kod pokazatelja koji nisu novac. */
+  readonly unit?: string | undefined
   readonly tone?: 'warn' | 'critical' | undefined
+}
+
+/**
+ * Novčani pokazatelj za sažetak.
+ *
+ * Postoji da sve tri stranice u dubinu rastavljaju iznos na isti način. Kada je
+ * svaka to radila sama, dovoljno je bilo da se jedna ne izmeni pa da na jednom
+ * ekranu valuta bude krupna a na drugom sitna.
+ */
+export function moneyStat(
+  label: string,
+  amount: string | number,
+  currency: string,
+  locale: string,
+  tone?: 'warn' | 'critical',
+): Stat {
+  const parts = splitMoney(amount, currency, locale)
+  return { label, value: parts.value, unit: parts.unit, ...(tone ? { tone } : {}) }
 }
 
 export function Stats({ stats }: { stats: readonly Stat[] }) {
@@ -67,6 +88,7 @@ export function Stats({ stats }: { stats: readonly Stat[] }) {
             }`.trim()}
           >
             {s.value}
+            {s.unit ? <span className={styles.statUnit}>{s.unit}</span> : null}
           </span>
         </div>
       ))}

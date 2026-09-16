@@ -1,6 +1,22 @@
 .page { display: flex; flex-direction: column; gap: var(--space-6); max-width: 780px; }
 .head { display: flex; flex-direction: column; gap: var(--space-2); }
-.title { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xl); }
+.title {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+/* Ista pločica kao na ostalim naslovima — `content-box` da ispuna okruži
+   ikonicu umesto da je pojede. */
+.title svg {
+  box-sizing: content-box;
+  padding: 7px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  flex: none;
+}
+
 .lede { font-size: var(--text-base); color: var(--muted); }
 
 .composer {
@@ -11,9 +27,10 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .group { display: flex; flex-direction: column; gap: var(--space-2); }
-.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-2); }
 .hint { font-size: var(--text-sm); color: var(--muted); }
 .input,
 .textarea {
@@ -58,16 +75,17 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .unread { border-left: 3px solid var(--brand, var(--accent)); }
 .messageHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
-.messageTitle { font-size: var(--text-md); font-weight: 500; }
+.messageTitle { font-size: var(--text-md); font-weight: var(--weight-medium); }
 .messageWhen { font-size: var(--text-sm); color: var(--faint); white-space: nowrap; }
 .messageBody { font-size: var(--text-base); color: var(--ink-2); white-space: pre-wrap; }
 .badge {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--brand-ink, var(--accent));
 }
@@ -76,6 +94,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   text-align: center;
 }

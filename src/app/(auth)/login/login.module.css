@@ -15,11 +15,11 @@
 }
 
 .brand { display: flex; flex-direction: column; gap: var(--space-1); }
-.mark { font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.02em; }
+.mark { font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .tagline {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
 }

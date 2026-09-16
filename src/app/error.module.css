@@ -2,7 +2,8 @@
 .panel {
   max-width: 460px; display: flex; flex-direction: column; gap: var(--space-3);
   padding: var(--space-6); background: var(--surface);
-  border: 1px solid var(--line); border-radius: var(--radius-lg); text-align: center;
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); text-align: center;
 }
 .title { font-size: var(--text-lg); }
 .body { font-size: var(--text-md); color: var(--muted); }

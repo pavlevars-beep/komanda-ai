@@ -1,13 +1,30 @@
 .page { display: flex; flex-direction: column; gap: var(--space-8); max-width: 860px; }
 
 .greeting { display: flex; flex-direction: column; gap: var(--space-2); }
-.hello { font-size: var(--text-xl); }
+.hello {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
 .lede { font-size: var(--text-md); color: var(--muted); }
 
 .section { display: flex; flex-direction: column; gap: var(--space-4); }
 .sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
-.sectionTitle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); }
-.sectionTitle svg { color: var(--muted); }
+.sectionTitle {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+/* Ista pločica kao na ostalim naslovima odeljaka. Da se ekrani ne raziđu u
+   sitnici koju korisnik primeti a ne ume da imenuje. */
+.sectionTitle svg {
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  flex: none;
+}
 .sectionMeta { font-size: var(--text-sm); color: var(--faint); }
 
 .list { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
@@ -15,21 +32,23 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .itemBody { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.itemTitle { font-size: var(--text-md); font-weight: 500; }
+.itemTitle { font-size: var(--text-md); font-weight: var(--weight-semibold); }
 .itemDetail { font-size: var(--text-base); color: var(--muted); }
 .itemWhen { font-size: var(--text-sm); color: var(--faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .empty {
-  padding: var(--space-6);
+  padding: var(--space-8);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   text-align: center;
   color: var(--muted);
   font-size: var(--text-base);
@@ -48,7 +67,7 @@
 .pendingLabel {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--warn);
 }
@@ -56,23 +75,57 @@
 /* --- Tabele --- */
 .tableWrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
-.tableCaption { caption-side: bottom; padding-top: var(--space-2); font-size: var(--text-sm); color: var(--faint); text-align: left; }
+.tableCaption { caption-side: bottom; padding-top: var(--space-3); font-size: var(--text-sm); color: var(--faint); text-align: left; }
+
+/*
+ * Zaglavlje je OZNAKA, ne red kao ostali.
+ *
+ * Ranije je bilo 13px sivim tekstom — dakle isti tekst kao u redovima, samo
+ * bledi. Oko je tada tražilo gde tabela počinje. Sitna verzalna oznaka se ne
+ * meša sa podatkom ni na trenutak.
+ */
 .table th {
-  text-align: left; font-weight: 500; color: var(--muted); font-size: var(--text-sm);
-  padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); white-space: nowrap;
+  text-align: left;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
 }
-.table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
-.table tr:last-child td { border-bottom: none; }
+
+/*
+ * Red je viši nego što je bio (8px → 12px po vertikali).
+ *
+ * Zbijena tabela staje na manje mesta, ali se u njoj gubi red pri prelasku
+ * pogleda sleva nadesno — a upravo to se ovde radi: ime kupca levo, iznos i
+ * broj dana desno.
+ */
+.table td { padding: var(--space-3); border-bottom: 1px solid var(--line); }
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* Isticanje reda pod pokazivačem. Tabela je nepromenljiva, ali prelaz pogleda
+   preko širokog reda nije — traka drži oko na istoj visini. */
+.table tbody tr:hover td { background: var(--surface-sunk); }
+
 /* Kolone brojeva nose tabularne cifre da se iznosi poravnaju po zarezu. */
 .numeric { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.warnCell { color: var(--warn); font-weight: 500; }
+.warnCell { color: var(--warn); font-weight: var(--weight-medium); }
 
 .unavailable {
   display: flex; flex-direction: column; gap: var(--space-1);
   padding: var(--space-4); border: 1px dashed var(--line-strong);
   border-radius: var(--radius-md); color: var(--muted); font-size: var(--text-base);
 }
-.unavailableLabel { font-size: var(--text-sm); color: var(--faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.unavailableLabel {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
 
 .panelGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
 @media (max-width: 900px) { .panelGrid { grid-template-columns: 1fr; } }
@@ -89,13 +142,24 @@
 .clock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-1);
+  padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .clockPrimary { border-color: var(--brand, var(--line-strong)); }
-.clockLabel { font-size: var(--text-sm); color: var(--muted); }
-.clockTime { font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.clockLabel {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+}
+.clockTime {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
 .clockDay { font-size: var(--text-sm); color: var(--faint); }

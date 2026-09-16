@@ -71,6 +71,35 @@ describe('dizajn tokeni', () => {
     expect(Object.fromEntries(nedostaju)).toEqual({})
   })
 
+  /*
+   * Debljina i razmak slova su se razišli tiho.
+   *
+   * Ista zamisao — sitna verzalna oznaka — bila je napisana jedanaest puta, sa
+   * razmakom slova od 0.04em do 0.12em. Svaka vrednost je pojedinačno razumna,
+   * a zajedno daju ekran na kojem ništa nije poravnato ni sa čim. Isto i sa
+   * `font-weight: 500` na tridesetak mesta: promena jedne debljine u tokenima
+   * tada ne stiže nigde.
+   */
+  it('stilovi ne upisuju debljinu i razmak slova brojem', () => {
+    const prekrsaji: string[] = []
+
+    for (const file of filesUnder(join(ROOT, 'src'), ['.module.css'])) {
+      const text = readFileSync(file, 'utf8')
+      const where = file.slice(ROOT.length + 1)
+
+      for (const m of text.matchAll(/font-weight:\s*([0-9]+)/g)) {
+        prekrsaji.push(`${where}: font-weight: ${m[1]!}`)
+      }
+      // `letter-spacing: 0` i `normal` su u redu — oni PONIŠTAVAJU nasleđeno,
+      // a ne uvode novu vrednost pored tokena.
+      for (const m of text.matchAll(/letter-spacing:\s*(-?[0-9]*\.?[0-9]+)(em|px|rem)/g)) {
+        if (Number(m[1]!) !== 0) prekrsaji.push(`${where}: letter-spacing: ${m[1]!}${m[2]!}`)
+      }
+    }
+
+    expect(prekrsaji).toEqual([])
+  })
+
   it('skala razmaka nema rupu', () => {
     // Rupa u nizu je poziv da neko napiše sledeći broj koji ne postoji.
     for (const n of [1, 2, 3, 4, 5, 6, 7, 8]) {

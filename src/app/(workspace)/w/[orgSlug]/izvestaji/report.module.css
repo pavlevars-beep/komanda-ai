@@ -8,6 +8,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .docHead { display: flex; flex-direction: column; gap: var(--space-1); border-bottom: 1px solid var(--line); padding-bottom: var(--space-4); }
 .docTitle { font-size: var(--text-lg); }
@@ -17,7 +18,7 @@
 .sectionTitle {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
 }

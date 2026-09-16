@@ -1,6 +1,7 @@
 .panel {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   background: var(--surface);
   padding: var(--space-5);
   display: flex;
@@ -17,7 +18,7 @@
 .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 
 .group { display: flex; flex-direction: column; gap: var(--space-2); }
-.label { font-size: var(--text-sm); font-weight: 500; color: var(--ink-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-2); }
 .hint { font-size: var(--text-sm); color: var(--muted); }
 .fieldError { font-size: var(--text-sm); color: var(--critical); }
 
