@@ -1,0 +1,138 @@
+name: Lozinka naloga
+
+# Postavlja lozinku postojećem nalogu, ručno.
+#
+# Postoji zbog konkretne rupe: aplikacija nema reset lozinke, Supabase-ov mejl
+# vodi na Site URL koji je bio localhost, a nalog koji je nešto uradio ne može
+# da se obriše jer ga drže kolone koje beleže KO je šta odobrio.
+#
+# Zašto ovako, a ne SQL-om u dashboardu: lozinka se ovde postavlja kroz zvanični
+# admin API, isti put kojim bi je postavila i sama aplikacija. Direktan upis u
+# `auth.users` radi dok Supabase ne promeni način čuvanja, i tada tiho pravi
+# nalog na koji se više ne može prijaviti.
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Mejl naloga kome se postavlja lozinka'
+        required: true
+        type: string
+
+# Nova lozinka NE ide kao ulaz ovog posla.
+#
+# Ulazi ručnog pokretanja ostaju vidljivi u istoriji pokretanja na GitHub-u,
+# svakom ko vidi repozitorijum. Zato lozinka dolazi iz tajne NOVA_LOZINKA,
+# koju obrišeš čim se prijaviš.
+
+concurrency:
+  group: lozinka-naloga
+  cancel-in-progress: false
+
+jobs:
+  postavi:
+    name: Postavi lozinku
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Proveri da su tajne postavljene
+        env:
+          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PASSWORD: ${{ secrets.NOVA_LOZINKA }}
+        run: |
+          nedostaje=0
+
+          if [ -z "$REF" ]; then
+            echo "::error::SUPABASE_PROJECT_REF nije postavljen."
+            nedostaje=1
+          fi
+
+          if [ -z "$KEY" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY nije postavljen."
+            echo "::error::Supabase -> Settings -> API -> service_role (tajni ključ)."
+            nedostaje=1
+          fi
+
+          if [ -z "$PASSWORD" ]; then
+            echo "::error::NOVA_LOZINKA nije postavljena."
+            echo "::error::Settings -> Secrets and variables -> Actions -> New repository secret."
+            nedostaje=1
+          fi
+
+          if [ "$nedostaje" = "1" ]; then
+            exit 1
+          fi
+
+          if [ "${#PASSWORD}" -lt 8 ]; then
+            echo "::error::Lozinka je kraća od osam znakova."
+            exit 1
+          fi
+
+          echo "Sve tri tajne su postavljene."
+
+      - name: Nađi nalog po mejlu
+        id: nalog
+        env:
+          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EMAIL: ${{ inputs.email }}
+        run: |
+          # Ista zamka kao pri isporuci migracija: polje za unos tajne lako
+          # ostavi novi red na kraju zalepljene vrednosti.
+          REF="$(printf '%s' "$REF" | tr -d '[:space:]')"
+          echo "::add-mask::$REF"
+
+          if ! odgovor="$(curl -sS --fail-with-body \
+            "https://$REF.supabase.co/auth/v1/admin/users?per_page=1000" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY")"; then
+            echo "::error::Poziv ka Supabase-u nije uspeo."
+            echo "::error::Ako je odgovor 401, service_role ključ je pogrešan ili opozvan."
+            exit 1
+          fi
+
+          # Poređenje ide bez obzira na velika i mala slova: Supabase mejlove
+          # čuva malim slovima, a čovek ih kuca kako mu dođe.
+          id="$(printf '%s' "$odgovor" | jq -r --arg e "$EMAIL" \
+            '.users[] | select((.email // "" | ascii_downcase) == ($e | ascii_downcase)) | .id' \
+            | head -1)"
+
+          if [ -z "$id" ] || [ "$id" = "null" ]; then
+            echo "::error::Nalog sa mejlom $EMAIL ne postoji u ovom projektu."
+            echo "::error::Postojeći mejlovi: $(printf '%s' "$odgovor" | jq -r '.users[].email' | paste -sd', ')"
+            exit 1
+          fi
+
+          echo "::add-mask::$id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "Nalog je pronađen."
+
+      - name: Postavi lozinku
+        env:
+          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PASSWORD: ${{ secrets.NOVA_LOZINKA }}
+          ID: ${{ steps.nalog.outputs.id }}
+        run: |
+          REF="$(printf '%s' "$REF" | tr -d '[:space:]')"
+          echo "::add-mask::$REF"
+
+          # Telo se sastavlja kroz jq, ne navodnicima u shell-u: lozinka sme da
+          # sadrži navodnik, obrnutu kosu crtu i dolar, a ručno sklopljen JSON
+          # bi na svakom od njih pukao ili, gore, promenio vrednost.
+          #
+          # `email_confirm` je namerno tu: nepotvrđen mejl odbija prijavu, pa bi
+          # se i posle uspešne promene lozinke dobijalo „pogrešni podaci".
+          telo="$(jq -n --arg p "$PASSWORD" '{password: $p, email_confirm: true}')"
+
+          if ! curl -sS --fail-with-body -X PUT \
+            "https://$REF.supabase.co/auth/v1/admin/users/$ID" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" \
+            -H "Content-Type: application/json" \
+            -d "$telo" > /dev/null; then
+            echo "::error::Postavljanje lozinke nije uspelo."
+            exit 1
+          fi
+
+          echo "Lozinka je postavljena."
+          echo "Prijavi se, pa OBRIŠI tajnu NOVA_LOZINKA."
