@@ -38,6 +38,7 @@ jobs:
       - name: Proveri da su tajne postavljene
         env:
           REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PASSWORD: ${{ secrets.NOVA_LOZINKA }}
         run: |
@@ -48,9 +49,12 @@ jobs:
             nedostaje=1
           fi
 
-          if [ -z "$KEY" ]; then
-            echo "::error::SUPABASE_SERVICE_ROLE_KEY nije postavljen."
-            echo "::error::Supabase -> Settings -> API -> service_role (tajni ključ)."
+          # Dovoljan je BILO KOJI od dva puta do ključa: pristupni token, kojim
+          # se `service_role` izvlači u toku posla, ili sam `service_role` kao
+          # tajna. Traženje oba bi značilo da se unosi tajna koja već postoji.
+          if [ -z "$TOKEN" ] && [ -z "$KEY" ]; then
+            echo "::error::Nema ni SUPABASE_ACCESS_TOKEN ni SUPABASE_SERVICE_ROLE_KEY."
+            echo "::error::Dovoljan je jedan. Token: https://supabase.com/dashboard/account/tokens"
             nedostaje=1
           fi
 
@@ -69,20 +73,59 @@ jobs:
             exit 1
           fi
 
-          echo "Sve tri tajne su postavljene."
+          echo "Tajne su na mestu."
+
+      # `service_role` se ne mora unositi kao tajna ako pristupni token već
+      # postoji — isti onaj kojim se isporučuju migracije. Management API vraća
+      # ključeve projekta, pa se jedna tajna manje drži u repozitorijumu.
+      #
+      # Oblik tog odgovora se kroz verzije menjao, zato se ključ traži na dva
+      # načina i, ako nijedan ne uspe, poruka kaže tačno šta da se unese ručno.
+      - name: Pribavi service_role ključ
+        id: kljuc
+        env:
+          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          POSTOJECI: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          REF="$(printf '%s' "$REF" | tr -d '[:space:]')"
+          echo "::add-mask::$REF"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$POSTOJECI" ]; then
+            echo "Koristi se SUPABASE_SERVICE_ROLE_KEY iz tajni."
+            echo "kljuc=$POSTOJECI" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          odgovor="$(curl -sS \
+            "https://api.supabase.com/v1/projects/$REF/api-keys?reveal=true" \
+            -H "Authorization: Bearer $TOKEN" || true)"
+
+          kljuc="$(printf '%s' "$odgovor" \
+            | jq -r 'if type == "array" then .[] else (.[]? // empty) end
+                     | select(.name == "service_role") | .api_key // .apiKey' 2>/dev/null \
+            | head -1)"
+
+          if [ -z "$kljuc" ] || [ "$kljuc" = "null" ]; then
+            echo "::error::Nisam uspeo da izvučem service_role ključ pristupnim tokenom."
+            echo "::error::Ako gore stoji 401, SUPABASE_ACCESS_TOKEN je istekao — nov: https://supabase.com/dashboard/account/tokens"
+            echo "::error::Zaobilazak: dodaj tajnu SUPABASE_SERVICE_ROLE_KEY (Supabase -> Settings -> API -> service_role) i pokreni ponovo."
+            exit 1
+          fi
+
+          echo "::add-mask::$kljuc"
+          echo "kljuc=$kljuc" >> "$GITHUB_OUTPUT"
+          echo "service_role ključ je pribavljen pristupnim tokenom."
 
       - name: Nađi nalog po mejlu
         id: nalog
         env:
-          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REF: ${{ steps.kljuc.outputs.ref }}
+          KEY: ${{ steps.kljuc.outputs.kljuc }}
           EMAIL: ${{ inputs.email }}
         run: |
-          # Ista zamka kao pri isporuci migracija: polje za unos tajne lako
-          # ostavi novi red na kraju zalepljene vrednosti.
-          REF="$(printf '%s' "$REF" | tr -d '[:space:]')"
-          echo "::add-mask::$REF"
-
+          # REF i ključ stižu iz prethodnog koraka, već očišćeni i maskirani.
           if ! odgovor="$(curl -sS --fail-with-body \
             "https://$REF.supabase.co/auth/v1/admin/users?per_page=1000" \
             -H "apikey: $KEY" -H "Authorization: Bearer $KEY")"; then
@@ -109,14 +152,11 @@ jobs:
 
       - name: Postavi lozinku
         env:
-          REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REF: ${{ steps.kljuc.outputs.ref }}
+          KEY: ${{ steps.kljuc.outputs.kljuc }}
           PASSWORD: ${{ secrets.NOVA_LOZINKA }}
           ID: ${{ steps.nalog.outputs.id }}
         run: |
-          REF="$(printf '%s' "$REF" | tr -d '[:space:]')"
-          echo "::add-mask::$REF"
-
           # Telo se sastavlja kroz jq, ne navodnicima u shell-u: lozinka sme da
           # sadrži navodnik, obrnutu kosu crtu i dolar, a ručno sklopljen JSON
           # bi na svakom od njih pukao ili, gore, promenio vrednost.
