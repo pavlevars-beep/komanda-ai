@@ -15,6 +15,7 @@
  */
 
 import { writeFileSync } from 'node:fs'
+import polygonClipping from 'polygon-clipping'
 
 const SOURCE =
   'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson'
@@ -33,9 +34,21 @@ const BACKGROUND = [
   'Bulgaria',
   'North Macedonia',
   'Albania',
-  'Kosovo',
   'Slovenia',
 ]
+
+/**
+ * Oblici koji se SPAJAJU u jednu zemlju.
+ *
+ * Natural Earth vodi Kosovo kao zaseban oblik. Za kartu koju gleda srpska firma
+ * to nije tačno: Kosovo i Metohija je autonomna pokrajina Srbije, i tako stoji u
+ * Ustavu. Zato se poligoni spajaju u JEDAN — ne samo oboje istom bojom, jer bi
+ * se unutrašnja granica i dalje videla kao linija razdvajanja.
+ *
+ * Unutrašnja linija se ne crta ni za Vojvodinu, pa se ne crta ni ovde: Srbija je
+ * na ovoj karti jedan obris.
+ */
+const MERGE_INTO = { Serbia: ['Kosovo'] }
 
 /** Okvir prikaza. Bira se rukom, jer okvir izveden iz podataka uvek zaseče. */
 const BOUNDS = { minLon: 15.4, maxLon: 23.4, minLat: 41.4, maxLat: 46.6 }
@@ -141,11 +154,35 @@ for (const feature of geo.features) {
   if (name) byName.set(name, feature.geometry)
 }
 
+/** Geometrija kao niz poligona, u obliku koji traži spajanje. */
+function toPolygons(geometry) {
+  if (geometry.type === 'Polygon') return [geometry.coordinates]
+  if (geometry.type === 'MultiPolygon') return geometry.coordinates
+  throw new Error(`Nepoznat tip geometrije: ${geometry.type}`)
+}
+
+function geometryFor(name) {
+  const base = byName.get(name)
+  if (!base) throw new Error(`Natural Earth nema zemlju: ${name}`)
+
+  const merge = MERGE_INTO[name]
+  if (!merge) return base
+
+  const parts = merge.map((other) => {
+    const g = byName.get(other)
+    if (!g) throw new Error(`Natural Earth nema oblik za spajanje: ${other}`)
+    return toPolygons(g)
+  })
+
+  // Spajanje pravi JEDAN obris bez unutrašnje granice. Da su samo obojeni isto,
+  // linija između njih bi ostala — a ona je upravo ono što ne sme da stoji.
+  const united = polygonClipping.union(toPolygons(base), ...parts)
+  return { type: 'MultiPolygon', coordinates: united }
+}
+
 function collect(names, tolerance, minArea) {
   return names.map((name) => {
-    const geometry = byName.get(name)
-    if (!geometry) throw new Error(`Natural Earth nema zemlju: ${name}`)
-    const d = pathFor(geometry, tolerance, minArea)
+    const d = pathFor(geometryFor(name), tolerance, minArea)
     if (d === '') throw new Error(`Prazna putanja za: ${name}`)
     return { name, d }
   })
