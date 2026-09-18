@@ -107,6 +107,17 @@ export default async function WorkspaceLayout({
   const nav: NavItem[] = [
     { href: `/w/${org.organizationSlug}` as Route, label: t('nav.home'), icon: 'home' },
     { href: `/w/${org.organizationSlug}/pitanja` as Route, label: t('nav.ask'), icon: 'ask' },
+    /*
+     * Mreža stoji ODMAH iza sagovornika, ne među stranicama u dubinu.
+     *
+     * Potraživanja i zalihe se otvaraju kada nešto zaškripi. Karta mreže je
+     * ekran koji vlasnik gleda sam od sebe — zato je na dohvat, a ne na dnu.
+     */
+    {
+      href: `/w/${org.organizationSlug}/maloprodaja` as Route,
+      label: t('retail.title'),
+      icon: 'building',
+    },
     {
       href: `/w/${org.organizationSlug}/poruke` as Route,
       label: t('messages.title'),

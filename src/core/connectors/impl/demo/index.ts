@@ -7,6 +7,7 @@ import type {
   HealthResult,
 } from '../../types'
 import { ok, err, domainError, type Result } from '../../../shared/result'
+import { demoNetwork } from '../../../retail/demo-network'
 import type { Provenance } from '../../../shared/provenance'
 import {
   dailySales,
@@ -280,6 +281,41 @@ const CAPABILITIES = [
       ),
     }),
   },
+  {
+    key: 'get_retail_network',
+    mode: 'read',
+    requiredPermission: 'view_sales',
+    // Promet je prepisan, marža i poređenje sa prethodnim periodom su izvedeni.
+    classification: 'calculation',
+    freshnessSlaSeconds: 3600,
+    inputSchema: z.object({}),
+    outputSchema: z.object({
+      asOf: z.string(),
+      locations: z.array(
+        z.object({
+          id: z.string(),
+          city: z.string(),
+          label: z.string(),
+          country: z.string(),
+          longitude: z.number(),
+          latitude: z.number(),
+          currency: z.string(),
+          monthToDate: z.string(),
+          previousPeriod: z.string(),
+          marginPercent: z.number(),
+          transactions: z.number().int(),
+          topProducts: z.array(
+            z.object({
+              name: z.string(),
+              quantity: z.number().int(),
+              revenue: z.string(),
+              unit: z.string(),
+            }),
+          ),
+        }),
+      ),
+    }),
+  },
 ] as const satisfies readonly CapabilityDescriptor[]
 
 function datasetOf(ctx: ConnectorContext): DemoDataset {
@@ -422,6 +458,17 @@ export const demoConnector: Connector = {
             data,
             provenance: provenanceFor(capabilityKey, now, 3600),
             rowCount: data.buckets.length,
+          }),
+        )
+      }
+
+      case 'get_retail_network': {
+        const locations = demoNetwork(ctx.organizationId, now)
+        return Promise.resolve(
+          ok({
+            data: { asOf: now.toISOString(), locations },
+            provenance: provenanceFor(capabilityKey, now, 3600),
+            rowCount: locations.length,
           }),
         )
       }

@@ -540,6 +540,46 @@ export const sr = {
   'audit.limited': 'Prikazano je poslednjih {count} zapisa.',
 
   // --- Zdravlje integracija ---
+  'retail.title': 'Prodajna mreža',
+  'retail.unavailable': 'Podaci o prodajnim mestima još ne stižu iz sistema.',
+  'retail.totalIn': 'Promet u {currency}',
+  /*
+   * Srpski ima TRI oblika množine, ne dva.
+   *
+   * „1 objekata" je greška koju svaki govornik primeti odmah, a engleski
+   * jednina/množina je ne hvata. Zato tri ključa, koje bira `Intl.PluralRules`.
+   */
+  'retail.locationCount.one': '{count} objekat',
+  'retail.locationCount.few': '{count} objekta',
+  'retail.locationCount.other': '{count} objekata',
+  'retail.averageMargin': 'Prosečna marža',
+  'retail.weightedByTurnover': 'Ponderisano prometom',
+  'retail.monthToDate': 'Od početka meseca',
+  'retail.previousPeriod': 'Isti period prošlog meseca',
+  'retail.margin': 'Marža',
+  'retail.receipts': 'Računa',
+  'retail.topProducts': 'Najprodavanije',
+  'retail.seeMore': 'Vidi više',
+  'retail.aboveAverage': 'iznad proseka',
+  'retail.belowAverage': 'ispod proseka',
+  'retail.onAverage': 'na proseku',
+  'retail.legend.above': 'Marža iznad proseka mreže',
+  'retail.legend.average': 'Na proseku',
+  'retail.legend.below': 'Marža ispod proseka',
+  'retail.legend.size': 'Veličina kruga = broj računa ovog meseca',
+  'retail.backToNetwork': 'Nazad na mrežu',
+  'retail.noProducts': 'Nema prodaje u ovom periodu.',
+  'retail.col.product': 'Artikal',
+  'retail.col.quantity': 'Količina',
+  'retail.col.revenue': 'Promet',
+  'retail.col.share': 'Udeo',
+  'retail.verdict.below':
+    'Marža ovog objekta je {margin}, a prosek mreže {average}. Svaki dinar prometa ovde donosi manje nego drugde.',
+  'retail.verdict.above':
+    'Marža ovog objekta je {margin}, a prosek mreže {average}. Svaki dinar prometa ovde donosi više nego drugde.',
+  'retail.verdict.on': 'Marža ovog objekta je na proseku mreže, {average}.',
+  'retail.askAbout': 'Zašto je marža u objektu {location} takva kakva jeste?',
+  'retail.askAction': 'Pitaj o ovom objektu',
   'health.title': 'Zdravlje integracija',
   'health.lede':
     'Poslednja provera po integraciji. Integracija koja ne odgovara ne obara ekran klijenta — blok se prikaže sa razlogom.',

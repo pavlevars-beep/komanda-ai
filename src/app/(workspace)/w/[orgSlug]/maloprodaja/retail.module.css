@@ -1,0 +1,270 @@
+/* --- Zbir po valuti --- */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryLabel {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+}
+
+.summaryValue {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryMeta {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/*
+ * Karta levo, kartice desno.
+ *
+ * Kartice NISU ispod karte: vlasnik pogleda krug, pa odmah pored pročita šta se
+ * u tom mestu prodaje, bez skrolovanja. Ispod karte bi to bila dva odvojena
+ * ekrana koja se ne gledaju istovremeno.
+ */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.mapPane {
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+/*
+ * Kartice se kreću zajedno sa stranicom, ali njihova kolona ima svoju visinu:
+ * karta je visoka, pa bi bez ograničenja spisak od osam kartica odvukao
+ * stranicu daleko ispod karte.
+ */
+.cardsPane {
+  min-width: 0;
+  max-height: 1000px;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+@media (max-width: 1100px) {
+  .split { grid-template-columns: 1fr; }
+  .cardsPane { max-height: none; overflow: visible; }
+}
+
+/* --- Kartica mesta --- */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cardName {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+/*
+ * Oznaka marže: tačka u boji, procenat, pa REČ.
+ *
+ * Boja sama nikad ne nosi značenje — reč „ispod proseka" radi i daltonisti i u
+ * crno-beloj štampi izveštaja, a i onome ko prvi put vidi ovaj ekran.
+ */
+.marginTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.marginDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--margin-mid);
+}
+
+.marginWord {
+  color: var(--faint);
+  font-size: var(--text-2xs);
+}
+
+.step3 .marginDot { background: var(--margin-up-3); }
+.step2 .marginDot { background: var(--margin-up-2); }
+.step1 .marginDot { background: var(--margin-up-1); }
+.step0 .marginDot { background: var(--margin-mid); }
+.step-1 .marginDot { background: var(--margin-down-1); }
+.step-2 .marginDot { background: var(--margin-down-2); }
+.step-3 .marginDot { background: var(--margin-down-3); }
+
+.cardFigures {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cardLabel {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+  width: 100%;
+}
+
+.cardValue {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+.up { color: var(--ok); }
+.down { color: var(--critical); }
+
+.cardMeta {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.products {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+}
+
+.productList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Naziv artikla ume da bude dugačak; seče se on, a ne količina. */
+.productName {
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.productQty {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex: none;
+}
+
+.seeMore {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--brand-ink, var(--accent));
+  text-decoration: none;
+}
+.seeMore:hover { text-decoration: underline; }
+
+/* --- Stranica jednog mesta --- */
+.backToMap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+.backToMap:hover { color: var(--ink); }
+/* Strelica gleda nazad; ista ikonica, okrenuta, umesto druge putanje. */
+.backToMap svg { transform: rotate(180deg); }
+
+.askLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--brand-soft, var(--accent-soft));
+  color: var(--brand-ink, var(--accent-ink));
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.askLink:hover { text-decoration: underline; }

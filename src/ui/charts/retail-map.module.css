@@ -1,0 +1,114 @@
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  min-width: 0;
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Susedi: dovoljno da se prepozna oblik, ne toliko da se gledaju. */
+.quietLand path {
+  fill: var(--map-land-quiet);
+  stroke: var(--map-border-quiet);
+  stroke-width: 1;
+}
+
+.land path {
+  fill: var(--map-land);
+  stroke: var(--map-border);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.leaders line {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+/*
+ * Prsten u boji podloge oko svakog kruga.
+ *
+ * Dva objekta u Beogradu se na ovoj razmeri preklapaju. Bez prstena se spoje u
+ * jednu mrlju i broj mesta na karti prestane da bude tačan.
+ */
+.bubble {
+  stroke: var(--map-land);
+  stroke-width: 2;
+  fill-opacity: 0.88;
+}
+
+.step3 { fill: var(--margin-up-3); }
+.step2 { fill: var(--margin-up-2); }
+.step1 { fill: var(--margin-up-1); }
+.step0 { fill: var(--margin-mid); }
+.step-1 { fill: var(--margin-down-1); }
+.step-2 { fill: var(--margin-down-2); }
+.step-3 { fill: var(--margin-down-3); }
+
+/*
+ * Tekst nosi tekstualne tokene, NIKAD boju kruga.
+ *
+ * Obojen natpis pored obojenog kruga udvaja isto značenje i oduzima kontrast —
+ * a iznos mora da se čita i kada je krug bledo siv.
+ */
+.city {
+  font-size: 20px;
+  font-weight: var(--weight-semibold);
+  fill: var(--ink);
+}
+
+.amount {
+  font-size: 18px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.labels text {
+  /* Natpis preko kruga ostaje čitljiv: obris u boji podloge, ispod slova. */
+  paint-order: stroke;
+  stroke: var(--map-land);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: none;
+}
+.dot.step3 { background: var(--margin-up-3); }
+.dot.step0 { background: var(--margin-mid); }
+.dot.step-3 { background: var(--margin-down-3); }
+
+/* Značenje veličine se piše rečima: legenda sa tri kruga zauzme pola širine
+   a kaže manje od jedne rečenice. */
+.legendSize {
+  margin-left: auto;
+  color: var(--faint);
+}
+
+@media (max-width: 900px) {
+  .legendSize { margin-left: 0; }
+}
