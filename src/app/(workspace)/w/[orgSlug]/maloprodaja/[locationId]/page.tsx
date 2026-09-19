@@ -7,14 +7,17 @@ import { currentUser } from '@/server/auth/current-user'
 import { requestId as makeRequestId } from '@/server/http/request-id'
 import { resolveOrgContext } from '@/core/tenancy/workspace-repository'
 import { requestLocale } from '@/server/http/locale'
-import { createTranslator } from '@/i18n/translator'
+import { createTranslator, type MessageKey } from '@/i18n/translator'
 import { INTL_LOCALE } from '@/i18n/config'
 import { initialiseConnectors } from '@/core/connectors'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadRetailNetwork } from '@/core/retail/loader'
 import { averageMargin, changePercent, marginStep } from '@/core/retail/network'
+import { seasonalComparison } from '@/core/retail/analytics'
+import { businessRulesFor } from '@/core/rules/repository'
+import { SeasonChart } from '@/ui/charts/season-chart'
+import { LocationAnalysis } from './analysis'
 import { Icon } from '@/ui/primitives/Icon'
-import { DataTable } from '../../data-table'
 import { DetailShell, Source, Stats, moneyStat } from '../../detail-shell'
 import detail from '../../detail.module.css'
 import styles from '../retail.module.css'
@@ -51,7 +54,12 @@ export default async function LocationPage({
 
   initialiseConnectors()
   const source = await primaryIntegration(db, org.organizationId)
-  const network = await loadRetailNetwork(db, org, source.integrationId, source.connectorType)
+  const [network, rules] = await Promise.all([
+    loadRetailNetwork(db, org, source.integrationId, source.connectorType),
+    // Pragovi za mrtav novac i nestašicu dolaze iz pravila KOJE JE FIRMA
+    // POSTAVILA, ne iz koda: šta je „sporo" zna vlasnik, ne program.
+    businessRulesFor(db, org.organizationId),
+  ])
 
   const locations = network.data?.locations ?? []
   const location = locations.find((l) => l.id === locationId)
@@ -70,14 +78,14 @@ export default async function LocationPage({
       Number(value),
     )
   const number = (value: number) => new Intl.NumberFormat(intl).format(value)
+  /* Množina se ne pogađa nego pita — srpski ima tri oblika, engleski dva. */
+  const plural = new Intl.PluralRules(intl)
   const percent = (value: number) =>
     new Intl.NumberFormat(intl, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
 
   const average = averageMargin(locations)
   const step = marginStep(location.marginPercent, average)
   const change = changePercent(location.monthToDate, location.previousPeriod)
-
-  const totalProductRevenue = location.topProducts.reduce((sum, p) => sum + Number(p.revenue), 0)
 
   /* Pitanje se sastavlja ovde, sa imenom objekta — sagovornik ga dobija gotovog. */
   const question = t('retail.askAbout', { location: location.label })
@@ -134,39 +142,82 @@ export default async function LocationPage({
 
       <section className={detail.card}>
         <h2 className={detail.title} style={{ fontSize: 'var(--text-md)' }}>
-          {t('retail.topProducts')}
+          {t('retail.history')}
         </h2>
-        <DataTable
-          rows={location.topProducts}
-          emptyLabel={t('retail.noProducts')}
-          unavailableLabel={t('brief.unavailable')}
-          columns={[
-            { key: 'name', header: t('retail.col.product'), render: (p) => p.name },
-            {
-              key: 'qty',
-              header: t('retail.col.quantity'),
-              numeric: true,
-              render: (p) => `${number(p.quantity)} ${p.unit}`,
-            },
-            {
-              key: 'revenue',
-              header: t('retail.col.revenue'),
-              numeric: true,
-              render: (p) => money(p.revenue, location.currency),
-            },
-            {
-              key: 'share',
-              header: t('retail.col.share'),
-              numeric: true,
-              render: (p) =>
-                totalProductRevenue > 0
-                  ? percent((Number(p.revenue) / totalProductRevenue) * 100)
-                  : '—',
-            },
-          ]}
+        <SeasonChart
+          points={seasonalComparison(location.history)}
+          currency={location.currency}
+          money={money}
+          monthLabel={(month) =>
+            new Intl.DateTimeFormat(intl, { month: 'short', year: '2-digit' }).format(
+              new Date(`${month}-01T00:00:00Z`),
+            )
+          }
+          labels={{
+            title: t('retail.history'),
+            thisYear: t('retail.history.thisYear'),
+            lastYear: t('retail.history.lastYear'),
+            tableLabel: t('retail.history.table'),
+            monthHeader: t('retail.col.month'),
+            valueHeader: t('retail.col.revenue'),
+          }}
         />
-        <Source block={network} t={t} formatDate={formatDate} />
       </section>
+
+      <LocationAnalysis
+        location={location}
+        rules={rules}
+        orgSlug={org.organizationSlug}
+        money={money}
+        number={number}
+        percent={percent}
+        itemsPhrase={(count) =>
+          t(`retail.items.${plural.select(count)}` as MessageKey, { count })
+        }
+        question={(topic) =>
+          t(`retail.ask.${topic}` as MessageKey, { location: location.label })
+        }
+        labels={{
+          deadTitle: t('retail.dead.title'),
+          deadEmpty: t('retail.dead.empty'),
+          deadFinding: t('retail.dead.finding', {
+            value: '{value}',
+            days: '{days}',
+            share: '{share}',
+            items: '{items}',
+          }),
+          shortageTitle: t('retail.shortage.title'),
+          shortageEmpty: t('retail.shortage.empty'),
+          shortageFinding: t('retail.shortage.finding', { items: '{items}' }),
+          volumeTitle: t('retail.volume.title'),
+          volumeEmpty: t('retail.volume.empty'),
+          volumeFinding: t('retail.volume.finding', {
+            items: '{items}',
+            average: '{average}',
+          }),
+          abcTitle: t('retail.abc.title'),
+          abcFinding: t('retail.abc.finding', {
+            count: '{count}',
+            total: '{total}',
+            share: '{share}',
+          }),
+          colProduct: t('retail.col.product'),
+          colStock: t('retail.col.stock'),
+          colValue: t('retail.col.value'),
+          colLastSold: t('retail.col.lastSold'),
+          colCover: t('retail.col.cover'),
+          colLead: t('retail.col.lead'),
+          colRevenue: t('retail.col.revenue'),
+          colMargin: t('retail.margin'),
+          colShare: t('retail.col.share'),
+          days: t('retail.days'),
+          ask: t('retail.analysisAsk'),
+        }}
+      />
+
+      <div className={detail.card}>
+        <Source block={network} t={t} formatDate={formatDate} />
+      </div>
 
       <Link
         href={`/w/${org.organizationSlug}/pitanja?q=${encodeURIComponent(question)}` as Route}

@@ -30,15 +30,58 @@ export const locationSchema = z.object({
 
 export type RetailLocation = z.infer<typeof locationSchema>
 
-export const productSaleSchema = z.object({
+/**
+ * Jedan artikal u jednom objektu — prodaja I zaliha u istom redu.
+ *
+ * Namerno JEDAN red, ne dve liste.
+ *
+ * Sva pitanja koja vlasnika zaista zanimaju spajaju te dve strane: „šta mi
+ * stoji a ne prodaje se", „šta se mnogo prodaje a malo zarađuje", „šta će mi
+ * nestati pre nego što stigne nova isporuka". Sa odvojenim listama svako od
+ * tih pitanja traži spajanje po nazivu artikla — a nazivi se iz sistema u
+ * sistem pišu različito.
+ */
+export const productLineSchema = z.object({
+  sku: z.string().min(1),
   name: z.string().min(1),
-  quantity: z.number().int().min(0),
+  unit: z.string().min(1),
+
+  /* --- Prodaja u tekućem mesecu --- */
+  soldQuantity: z.number().int().min(0),
   /** Prihod od tog artikla, u valuti mesta. */
   revenue: z.string(),
-  unit: z.string().min(1),
+  /** Marža na tom artiklu, u procentima. */
+  marginPercent: z.number(),
+
+  /* --- Zaliha --- */
+  onHand: z.number().min(0),
+  /** Vrednost zalihe po nabavnoj ceni, u valuti mesta. */
+  stockValue: z.string(),
+  /** Prosečna dnevna prodaja — iz nje se računa pokrivenost. */
+  averageDailySales: z.number().min(0),
+  /** Rok isporuke u danima. Nula kada izvoz ne nosi taj podatak. */
+  leadTimeDays: z.number().int().min(0),
+  /**
+   * Koliko dana je prošlo od poslednje prodaje.
+   *
+   * Ovo je polje zbog kojeg se vidi mrtav novac. Artikal sa zalihom i bez
+   * prodaje devedeset dana nije „malo sporiji" — to je novac koji stoji na
+   * polici i ne radi ništa.
+   */
+  lastSoldDaysAgo: z.number().int().min(0),
 })
 
-export type ProductSale = z.infer<typeof productSaleSchema>
+export type ProductLine = z.infer<typeof productLineSchema>
+
+/** Jedan mesec u istoriji objekta. */
+export const monthlyPointSchema = z.object({
+  /** Oblik YYYY-MM. */
+  month: z.string().regex(/^\d{4}-\d{2}$/),
+  total: z.string(),
+  marginPercent: z.number(),
+})
+
+export type MonthlyPoint = z.infer<typeof monthlyPointSchema>
 
 export const locationPerformanceSchema = locationSchema.extend({
   /** Promet od početka meseca. */
@@ -49,8 +92,16 @@ export const locationPerformanceSchema = locationSchema.extend({
   marginPercent: z.number(),
   /** Broj izdatih računa od početka meseca. */
   transactions: z.number().int().min(0),
-  /** Najprodavaniji artikli, najviše pet. */
-  topProducts: z.array(productSaleSchema).max(5),
+  /**
+   * CEO asortiman objekta, ne samo najprodavanije.
+   *
+   * Najprodavanijih pet se izvodi sortiranjem. Obrnuto ne ide: iz pet redova
+   * se ne može videti ni mrtav novac ni ABC raspodela, a to su upravo nalazi
+   * zbog kojih se ovaj ekran otvara.
+   */
+  products: z.array(productLineSchema),
+  /** Mesečni tok, najstariji mesec prvi. */
+  history: z.array(monthlyPointSchema),
 })
 
 export type LocationPerformance = z.infer<typeof locationPerformanceSchema>

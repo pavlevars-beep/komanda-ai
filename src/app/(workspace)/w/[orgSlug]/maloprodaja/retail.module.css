@@ -268,3 +268,124 @@
   text-decoration: none;
 }
 .askLink:hover { text-decoration: underline; }
+
+/* --- Nalazi nad asortimanom --- */
+.analyses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: var(--space-4);
+}
+@media (max-width: 900px) {
+  .analyses { grid-template-columns: 1fr; }
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.analysisTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.analysisIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: var(--muted);
+}
+
+/*
+ * Nalaz u jednoj rečenici, iznad tabele.
+ *
+ * Vlasnik koji ima dva minuta pročita samo nju. Zato je krupnija od tabele
+ * ispod, a ne sitna napomena — ona nosi zaključak, tabela samo dokaz.
+ */
+.finding {
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.findingWarn { color: var(--warn); }
+.findingCritical { color: var(--critical); }
+
+.analysisTable { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.analysisTable th {
+  text-align: left;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--faint);
+  padding: var(--space-2) var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.analysisTable td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+.analysisTable tbody tr:last-child td { border-bottom: none; }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Broj koji je razlog nalaza. Uz boju uvek ide i sam broj, pa boja ne nosi
+   značenje sama. */
+.bad { color: var(--warn); font-weight: var(--weight-medium); }
+
+.analysisAsk {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  margin-top: auto;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--brand-ink, var(--accent));
+  text-decoration: none;
+}
+.analysisAsk:hover { text-decoration: underline; }
+
+/* --- ABC traka --- */
+.abcBar {
+  display: flex;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  /* Razmak u boji podloge između segmenata: bez njega se susedni artikli istog
+     razreda stope u jedan blok i odnos se izgubi. */
+  gap: 2px;
+  background: var(--surface-sunk);
+}
+.abcSegment { display: block; min-width: 2px; }
+.abcA { background: var(--margin-up-3); }
+.abcB { background: var(--margin-up-1); }
+.abcC { background: var(--line-strong); }
+
+.abcLegend {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.abcLegendItem { display: inline-flex; align-items: center; gap: var(--space-2); }
+.abcSwatch { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+
+/* --- Zaliha mreže --- */
+.stockNote { font-size: var(--text-sm); color: var(--muted); }

@@ -1,4 +1,9 @@
-import type { LocationPerformance, ProductSale, RetailLocation } from './network'
+import type {
+  LocationPerformance,
+  MonthlyPoint,
+  ProductLine,
+  RetailLocation,
+} from './network'
 
 /**
  * Demo mreža prodajnih mesta.
@@ -91,18 +96,37 @@ export const DEMO_LOCATIONS: readonly RetailLocation[] = [
   },
 ]
 
-/** Asortiman: prave kategorije okova i profila, sa jedinicom mere. */
-const CATALOG: readonly { readonly name: string; readonly unit: string }[] = [
-  { name: 'Šarka za drvene frontove, sa usporivačem', unit: 'kom' },
-  { name: 'Klizač za fioke, puni izvlak 450 mm', unit: 'par' },
-  { name: 'Aluminijumska lajsna za pod 25 mm', unit: 'm' },
-  { name: 'LED profil ugradni, elox', unit: 'm' },
-  { name: 'Podizni mehanizam za front', unit: 'kom' },
-  { name: 'Dekorativna ručica, crna mat 160 mm', unit: 'kom' },
-  { name: 'Točkić za nameštaj sa kočnicom', unit: 'kom' },
-  { name: 'Lajsna za završetak pločica 10 mm', unit: 'm' },
-  { name: 'Okov za klizna vrata, set', unit: 'set' },
-  { name: 'Bravica za drvene frontove', unit: 'kom' },
+/**
+ * Asortiman: prave kategorije okova i profila.
+ *
+ * `margin` i `leadTimeDays` su po artiklu, ne po objektu — i to je poenta.
+ * Okov iz uvoza stiže tri nedelje i nosi slabiju maržu; lajsne se seku ovde,
+ * stižu za dan i nose bolju. Bez te razlike svaka analiza po artiklu daje isti
+ * broj za sve i ne pokazuje ništa.
+ */
+const CATALOG: readonly {
+  readonly sku: string
+  readonly name: string
+  readonly unit: string
+  readonly margin: number
+  readonly leadTimeDays: number
+  /** Koliko se brzo obrće: 1 je dnevna roba, 0.05 je artikal za po narudžbini. */
+  readonly velocity: number
+}[] = [
+  { sku: 'OK-1201', name: 'Šarka za drvene frontove, sa usporivačem', unit: 'kom', margin: 24, leadTimeDays: 14, velocity: 1 },
+  { sku: 'KL-4450', name: 'Klizač za fioke, puni izvlak 450 mm', unit: 'par', margin: 21, leadTimeDays: 21, velocity: 0.82 },
+  { sku: 'AL-2025', name: 'Aluminijumska lajsna za pod 25 mm', unit: 'm', margin: 31, leadTimeDays: 3, velocity: 0.74 },
+  { sku: 'LED-0810', name: 'LED profil ugradni, elox', unit: 'm', margin: 28, leadTimeDays: 5, velocity: 0.61 },
+  { sku: 'PM-3300', name: 'Podizni mehanizam za front', unit: 'kom', margin: 12, leadTimeDays: 28, velocity: 0.55 },
+  { sku: 'RU-1600', name: 'Dekorativna ručica, crna mat 160 mm', unit: 'kom', margin: 34, leadTimeDays: 10, velocity: 0.9 },
+  { sku: 'TO-0500', name: 'Točkić za nameštaj sa kočnicom', unit: 'kom', margin: 19, leadTimeDays: 14, velocity: 0.48 },
+  { sku: 'LP-1010', name: 'Lajsna za završetak pločica 10 mm', unit: 'm', margin: 29, leadTimeDays: 3, velocity: 0.43 },
+  { sku: 'KV-7000', name: 'Okov za klizna vrata, set', unit: 'set', margin: 15, leadTimeDays: 35, velocity: 0.22 },
+  { sku: 'BR-0300', name: 'Bravica za drvene frontove', unit: 'kom', margin: 26, leadTimeDays: 14, velocity: 0.35 },
+  { sku: 'OK-1890', name: 'Šarka za staklene frontove, inox', unit: 'kom', margin: 18, leadTimeDays: 42, velocity: 0.08 },
+  { sku: 'AP-6000', name: 'Akustični panel orah 600×600', unit: 'm²', margin: 33, leadTimeDays: 21, velocity: 0.05 },
+  { sku: 'UT-0220', name: 'Utičnica za radnu ploču, dupla', unit: 'kom', margin: 22, leadTimeDays: 28, velocity: 0.06 },
+  { sku: 'KO-4400', name: 'Korpa za otpatke ugradna 40 l', unit: 'kom', margin: 27, leadTimeDays: 35, velocity: 0.04 },
 ]
 
 /** mulberry32 — isti generator kao u demo skupu podataka, zbog ponovljivosti. */
@@ -148,27 +172,170 @@ const SCALE: Record<string, number> = {
  */
 const DAILY_BASE: Record<string, number> = { RSD: 620_000, BAM: 5_200, EUR: 2_650 }
 
-function productsFor(location: RetailLocation, random: () => number): ProductSale[] {
-  // Svako mesto ima svoj redosled asortimana: u Subotici se ne prodaje isto
-  // što i u Nišu, i baš to vlasnik traži na ovom ekranu.
-  const ranked = [...CATALOG]
-    .map((item) => ({ item, weight: random() }))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 4)
-
+function productsFor(
+  location: RetailLocation,
+  random: () => number,
+  daysIntoMonth: number,
+  marginFactor: number,
+): ProductLine[] {
   const scale = SCALE[location.id] ?? 0.3
-  const unitPrice = location.currency === 'RSD' ? 1 : location.currency === 'BAM' ? 0.0085 : 0.0085
+  // Iznosi u stranoj valuti nisu dinari podeljeni kursom nego sopstveni red
+  // veličine — inače bi cene u evrima ispale besmislene.
+  const price = location.currency === 'RSD' ? 1 : 0.0085
 
-  return ranked.map(({ item }, index) => {
-    const quantity = Math.round((520 - index * 95) * scale * (0.8 + random() * 0.45))
-    const perUnit = (140 + random() * 900) * unitPrice
+  /*
+   * Redosled asortimana se razlikuje po objektu.
+   *
+   * U Subotici se ne prodaje isto što i u Nišu, i baš to vlasnik traži na ovom
+   * ekranu. Pomeraj je mali (±25%) da bi asortiman ostao prepoznatljiv kao
+   * asortiman jedne firme, a ne kao nasumičan spisak.
+   */
+  return CATALOG.map((item) => {
+    const localVelocity = item.velocity * (0.75 + random() * 0.5)
+    const perUnit = (140 + random() * 900) * price
+
+    const dailyUnits = 18 * localVelocity * scale
+    const soldQuantity = Math.round(dailyUnits * daysIntoMonth)
+    const revenue = soldQuantity * perUnit
+
+    /*
+     * Zaliha se drži prema tempu prodaje, ne nasumično.
+     *
+     * Brza roba stoji dvadesetak dana, spora mesecima — tako i jeste, i tek
+     * tada mrtav novac u analizi znači nešto. Nabavna vrednost je prodajna
+     * umanjena za maržu.
+     */
+    /*
+     * Raspon pokrivenosti mora da SEČE rok isporuke, inače analiza nema šta da
+     * nađe.
+     *
+     * Prva verzija je svakom artiklu davala najmanje osamnaest dana zalihe, a
+     * rokovi isporuke idu od tri do četrdeset dva — pa nijedan artikal nikad
+     * nije bio u riziku i ceo odeljak je uvek pisao „sve je u redu". U pravoj
+     * radnji je obrnuto: baš najbrža roba se drži najkraće, jer stalno ide.
+     */
+    const coverDays = 6 + (1 - localVelocity) * 160 * (0.7 + random() * 0.6)
+    const onHand = Math.max(0, Math.round(dailyUnits * coverDays))
+    const costPerUnit = perUnit * (1 - item.margin / 100)
+
+    /*
+     * Dani od poslednje prodaje: brza roba se prodaje danas, spora pre više
+     * meseci. Bez tog raspona mrtvog novca nema, pa ni analize koja ga nalazi.
+     */
+    const lastSoldDaysAgo =
+      localVelocity > 0.3
+        ? Math.round(random() * 3)
+        : Math.round(60 + (0.3 - localVelocity) * 900 * (0.6 + random() * 0.8))
+
     return {
+      sku: item.sku,
       name: item.name,
       unit: item.unit,
-      quantity,
-      revenue: (quantity * perUnit).toFixed(2),
+      soldQuantity,
+      revenue: revenue.toFixed(2),
+      /*
+       * Marža artikla nosi ČINILAC OBJEKTA.
+       *
+       * Bez toga je marža objekta stajala kao zaseban broj pored tabele u kojoj
+       * nijedan artikal nije slab — ekran koji sam sebi protivreči, i to na
+       * mestu gde vlasnik prvo gleda. Sada se marža objekta izvodi iz artikala,
+       * pa „ovo mesto slabo zarađuje" ima gde da se vidi i po čemu.
+       */
+      marginPercent: Math.round((item.margin * marginFactor + (random() - 0.5) * 2) * 10) / 10,
+      onHand,
+      stockValue: (onHand * costPerUnit).toFixed(2),
+      averageDailySales: Math.round(dailyUnits * 100) / 100,
+      leadTimeDays: item.leadTimeDays,
+      lastSoldDaysAgo,
     }
   })
+}
+
+/*
+ * Sezonski oblik godine.
+ *
+ * Trgovina okovom i profilima ide za građevinom: zima stoji, proleće i jesen
+ * vuku. Bez tog oblika mesečni niz izgleda kao šum, a poređenje sa istim
+ * mesecom prošle godine — koje je jedino pošteno u sezonskom poslu — nema šta
+ * da pokaže.
+ *
+ * Indeks po mesecima, januar prvi.
+ */
+const SEASON = [0.68, 0.72, 0.94, 1.12, 1.24, 1.18, 1.02, 0.96, 1.21, 1.26, 1.05, 0.82]
+
+/** Mesečna istorija: dvadeset pet meseci, da se vidi i ista sezona lane. */
+function historyFor(
+  location: RetailLocation,
+  random: () => number,
+  today: Date,
+  monthlyBase: number,
+): MonthlyPoint[] {
+  const points: MonthlyPoint[] = []
+
+  /*
+   * Dvadeset pet meseci, ne dvanaest.
+   *
+   * Za poređenje tekućeg meseca sa istim mesecom prošle godine treba puna
+   * godina PRE najstarijeg meseca koji se prikazuje. Sa dvanaest meseci
+   * najstariji mesec nema par i poređenje počinje tek na sredini grafikona.
+   *
+   * Tekući mesec se IZOSTAVLJA: nepotpun mesec pored punih izgleda kao pad.
+   */
+  for (let back = 25; back >= 1; back--) {
+    const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - back, 1))
+    const monthIndex = date.getUTCMonth()
+    const season = SEASON[monthIndex] ?? 1
+
+    // Blag godišnji rast, pa prošla godina nije prosta kopija ove.
+    const growth = 1 + (25 - back) * 0.004
+    const noise = 0.93 + random() * 0.14
+
+    points.push({
+      month: `${date.getUTCFullYear()}-${String(monthIndex + 1).padStart(2, '0')}`,
+      total: (monthlyBase * season * growth * noise).toFixed(2),
+      marginPercent:
+        Math.round(24 * (MARGIN_FACTOR[location.id] ?? 0.8) * (0.94 + random() * 0.12) * 10) / 10,
+    })
+  }
+
+  return points
+}
+
+/*
+ * Činilac marže po objektu, ne gotov procenat.
+ *
+ * Niš je namerno slab: to je slučaj zbog kojeg se karta i gleda — veliki krug
+ * koji ne zarađuje. Ali taj podatak NE stoji sam: množi maržu svakog artikla u
+ * tom objektu, pa se marža objekta izvodi iz artikala. Tek tada „ovo mesto
+ * slabo zarađuje" ima gde da se proveri, umesto da bude broj koji protivreči
+ * tabeli ispod sebe.
+ */
+const MARGIN_FACTOR: Record<string, number> = {
+  'bg-obrenovacki': 0.88,
+  'bg-novi-beograd': 0.81,
+  nis: 0.52,
+  subotica: 0.95,
+  jagodina: 0.75,
+  krusevac: 0.84,
+  'banja-luka': 1.0,
+  podgorica: 0.66,
+}
+
+/*
+ * Smer promene je zadat po objektu, ne prepušten slučaju.
+ *
+ * Sa dva nezavisna slučajna broja ispadalo je da svih osam objekata pada u
+ * odnosu na prošli mesec — demo koji izgleda kao firma pred zatvaranje.
+ */
+const TREND: Record<string, number> = {
+  'bg-obrenovacki': 1.06,
+  'bg-novi-beograd': 0.94,
+  nis: 1.11,
+  subotica: 1.03,
+  jagodina: 0.91,
+  krusevac: 1.02,
+  'banja-luka': 1.08,
+  podgorica: 0.96,
 }
 
 /**
@@ -186,47 +353,32 @@ export function demoNetwork(orgId: string, today: Date): LocationPerformance[] {
     const scale = SCALE[location.id] ?? 0.3
     const base = (DAILY_BASE[location.currency] ?? 1000) * scale
 
-    /*
-     * Smer promene je zadat po mestu, ne prepušten slučaju.
-     *
-     * Sa dva nezavisna slučajna broja ispadalo je da svih osam objekata pada u
-     * odnosu na prošli mesec — demo koji izgleda kao firma pred zatvaranje.
-     * Ovako mreža ima i rast i pad, što je i realnije i korisnije za razgovor.
-     */
-    const trend: Record<string, number> = {
-      'bg-obrenovacki': 1.06,
-      'bg-novi-beograd': 0.94,
-      nis: 1.11,
-      subotica: 1.03,
-      jagodina: 0.91,
-      krusevac: 1.02,
-      'banja-luka': 1.08,
-      podgorica: 0.96,
-    }
-
     const monthToDate = base * daysIntoMonth * (0.9 + random() * 0.24)
-    const previousPeriod = monthToDate / (trend[location.id] ?? 1)
+    const previousPeriod = monthToDate / (TREND[location.id] ?? 1)
+
+    const products = productsFor(
+      location,
+      random,
+      daysIntoMonth,
+      MARGIN_FACTOR[location.id] ?? 0.8,
+    )
 
     /*
-     * Marža se razlikuje po mestu, i to je poenta ovog ekrana.
+     * Marža objekta je PONDERISANI PROSEK marži njegovih artikala.
      *
-     * Niš je namerno postavljen na veliki promet sa slabom maržom: to je slučaj
-     * zbog kojeg se karta i gleda — veliki krug koji ne zarađuje. Bez takvog
-     * mesta u demou, prikaz izgleda lepo a ne pokazuje ništa.
+     * Nije zaseban broj. Da jeste, ekran bi mogao da tvrdi da objekat slabo
+     * zarađuje dok u tabeli ispod nijedan artikal nije slab — a to je prva
+     * nedoslednost koju vlasnik primeti i posle koje ne veruje ostatku.
      */
-    const marginBase: Record<string, number> = {
-      'bg-obrenovacki': 21.4,
-      'bg-novi-beograd': 19.8,
-      nis: 12.6,
-      subotica: 23.1,
-      jagodina: 18.2,
-      krusevac: 20.5,
-      'banja-luka': 24.3,
-      podgorica: 16.1,
-    }
-
+    const productRevenue = products.reduce((sum, p) => sum + Number(p.revenue), 0)
     const marginPercent =
-      Math.round(((marginBase[location.id] ?? 18) + (random() - 0.5) * 1.6) * 10) / 10
+      productRevenue > 0
+        ? Math.round(
+            (products.reduce((sum, p) => sum + p.marginPercent * Number(p.revenue), 0) /
+              productRevenue) *
+              10,
+          ) / 10
+        : 0
 
     const averageBasket = location.currency === 'RSD' ? 8_400 : location.currency === 'BAM' ? 72 : 36
 
@@ -236,7 +388,8 @@ export function demoNetwork(orgId: string, today: Date): LocationPerformance[] {
       previousPeriod: previousPeriod.toFixed(2),
       marginPercent,
       transactions: Math.round(monthToDate / averageBasket),
-      topProducts: productsFor(location, random),
+      products,
+      history: historyFor(location, random, today, base * 30),
     }
   })
 }

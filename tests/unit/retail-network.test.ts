@@ -29,7 +29,8 @@ function place(
     previousPeriod: '0',
     marginPercent,
     transactions: 0,
-    topProducts: [],
+    products: [],
+    history: [],
   }
 }
 
@@ -164,13 +165,13 @@ describe('demo mreža', () => {
     expect(medju3.some((l) => marginStep(l.marginPercent, prosek) <= -2)).toBe(true)
   })
 
-  it('svako mesto nosi artikle iz svog asortimana', () => {
+  it('svako mesto nosi ceo asortiman, sa prodajom i zalihom', () => {
     for (const location of demoNetwork('org-1', NOW)) {
-      expect(location.topProducts.length).toBeGreaterThan(0)
-      expect(location.topProducts.length).toBeLessThanOrEqual(5)
-      for (const product of location.topProducts) {
-        expect(product.quantity).toBeGreaterThan(0)
-        expect(Number(product.revenue)).toBeGreaterThan(0)
+      expect(location.products.length).toBeGreaterThan(5)
+      for (const product of location.products) {
+        expect(product.sku).not.toBe('')
+        expect(Number(product.revenue)).toBeGreaterThanOrEqual(0)
+        expect(Number(product.stockValue)).toBeGreaterThanOrEqual(0)
       }
     }
   })

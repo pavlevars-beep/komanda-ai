@@ -11,6 +11,8 @@ import { initialiseConnectors } from '@/core/connectors'
 import { primaryIntegration } from '@/core/dashboard/loader'
 import { loadRetailNetwork } from '@/core/retail/loader'
 import { averageMargin, networkTotals } from '@/core/retail/network'
+import { networkStock } from '@/core/retail/analytics'
+import { businessRulesFor } from '@/core/rules/repository'
 import { RetailMap } from '@/ui/charts/retail-map'
 import { DetailShell, Source, Unavailable } from '../detail-shell'
 import { LocationCards } from './location-cards'
@@ -49,12 +51,10 @@ export default async function RetailNetworkPage({
 
   initialiseConnectors()
   const source = await primaryIntegration(db, org.organizationId)
-  const network = await loadRetailNetwork(
-    db,
-    org,
-    source.integrationId,
-    source.connectorType,
-  )
+  const [network, rules] = await Promise.all([
+    loadRetailNetwork(db, org, source.integrationId, source.connectorType),
+    businessRulesFor(db, org.organizationId),
+  ])
 
   const money = (value: string, currency: string) =>
     new Intl.NumberFormat(intl, { style: 'currency', currency, maximumFractionDigits: 0 }).format(
@@ -130,6 +130,32 @@ export default async function RetailNetworkPage({
               <span className={styles.summaryValue}>{percent(averageMargin(locations))}</span>
               <span className={styles.summaryMeta}>{t('retail.weightedByTurnover')}</span>
             </div>
+          </div>
+
+          {/*
+            Zaliha stoji uz promet, ne na zasebnom ekranu.
+            Promet bez zalihe je pola slike: objekat koji dobro prodaje a drži
+            mrtav novac ne izgleda drugačije od onog koji ne drži — a razlika je
+            u novcu koji stoji na polici.
+          */}
+          <div className={styles.summary}>
+            {networkStock(locations, rules).map((stock) => (
+              <div key={stock.currency} className={styles.summaryCard}>
+                <span className={styles.summaryLabel}>
+                  {t('retail.stockValue', { currency: stock.currency })}
+                </span>
+                <span className={styles.summaryValue}>
+                  {money(stock.value, stock.currency)}
+                </span>
+                <span className={styles.summaryMeta}>
+                  {t('retail.deadShare', { share: percent(stock.deadShare) })} ·{' '}
+                  {t(
+                    `retail.shortageCount.${plural.select(stock.shortageCount)}` as MessageKey,
+                    { count: stock.shortageCount },
+                  )}
+                </span>
+              </div>
+            ))}
           </div>
 
           <div className={styles.split}>

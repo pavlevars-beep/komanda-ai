@@ -304,12 +304,26 @@ const CAPABILITIES = [
           previousPeriod: z.string(),
           marginPercent: z.number(),
           transactions: z.number().int(),
-          topProducts: z.array(
+          products: z.array(
             z.object({
+              sku: z.string(),
               name: z.string(),
-              quantity: z.number().int(),
-              revenue: z.string(),
               unit: z.string(),
+              soldQuantity: z.number().int(),
+              revenue: z.string(),
+              marginPercent: z.number(),
+              onHand: z.number(),
+              stockValue: z.string(),
+              averageDailySales: z.number(),
+              leadTimeDays: z.number().int(),
+              lastSoldDaysAgo: z.number().int(),
+            }),
+          ),
+          history: z.array(
+            z.object({
+              month: z.string(),
+              total: z.string(),
+              marginPercent: z.number(),
             }),
           ),
         }),

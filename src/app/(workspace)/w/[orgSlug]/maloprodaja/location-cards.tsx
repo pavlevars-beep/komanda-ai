@@ -104,16 +104,19 @@ export function LocationCards({
             <div className={styles.products}>
               <span className={styles.cardLabel}>{labels.topProducts}</span>
               <ul className={styles.productList}>
-                {/* Tri, ne pet: kartica je pregled, a ne spisak. Ostalo je iza
-                    „Vidi više", gde ima mesta da se pročita. */}
-                {location.topProducts.slice(0, 3).map((product) => (
-                  <li key={product.name} className={styles.product}>
-                    <span className={styles.productName}>{product.name}</span>
-                    <span className={styles.productQty}>
-                      {number(product.quantity)} {product.unit}
-                    </span>
-                  </li>
-                ))}
+                {/* Tri, ne ceo asortiman: kartica je pregled, a ne spisak.
+                    Ostalo je iza „Vidi više", gde ima mesta da se pročita. */}
+                {[...location.products]
+                  .sort((a, b) => Number(b.revenue) - Number(a.revenue))
+                  .slice(0, 3)
+                  .map((product) => (
+                    <li key={product.name} className={styles.product}>
+                      <span className={styles.productName}>{product.name}</span>
+                      <span className={styles.productQty}>
+                        {number(product.soldQuantity)} {product.unit}
+                      </span>
+                    </li>
+                  ))}
               </ul>
             </div>
 
