@@ -134,6 +134,16 @@
   background-size: 12px 12px;
   background-position: 0 0, 0 6px, 6px -6px, -6px 0;
 }
-.logoImage { display: block; max-height: 72px; max-width: 240px; }
+/* Isti lek kao u traci: bez `align-self` i `object-fit` slika se razvuče na
+   širinu roditelja, a ograničenje visine je spljošti. */
+.logoImage {
+  display: block;
+  align-self: flex-start;
+  width: auto;
+  height: auto;
+  max-height: 72px;
+  max-width: 240px;
+  object-fit: contain;
+}
 .logoActions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .file { font: inherit; font-size: var(--text-sm); color: var(--muted); max-width: 100%; }

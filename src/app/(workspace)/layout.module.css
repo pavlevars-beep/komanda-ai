@@ -57,8 +57,27 @@
   .main { padding: var(--space-5) var(--space-4) var(--space-10); }
 }
 
-/* Logotip klijenta. Ograničen po visini, ne po širini — logotipi su najčešće
-   široki, pa bi ograničenje po širini nasumično sekao one uspravne. */
-.logo { display: block; max-height: 36px; max-width: 100%; margin-bottom: var(--space-2); }
+/*
+ * Logotip klijenta. Ograničen po visini, ne po širini — logotipi su najčešće
+ * široki, pa bi ograničenje po širini nasumično seklo one uspravne.
+ *
+ * `align-self` je ovde OBAVEZAN, ne ukras.
+ *
+ * Slika je dete flex kolone, a ona podrazumevano rasteže decu po širini
+ * (`align-items: stretch`). Slika se tada razvuče na punu širinu trake, a
+ * `max-height` je spljošti po visini — logotip od 800×200 se iscrtavao kao
+ * 232×36, dakle šezdeset procenata širi nego što jeste. Mereno u pregledaču:
+ * prirodni odnos 4,00, nacrtani 6,44.
+ */
+.logo {
+  display: block;
+  align-self: flex-start;
+  width: auto;
+  height: auto;
+  max-height: 36px;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: var(--space-2);
+}
 
 .switches { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
