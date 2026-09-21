@@ -944,6 +944,13 @@ export const en: Messages = {
   'import.error.noReader': 'Reading imported tables is not available.',
 
   // --- Metrics board ---
+  // --- Change chip ---
+  'delta.vsDayBefore': 'vs the day before yesterday',
+  'delta.vsPrevious7': 'vs the previous 7 days',
+  'delta.vsSameLastMonth': 'vs the same period last month',
+  'delta.up': 'Up {value}, {hint}',
+  'delta.down': 'Down {value}, {hint}',
+
   'board.title': 'Overview',
   'board.readAt': 'Read {when}',
   'board.autoRefresh': 'Refreshes every {seconds} s',
@@ -985,7 +992,6 @@ export const en: Messages = {
   'board.chart.coverage': 'Stock coverage against lead time',
   'board.chart.departments': 'Employees by department',
 
-  'board.vsPrevious': 'vs previous',
 
   // --- Morning brief ---
   'links.title': 'Public services',

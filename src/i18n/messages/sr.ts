@@ -976,6 +976,17 @@ export const sr = {
   'import.error.notImported': 'Ova tabela još nije uvezena.',
   'import.error.noReader': 'Čitanje uvezenih tabela nije dostupno.',
 
+  // --- Oznaka promene ---
+  /*
+   * Osnova poređenja se piše kao NASTAVAK rečenice, malim slovom: ista niska
+   * stoji i pored brojke („↗ 11,2% u odnosu na…") i u oblačiću.
+   */
+  'delta.vsDayBefore': 'u odnosu na prekjuče',
+  'delta.vsPrevious7': 'u odnosu na prethodnih 7 dana',
+  'delta.vsSameLastMonth': 'u odnosu na isti period prošlog meseca',
+  'delta.up': 'Porast {value}, {hint}',
+  'delta.down': 'Pad {value}, {hint}',
+
   // --- Tabla sa pokazateljima ---
   'board.title': 'Pregled',
   'board.readAt': 'Očitano {when}',
@@ -1018,7 +1029,6 @@ export const sr = {
   'board.chart.coverage': 'Pokrivenost zaliha prema roku isporuke',
   'board.chart.departments': 'Zaposleni po odeljenjima',
 
-  'board.vsPrevious': 'prema prethodnom',
 
   // --- Jutarnji brif ---
   'links.title': 'Javni servisi',

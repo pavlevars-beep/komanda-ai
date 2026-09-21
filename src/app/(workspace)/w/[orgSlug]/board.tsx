@@ -3,6 +3,7 @@ import type { MorningBrief } from '@/core/brief/loader'
 import type { BusinessRules } from '@/core/rules/business-rules'
 import type { Translator } from '@/i18n/translator'
 import { Icon, type IconName } from '@/ui/primitives/Icon'
+import { ChangeChip } from '@/ui/primitives/ChangeChip'
 import { ColumnChart, Dumbbell, RankedBars, ShareBar, Sparkline, TrendChart } from '@/ui/charts'
 import { AutoRefresh } from './auto-refresh'
 import styles from './board.module.css'
@@ -52,20 +53,35 @@ export interface BoardFormat {
 }
 
 /*
- * Strelica je IKONICA, ne znak ↑ iz teksta.
+ * Oznaka promene uvek nosi i osnovu poređenja.
  *
- * Znakovi strelica retko postoje u samom fontu, pa ih pregledač uzima iz
- * rezervnog — i onda jedini element na kartici koji nosi smer ispadne iz druge
- * porodice, druge debljine i druge visine od svega oko sebe.
+ * „↘ 4%" bez osnove je zagonetka: manje od čega — od juče, od prošlog meseca,
+ * od plana? Osnovu zna onaj ko je broj izračunao, pa je ovde prosleđuje kao
+ * gotovu frazu; `ChangeChip` je pokazuje pored brojke ili na prelaz mišem,
+ * dodir i tastaturu, a čitaču ekrana uvek.
  */
-function Delta({ percent, f }: { percent: number | undefined; f: BoardFormat }) {
-  if (percent === undefined || percent === 0) return null
+function Delta({
+  percent,
+  hint,
+  f,
+  expose,
+}: {
+  percent: number | undefined
+  hint: string | undefined
+  f: BoardFormat
+  expose?: boolean
+}) {
+  if (percent === undefined || percent === 0 || hint === undefined) return null
   const up = percent > 0
+  const value = f.percent(Math.abs(percent))
   return (
-    <span className={`${styles.kpiDelta} ${up ? styles.up : styles.down}`}>
-      <Icon name={up ? 'trendUp' : 'trendDown'} size={14} />
-      {f.percent(Math.abs(percent))}
-    </span>
+    <ChangeChip
+      direction={up ? 'up' : 'down'}
+      value={value}
+      hint={hint}
+      ariaLabel={f.t(up ? 'delta.up' : 'delta.down', { value, hint })}
+      {...(expose ? { expose: true } : {})}
+    />
   )
 }
 
@@ -95,6 +111,8 @@ interface Kpi {
   /** Oznaka valute uz brojku. Prazno kod pokazatelja koji nisu novac. */
   readonly unit?: string
   readonly deltaPercent?: number
+  /** Osnova poređenja uz promenu, kao nastavak rečenice. Bez nje nema oznake. */
+  readonly deltaHint?: string
   readonly note?: string
   /** Boja napomene; odvojena od boje brojke, jer se tiču različitih stvari. */
   readonly noteTone?: 'warn' | 'critical'
@@ -123,7 +141,7 @@ function KpiCard({ kpi, f }: { kpi: Kpi; f: BoardFormat }) {
 
       {kpi.deltaPercent !== undefined || kpi.note ? (
         <span className={styles.kpiFoot}>
-          <Delta percent={kpi.deltaPercent} f={f} />
+          <Delta percent={kpi.deltaPercent} hint={kpi.deltaHint} f={f} />
           {kpi.note ? (
             <span
               className={`${styles.kpiNote} ${
@@ -211,12 +229,14 @@ function HeroPanel({
           </span>
         )}
 
-        {kpi.deltaPercent !== undefined && kpi.deltaPercent !== 0 ? (
-          <span className={styles.heroFoot}>
-            <Delta percent={kpi.deltaPercent} f={f} />
-            <span className={styles.heroNote}>{f.t('board.vsPrevious')}</span>
-          </span>
-        ) : null}
+        {/*
+          Na vodećem broju osnova stoji ISPISANA, ne u oblačiću.
+          Broj koji tabla vodi ne sme da traži prelaz mišem da bi se razumeo —
+          a ovde ima mesta da se pročita cela rečenica.
+        */}
+        <span className={styles.heroFoot}>
+          <Delta percent={kpi.deltaPercent} hint={kpi.deltaHint} f={f} expose />
+        </span>
       </div>
 
       {/*
@@ -234,7 +254,7 @@ function HeroPanel({
                 <span className={styles.heroUnit}>{item.unit}</span>
               ) : null}
             </span>
-            <Delta percent={item.deltaPercent} f={f} />
+            <Delta percent={item.deltaPercent} hint={item.deltaHint} f={f} />
           </div>
         ))}
       </div>
@@ -305,7 +325,14 @@ export function MetricsBoard({
       band: 'sales',
       label: f.t('board.kpi.salesMonth'),
       ...moneyKpi(f, sales?.monthToDate.total, sales?.currency),
-      ...(sales ? { deltaPercent: sales.monthToDate.changePercent } : {}),
+      ...(sales
+        ? {
+            deltaPercent: sales.monthToDate.changePercent,
+            // Poredi se ISTI broj dana prethodnog meseca, ne pun mesec — inače
+            // bi svaki prvi u mesecu lažno prijavio pad.
+            deltaHint: f.t('delta.vsSameLastMonth'),
+          }
+        : {}),
       ...(dailyValues.length > 1 ? { spark: dailyValues } : {}),
     },
     {
@@ -313,7 +340,9 @@ export function MetricsBoard({
       band: 'sales',
       label: f.t('board.kpi.salesYesterday'),
       ...moneyKpi(f, sales?.yesterday.total, sales?.currency),
-      ...(sales ? { deltaPercent: sales.yesterday.changePercent } : {}),
+      ...(sales
+        ? { deltaPercent: sales.yesterday.changePercent, deltaHint: f.t('delta.vsDayBefore') }
+        : {}),
       // Sparkline nosi poslednjih sedam dana — oblik kretanja, ne vrednosti.
       ...(dailyValues.length > 1 ? { spark: dailyValues.slice(-7) } : {}),
     },
@@ -322,7 +351,9 @@ export function MetricsBoard({
       band: 'sales',
       label: f.t('board.kpi.sales7'),
       ...moneyKpi(f, sales?.last7Days.total, sales?.currency),
-      ...(sales ? { deltaPercent: sales.last7Days.changePercent } : {}),
+      ...(sales
+        ? { deltaPercent: sales.last7Days.changePercent, deltaHint: f.t('delta.vsPrevious7') }
+        : {}),
       ...(dailyValues.length > 1 ? { spark: dailyValues.slice(-14) } : {}),
     },
     {

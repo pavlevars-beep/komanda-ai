@@ -52,6 +52,9 @@ describe.runIf(OUT)('pregled ekrana mreže', () => {
           aboveAverage: 'iznad proseka',
           belowAverage: 'ispod proseka',
           onAverage: 'na proseku',
+          vsPrevious: 'u odnosu na isti period prošlog meseca',
+          changeUp: 'Porast {value}, {hint}',
+          changeDown: 'Pad {value}, {hint}',
         },
       }),
     )
@@ -72,6 +75,7 @@ describe.runIf(OUT)('pregled ekrana mreže', () => {
       `<!doctype html><meta charset="utf-8"><style>
         ${read('src/ui/theme/tokens.css')}
         ${read('src/ui/charts/retail-map.module.css')}
+        ${read('src/ui/primitives/ChangeChip.module.css')}
         ${read('src/app/(workspace)/w/[orgSlug]/maloprodaja/retail.module.css')}
         body{background:var(--ground);margin:0;padding:32px;color:var(--ink);
              font-family:Inter,system-ui,sans-serif;font-size:14.5px;

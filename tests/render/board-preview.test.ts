@@ -133,6 +133,7 @@ describe.runIf(OUT)('pregled table', () => {
         ${read('src/ui/theme/tokens.css')}
         ${read('src/ui/charts/charts.module.css')}
         ${read('src/app/(workspace)/w/[orgSlug]/board.module.css')}
+        ${read('src/ui/primitives/ChangeChip.module.css')}
         body{background:var(--ground);margin:0;padding:32px;color:var(--ink);
              font-family:Inter,system-ui,sans-serif;font-size:14.5px;
              font-variant-numeric:tabular-nums;letter-spacing:-0.006em}

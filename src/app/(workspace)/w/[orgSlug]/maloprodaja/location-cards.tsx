@@ -7,6 +7,7 @@ import {
   type LocationPerformance,
 } from '@/core/retail/network'
 import { Icon } from '@/ui/primitives/Icon'
+import { ChangeChip } from '@/ui/primitives/ChangeChip'
 import styles from './retail.module.css'
 
 /**
@@ -29,6 +30,11 @@ export interface CardLabels {
   readonly aboveAverage: string
   readonly belowAverage: string
   readonly onAverage: string
+  /** Osnova poređenja uz promenu, kao nastavak rečenice. */
+  readonly vsPrevious: string
+  /** Cela rečenica za čitač ekrana; {value} i {hint} popunjava kartica. */
+  readonly changeUp: string
+  readonly changeDown: string
 }
 
 export function LocationCards({
@@ -89,11 +95,20 @@ export function LocationCards({
               <span className={styles.cardValue}>
                 {money(location.monthToDate, location.currency)}
               </span>
+              {/*
+                Uz procenat ide i osnova poređenja.
+                Bez nje „−7%" ne kaže manje od čega, a izgleda kao da kaže —
+                što je gore nego da procenta nema.
+              */}
               {change !== 0 ? (
-                <span className={`${styles.change} ${change > 0 ? styles.up : styles.down}`}>
-                  <Icon name={change > 0 ? 'trendUp' : 'trendDown'} size={14} />
-                  {percent(Math.abs(change))}
-                </span>
+                <ChangeChip
+                  direction={change > 0 ? 'up' : 'down'}
+                  value={percent(Math.abs(change))}
+                  hint={labels.vsPrevious}
+                  ariaLabel={(change > 0 ? labels.changeUp : labels.changeDown)
+                    .replace('{value}', percent(Math.abs(change)))
+                    .replace('{hint}', labels.vsPrevious)}
+                />
               ) : null}
             </div>
 

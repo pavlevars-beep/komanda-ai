@@ -189,6 +189,9 @@ export default async function RetailNetworkPage({
                   aboveAverage: t('retail.aboveAverage'),
                   belowAverage: t('retail.belowAverage'),
                   onAverage: t('retail.onAverage'),
+                  vsPrevious: t('delta.vsSameLastMonth'),
+                  changeUp: t('delta.up', { value: '{value}', hint: '{hint}' }),
+                  changeDown: t('delta.down', { value: '{value}', hint: '{hint}' }),
                 }}
               />
             </section>

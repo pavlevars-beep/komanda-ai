@@ -1,0 +1,75 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+.up { color: var(--ok); }
+.down { color: var(--critical); }
+
+/*
+ * Dugme se svlači do golog teksta.
+ *
+ * Nosač je dugme zbog ponašanja (žiža na klik i dodir), ne zbog izgleda —
+ * podrazumevani okvir i podloga bi od oznake napravili kontrolu koja obećava
+ * radnju koje nema.
+ */
+.button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  letter-spacing: inherit;
+  /* Pokazivač je „pomoć", ne „ruka": klik ne vodi nikuda, samo objašnjava. */
+  cursor: help;
+  position: relative;
+}
+/*
+ * Oblačić se pojavljuje ISPOD oznake.
+ *
+ * Iznad bi pao preko same brojke na koju se odnosi — a brojka je razlog zbog
+ * kojeg je neko i prešao mišem preko oznake.
+ *
+ * Širina je `max-content` do granice, pa kratka osnova ne pravi široku ploču,
+ * a duga se prelama umesto da izađe iz kartice.
+ */
+.hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: max-content;
+  max-width: min(230px, 60vw);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--ink);
+  color: var(--ground);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: 1.35;
+  text-align: left;
+  letter-spacing: 0;
+  /* Oblačić ne hvata miš: inače bi se pod kursorom pojavio i odmah nestao. */
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 90ms ease-out;
+}
+.button:hover .hint,
+.button:focus .hint {
+  opacity: 1;
+  visibility: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hint { transition: none; }
+}
+
+/* Uz istaknuti broj osnova stoji ispisana, pa oblačić nema šta da radi. */
+.exposed { display: inline-flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.note { font-size: var(--text-sm); opacity: 0.72; }

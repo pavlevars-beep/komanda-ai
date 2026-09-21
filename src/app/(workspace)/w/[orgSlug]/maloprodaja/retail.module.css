@@ -170,17 +170,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.change {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  font-variant-numeric: tabular-nums;
-}
-.up { color: var(--ok); }
-.down { color: var(--critical); }
-
 .cardMeta {
   font-size: var(--text-sm);
   color: var(--muted);
