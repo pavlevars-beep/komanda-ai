@@ -15,6 +15,12 @@
   --viz-4: #064e4b;
   --viz-line: var(--viz-3);
   --viz-grid: var(--line);
+  /*
+   * Jačina ispune ispod linije. Podrazumevano važi za karticu; površina koja
+   * nije kartica (tamna traka na tabli) je prepisuje, jer isto pranje na
+   * tamnoj podlozi nestaje.
+   */
+  --viz-area: 0.1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,7 +47,7 @@
 
 /* Linija je 2px, spojevi zaobljeni; ispuna je isti ton kao pranje, ne blok. */
 .line { fill: none; stroke: var(--viz-line); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.area { fill: var(--viz-line); opacity: 0.1; }
+.area { fill: var(--viz-line); opacity: var(--viz-area); }
 /* Prsten u boji površine drži tačku čitljivom tamo gde preseca liniju. */
 .endDot { fill: var(--viz-line); stroke: var(--surface); stroke-width: 2; }
 
@@ -123,3 +129,84 @@ details[open] > .tableToggle::before { content: '▾ '; }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); margin-top: var(--space-2); }
 .table th, .table td { text-align: left; padding: 2px var(--space-2); border-bottom: 1px solid var(--line); }
 .table td:last-child, .table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+/*
+ * Istaknut stubić i utišani ostatak.
+ *
+ * Utišani nisu sivi nego najsvetliji korak iste rampe: siva bi ih izdvojila u
+ * drugu porodicu boja i čitala bi se kao „druga vrsta dana".
+ */
+.columnLead { background: var(--viz-4); }
+.columnQuiet { background: var(--viz-1); }
+
+/* --- Udeo u celini --- */
+/*
+ * Razmak između odsečaka je 2px POVRŠINE, ne providnost.
+ *
+ * Dve susedne ispune bez razmaka se slivaju u jednu, pa se granica udela gubi
+ * tačno tamo gde je traka i potrebna. Providan razmak bi propustio boju
+ * kartice ispod i menjao se sa temom.
+ */
+.shareTrack {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  background: var(--surface-sunk);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.shareSegment { height: 100%; min-width: 2px; }
+.shareSegment:first-child { border-radius: 7px 0 0 7px; }
+.shareSegment:last-child { border-radius: 0 7px 7px 0; }
+
+.shareLegend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.shareItem {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+.shareSwatch { width: 10px; height: 10px; border-radius: 3px; align-self: center; }
+.shareName { color: var(--ink-2); min-width: 0; }
+.shareValue { color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Udeo je uvek dvocifren procenat; fiksna širina drži kolonu poravnatu. */
+.shareShare { color: var(--faint); font-variant-numeric: tabular-nums; min-width: 46px; text-align: right; }
+
+/* --- Dve vrednosti po stavci --- */
+.pairLegend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--text-sm); color: var(--ink-2); }
+.pairKey { display: inline-flex; align-items: center; gap: var(--space-2); }
+/*
+ * Tačka je 9px sa prstenom u boji površine. Prsten drži tačku čitljivom tamo
+ * gde se dve preklope — a preklapaju se upravo kada su vrednosti bliske, što
+ * je slučaj koji se najviše gleda.
+ */
+.pairDot {
+  width: 9px; height: 9px; flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.pairFrom { background: var(--cat-1); }
+.pairTo { background: var(--cat-2); }
+
+.pairs { display: flex; flex-direction: column; gap: var(--space-3); }
+.pairRow { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-3); align-items: baseline; }
+.pairValues { font-size: var(--text-sm); color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pairArrow { color: var(--faint); }
+.pairTrack { grid-column: 1 / -1; position: relative; height: 13px; }
+/* Šina ispod tačaka: bez nje razmak lebdi i ne zna se odakle se meri. */
+.pairTrack::before {
+  content: '';
+  position: absolute; inset-inline: 0; top: 50%;
+  height: 1px; margin-top: -0.5px;
+  background: var(--line);
+}
+.pairLink {
+  position: absolute; top: 50%;
+  height: 3px; margin-top: -1.5px;
+  border-radius: var(--radius-full);
+  background: var(--line-strong);
+  min-width: 2px;
+}
+.pairAlert { background: var(--critical); }
+.pairPlaced { position: absolute; top: 50%; margin-top: -4.5px; margin-left: -4.5px; }

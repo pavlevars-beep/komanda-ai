@@ -996,17 +996,26 @@ export const sr = {
   'board.kpi.profit': 'Dobit, 30 dana',
   'board.kpi.margin': 'Marža',
   'board.kpi.receivables': 'Potraživanja',
-  'board.kpi.overdue': 'Dospelo preko {days} dana',
+  'board.kpi.ofWhichOverdue': 'Od toga dospelo preko {days} dana: {amount}',
   'board.kpi.payables7': 'Obaveze u 7 dana',
   'board.kpi.stockRisk': 'Zalihe u riziku',
   'board.kpi.headcount': 'Zaposlenih',
   'board.kpi.items': '{count} artikala',
   'board.kpi.departments': '{count} odeljenja',
 
+  'board.band.money': 'Novac',
+  'board.band.stock': 'Zalihe i ljudi',
+
+  'board.chart.structure': 'Na šta je otišao prihod, 30 dana',
+  'board.chart.revenueTotal': 'Prihod {amount}',
+  'board.chart.loss': 'Rashod je veći od prihoda za {amount}. Udeo se ne prikazuje jer celine nema.',
+  'board.legend.cover': 'Pokrivenost',
+  'board.legend.lead': 'Rok isporuke',
+
   'board.chart.daily': 'Prodaja po danima, poslednjih 30',
   'board.chart.history': 'Prodaja po mesecima',
   'board.chart.aging': 'Potraživanja po starosti duga',
-  'board.chart.coverage': 'Pokrivenost zaliha, najkraća prva',
+  'board.chart.coverage': 'Pokrivenost zaliha prema roku isporuke',
   'board.chart.departments': 'Zaposleni po odeljenjima',
 
   'board.vsPrevious': 'prema prethodnom',

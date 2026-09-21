@@ -133,6 +133,46 @@
   --margin-down-2: #c2603f;
   --margin-down-3: #8f2f2f;
 
+  /*
+   * Istaknuta traka na tabli — podloga koja je TAMNA U OBE TEME.
+   *
+   * Ne koristi `--accent-ink`: u tamnoj temi je to svetli tirkiz, pa bi traka
+   * u toj temi postala svetla ploča i sve boje na njoj bi se prevrnule. Traka
+   * je jedina površina koja namerno ne prati temu, jer joj je posao da se
+   * razlikuje od svega oko sebe.
+   *
+   * Vrednosti su merene prema podlozi: mastilo 8,3 : 1 u svetloj temi i
+   * 11,8 : 1 u tamnoj, linija 4,9 odnosno 7,0.
+   */
+  --hero-bg: #0a5451;
+  --hero-ink: #f2fbfa;
+  --hero-line: #7fd0cb;
+
+  /*
+   * Kategorijalne boje — TAČNO DVE, i to nije štednja nego nalaz.
+   *
+   * Uz rezervisane statusne boje (zelena, narandžasta, crvena, plava) u paleti
+   * ostaje malo mesta: svaki treći ton koji je probavan sudarao se ili sa
+   * statusom ili sa već izabranim. Provera parova je pokazala da se plava i
+   * ljubičasta ne razlikuju ni normalnim vidom (ΔE 11,4 — prag je 15), a kod
+   * deuteranopije se stapaju (ΔE 3,4). Zato dve, provereno na SVIM parovima u
+   * obe teme, a ne četiri po oku.
+   *
+   * Koriste se samo tamo gde se porede DVA niza (pokrivenost prema roku
+   * isporuke). Za veličinu se koristi rampa, za stanje statusne boje.
+   */
+  --cat-1: #11938e;
+  --cat-2: #784991;
+
+  /*
+   * Tonovi pojasa na tabli. Ovo NIJE kodiranje podatka nego pregrada ekrana:
+   * uz svaki stoji ispisan naslov pojasa, pa boja ništa ne nosi sama. Zato
+   * ovde sme i treći ton koji za podatke ne bi prošao proveru.
+   */
+  --band-sales: #11938e;
+  --band-money: #2e619f;
+  --band-stock: #784991;
+
   /* Podloga karte. Zemlje sa objektima u prvom planu, susedi utišani. */
   --map-land: #ffffff;
   --map-land-quiet: #eaeeef;
@@ -182,6 +222,15 @@
       0 1px 1px rgba(0, 0, 0, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.5),
       0 28px 56px -24px rgba(0, 0, 0, 0.7);
 
+
+    --hero-bg: #123a38;
+
+    --cat-1: #2aa9a1;
+    --cat-2: #8a66b0;
+
+    --band-sales: #2aa9a1;
+    --band-money: #6695d3;
+    --band-stock: #8a66b0;
 
     /* Tamni režim se BIRA, ne dobija okretanjem svetlog: isti koraci na
        tamnoj podlozi padaju na kontrastu. Provereni zasebno, prema --surface. */
@@ -237,6 +286,15 @@
   --shadow-lg:
     0 1px 1px rgba(0, 0, 0, 0.35), 0 8px 20px -6px rgba(0, 0, 0, 0.5),
     0 28px 56px -24px rgba(0, 0, 0, 0.7);
+
+  --hero-bg: #123a38;
+
+  --cat-1: #2aa9a1;
+  --cat-2: #8a66b0;
+
+  --band-sales: #2aa9a1;
+  --band-money: #6695d3;
+  --band-stock: #8a66b0;
 
   /* Tamni režim se BIRA, ne dobija okretanjem svetlog: isti koraci na tamnoj
      podlozi padaju na kontrastu. Provereni zasebno, prema --surface. */

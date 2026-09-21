@@ -963,17 +963,26 @@ export const en: Messages = {
   'board.kpi.profit': 'Profit, 30 days',
   'board.kpi.margin': 'Margin',
   'board.kpi.receivables': 'Receivables',
-  'board.kpi.overdue': 'Overdue past {days} days',
+  'board.kpi.ofWhichOverdue': 'Of which overdue past {days} days: {amount}',
   'board.kpi.payables7': 'Payables within 7 days',
   'board.kpi.stockRisk': 'Stock at risk',
   'board.kpi.headcount': 'Employees',
   'board.kpi.items': '{count} items',
   'board.kpi.departments': '{count} departments',
 
+  'board.band.money': 'Money',
+  'board.band.stock': 'Stock and people',
+
+  'board.chart.structure': 'Where the revenue went, 30 days',
+  'board.chart.revenueTotal': 'Revenue {amount}',
+  'board.chart.loss': 'Expenses exceed revenue by {amount}. No share is shown because there is no whole.',
+  'board.legend.cover': 'Coverage',
+  'board.legend.lead': 'Lead time',
+
   'board.chart.daily': 'Daily sales, last 30',
   'board.chart.history': 'Monthly sales',
   'board.chart.aging': 'Receivables by age of debt',
-  'board.chart.coverage': 'Stock coverage, shortest first',
+  'board.chart.coverage': 'Stock coverage against lead time',
   'board.chart.departments': 'Employees by department',
 
   'board.vsPrevious': 'vs previous',
