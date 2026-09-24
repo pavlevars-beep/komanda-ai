@@ -8,6 +8,8 @@
 }
 .up { color: var(--ok); }
 .down { color: var(--critical); }
+/* Oznaka koja stoji umesto vrednosti reda, a ne uz nju. Oblačić ostaje sitan. */
+.md { font-size: var(--text-md); }
 
 /*
  * Dugme se svlači do golog teksta.
@@ -61,6 +63,18 @@
   visibility: hidden;
   transition: opacity 90ms ease-out;
 }
+/*
+ * Oznaka uz desnu ivicu kači oblačić za SVOJU desnu ivicu.
+ *
+ * Centriran bi pola širine gurnuo van kartice, a na uskom ekranu i van strane
+ * — mereno 89 odnosno 56px. Ovako se širi samo ulevo, u prostor koji postoji.
+ */
+.hintEnd {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .button:hover .hint,
 .button:focus .hint {
   opacity: 1;

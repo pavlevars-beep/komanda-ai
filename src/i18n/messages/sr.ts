@@ -750,11 +750,13 @@ export const sr = {
   'context.kind.other': 'Ostalo',
 
   'history.title': 'Istorija prodaje',
-  'history.yoy': 'Isti mesec prethodne godine',
+  'history.month': 'Posmatrani mesec',
   'history.raw': 'Po izvornim vrednostima',
   'history.adjusted': 'Bez izuzetnih događaja',
   'history.adjustedNote':
     'Poređenje je prilagođeno jer je jedan od meseci obeležen kao izuzetan. Prikazane su obe vrednosti.',
+  'history.vsPrevious': 'u odnosu na {month}: {amount}',
+  'history.vsPreviousBaseline': 'u odnosu na osnovicu za {month}: {amount}',
   'history.noPrevious': 'Nema podataka za isti mesec prethodne godine.',
   'history.monthsWithEvents': 'Meseci sa zabeleženim kontekstom',
   'history.baseline': 'Osnovica',

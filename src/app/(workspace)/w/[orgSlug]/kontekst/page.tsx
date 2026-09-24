@@ -14,6 +14,7 @@ import { loadSalesHistory } from '@/core/context/history'
 import { CONTEXT_EVENT_KINDS } from '@/core/context/repository'
 import { Icon } from '@/ui/primitives/Icon'
 import { ContextEventForm, DeleteEventButton } from './event-form'
+import { YearOverYear } from './year-over-year'
 import styles from './context.module.css'
 
 export default async function ContextPage({
@@ -63,12 +64,15 @@ export default async function ContextPage({
       maximumFractionDigits: 0,
     }).format(value)
 
+  /*
+   * Bez `signDisplay` — znak sada nosi strelica.
+   *
+   * Dok je procenat stajao sam, plus je bio jedini nosilac smera. Uz strelicu
+   * bi se smer pisao dvaput, i to nesigurno: `signDisplay` bi uz apsolutnu
+   * vrednost ispisao plus i tamo gde strelica pokazuje nadole.
+   */
   const percent = (value: number) =>
-    new Intl.NumberFormat(intl, {
-      style: 'percent',
-      maximumFractionDigits: 1,
-      signDisplay: 'exceptZero',
-    }).format(value / 100)
+    new Intl.NumberFormat(intl, { style: 'percent', maximumFractionDigits: 1 }).format(value / 100)
 
   // Događaj menja osnovicu za poređenje, dakle i koja se upozorenja otvaraju.
   // To nije komentar nego podešavanje analize, i ne sme svako.
@@ -107,60 +111,7 @@ export default async function ContextPage({
             ))}
           </div>
 
-          {yoy ? (
-            <div className={styles.compare}>
-              <div className={styles.compareRow}>
-                <span className={styles.compareLabel}>
-                  {t('history.yoy')} · {yoy.current.month}
-                </span>
-                <span className={styles.compareValue}>{money(yoy.current.total)}</span>
-              </div>
-
-              {yoy.previous === undefined ? (
-                <p className={styles.compareLabel}>{t('history.noPrevious')}</p>
-              ) : (
-                <>
-                  <div className={styles.compareRow}>
-                    <span className={styles.compareLabel}>{t('history.raw')}</span>
-                    <span
-                      className={`${styles.compareValue} ${
-                        (yoy.rawChangePercent ?? 0) >= 0 ? styles.up : styles.down
-                      }`}
-                    >
-                      {yoy.rawChangePercent === undefined
-                        ? '—'
-                        : percent(yoy.rawChangePercent)}
-                    </span>
-                  </div>
-
-                  {/*
-                    Prilagođeni procenat stoji PORED izvornog, nikad umesto
-                    njega. Samo prilagođeni bi sakrio da je poređenje dirano;
-                    samo izvorni vraća lažni pad.
-                  */}
-                  {yoy.adjustedChangePercent !== undefined ? (
-                    <div className={styles.compareRow}>
-                      <span className={styles.compareLabel}>{t('history.adjusted')}</span>
-                      <span
-                        className={`${styles.compareValue} ${
-                          yoy.adjustedChangePercent >= 0 ? styles.up : styles.down
-                        }`}
-                      >
-                        {percent(yoy.adjustedChangePercent)}
-                      </span>
-                    </div>
-                  ) : null}
-
-                  {yoy.needsNote ? (
-                    <p className={styles.note}>
-                      <Icon name="warning" size={16} />
-                      {t('history.adjustedNote')}
-                    </p>
-                  ) : null}
-                </>
-              )}
-            </div>
-          ) : null}
+          {yoy ? <YearOverYear yoy={yoy} t={t} money={money} percent={percent} /> : null}
         </section>
       ) : null}
 

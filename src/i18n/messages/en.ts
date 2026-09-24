@@ -722,11 +722,13 @@ export const en: Messages = {
   'context.kind.other': 'Other',
 
   'history.title': 'Sales history',
-  'history.yoy': 'Same month last year',
+  'history.month': 'Month examined',
   'history.raw': 'By source values',
   'history.adjusted': 'Excluding exceptional events',
   'history.adjustedNote':
     'The comparison is adjusted because one of the months is marked exceptional. Both values are shown.',
+  'history.vsPrevious': 'vs {month}: {amount}',
+  'history.vsPreviousBaseline': 'vs the baseline for {month}: {amount}',
   'history.noPrevious': 'No data for the same month last year.',
   'history.monthsWithEvents': 'Months with recorded context',
   'history.baseline': 'Baseline',

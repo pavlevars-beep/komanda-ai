@@ -5,6 +5,7 @@ import type { Block, MorningBrief } from '@/core/brief/loader'
 import type { BriefSection } from '@/core/brief/focus'
 import type { Translator, MessageKey } from '@/i18n/translator'
 import { Icon, type IconName } from '@/ui/primitives/Icon'
+import { ChangeChip } from '@/ui/primitives/ChangeChip'
 import styles from './brief.module.css'
 
 /**
@@ -139,11 +140,33 @@ function Unavailable({ block, f }: { block: Block<unknown>; f: BriefFormat }) {
   )
 }
 
-function Change({ percent, f }: { percent: number; f: BriefFormat }) {
+/**
+ * Promena uz iznos — sa odgovorom na „u odnosu na šta".
+ *
+ * Procenat bez osnove ne znači ništa, a izgleda kao da znači. Osnovu zna onaj
+ * ko je broj izračunao, pa je ovde prosleđuje kao gotovu frazu; vidi se na
+ * prelaz mišem, dodir i tastaturu, a čitaču ekrana uvek.
+ *
+ * Strelica dolazi iz ikonica, ne iz teksta: znakovi ↑ i ↓ retko postoje u
+ * samom fontu, pa ih pregledač uzima iz rezervnog — i onda jedini element reda
+ * koji nosi smer ispadne iz druge porodice i druge debljine od svega oko sebe.
+ *
+ * Omotač ostaje zbog najmanje širine: bez nje iznosi u karticama poskakuju
+ * levo-desno prema tome koliko je procenat širok.
+ */
+function Change({ percent, hint, f }: { percent: number; hint: string; f: BriefFormat }) {
   if (percent === 0) return null
+  const up = percent > 0
+  const value = f.percent(Math.abs(percent))
   return (
-    <span className={`${styles.rowChange} ${percent > 0 ? styles.up : styles.down}`}>
-      {percent > 0 ? '↑' : '↓'} {f.percent(Math.abs(percent))}
+    <span className={styles.rowChange}>
+      <ChangeChip
+        align="end"
+        direction={up ? 'up' : 'down'}
+        value={value}
+        hint={hint}
+        ariaLabel={f.t(up ? 'delta.up' : 'delta.down', { value, hint })}
+      />
     </span>
   )
 }
@@ -195,20 +218,26 @@ export function Brief({
         {sales.data ? (
           <div className={styles.card}>
             <dl className={styles.rows}>
+              {/*
+                Uz svaki red ide i osnova poređenja, jer nije ista za sva tri:
+                juče se poredi sa prekjuče, sedam dana sa prethodnih sedam, a
+                mesec sa ISTIM brojem dana prethodnog meseca — ne sa punim
+                mesecom, inače bi svaki prvi u mesecu lažno prijavio pad.
+              */}
               {(
                 [
-                  ['brief.sales.yesterday', sales.data.yesterday],
-                  ['brief.sales.last7', sales.data.last7Days],
-                  ['brief.sales.month', sales.data.monthToDate],
+                  ['brief.sales.yesterday', sales.data.yesterday, 'delta.vsDayBefore'],
+                  ['brief.sales.last7', sales.data.last7Days, 'delta.vsPrevious7'],
+                  ['brief.sales.month', sales.data.monthToDate, 'delta.vsSameLastMonth'],
                 ] as const
-              ).map(([key, period]) => (
+              ).map(([key, period, hint]) => (
                 <div key={key} className={styles.row}>
                   <dt className={styles.rowLabel}>{f.t(key)}</dt>
                   <dd className={styles.row}>
                     <span className={styles.rowValue}>
                       {f.money(period.total, sales.data!.currency)}
                     </span>
-                    <Change percent={period.changePercent} f={f} />
+                    <Change percent={period.changePercent} hint={f.t(hint)} f={f} />
                   </dd>
                 </div>
               ))}

@@ -149,8 +149,6 @@ details[open] > .whySummary::before { transform: rotate(90deg); }
   min-width: 58px;
   text-align: right;
 }
-.up { color: var(--ok); }
-.down { color: var(--critical); }
 
 .footnote {
   display: flex; align-items: center; gap: var(--space-2);
